@@ -1,0 +1,107 @@
+{
+  "name": "enumwaii",
+  "version": "0.0.0",
+  "description": "Nominal, runtime-safe string enums for TypeScript and AI-generated code",
+  "keywords": [
+    "enum",
+    "typescript",
+    "standard-schema",
+    "zod",
+    "valibot",
+    "validation",
+    "tanstack-intent"
+  ],
+  "license": "MIT",
+  "author": "CatOfJupit3r",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CatOfJupit3r/enumwaii.git",
+    "directory": "packages/enumwaii"
+  },
+  "homepage": "https://github.com/CatOfJupit3r/enumwaii#readme",
+  "bugs": "https://github.com/CatOfJupit3r/enumwaii/issues",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "skills"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./zod": {
+      "import": {
+        "types": "./dist/adapters/zod.d.mts",
+        "default": "./dist/adapters/zod.mjs"
+      },
+      "require": {
+        "types": "./dist/adapters/zod.d.cts",
+        "default": "./dist/adapters/zod.cjs"
+      }
+    },
+    "./valibot": {
+      "import": {
+        "types": "./dist/adapters/valibot.d.mts",
+        "default": "./dist/adapters/valibot.mjs"
+      },
+      "require": {
+        "types": "./dist/adapters/valibot.d.cts",
+        "default": "./dist/adapters/valibot.cjs"
+      }
+    },
+    "./derive-with": {
+      "import": {
+        "types": "./dist/derive-with/index.d.mts",
+        "default": "./dist/derive-with/index.mjs"
+      },
+      "require": {
+        "types": "./dist/derive-with/index.d.cts",
+        "default": "./dist/derive-with/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "clean": "premove dist coverage",
+    "dev": "tsdown --watch --no-clean",
+    "test": "vitest run",
+    "test:types": "tsc --noEmit",
+    "test:build": "publint --strict && attw --pack --profile node16"
+  },
+  "peerDependencies": {
+    "valibot": "^1.0.0",
+    "zod": "^3.25.0 || ^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "valibot": {
+      "optional": true
+    },
+    "zod": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@tanstack/intent": "^0.3.6",
+    "valibot": "^1.4.2",
+    "zod": "^4.4.3"
+  },
+  "dependencies": {
+    "@standard-schema/spec": "^1.1.0"
+  }
+}

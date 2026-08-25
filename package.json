@@ -1,0 +1,40 @@
+{
+  "name": "enumwaii-workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=22.18.0",
+    "pnpm": ">=11.0.0"
+  },
+  "scripts": {
+    "build": "pnpm --recursive --if-present run build",
+    "clean": "pnpm --recursive --if-present run clean",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "oxlint --type-aware --deny-warnings .",
+    "test": "pnpm --recursive --if-present run test",
+    "test:types": "pnpm --recursive --if-present run test:types",
+    "test:build": "pnpm --recursive --if-present run test:build",
+    "test:skills": "pnpm --filter enumwaii exec intent validate skills --check",
+    "skills:stale": "pnpm --filter enumwaii exec intent stale",
+    "check": "pnpm format:check && pnpm lint && pnpm test && pnpm test:types && pnpm test:skills && pnpm build && pnpm test:build",
+    "changeset": "changeset",
+    "changeset:version": "changeset version && pnpm install --lockfile-only",
+    "changeset:publish": "changeset publish"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.1",
+    "@types/node": "^24.3.0",
+    "oxlint": "^1.58.0",
+    "oxlint-tsgolint": "^7.0.2001",
+    "premove": "^4.0.0",
+    "prettier": "^3.7.4",
+    "publint": "^0.3.13",
+    "tsdown": "^0.22.14",
+    "typescript": "^6.0.3",
+    "vitest": "^4.0.18"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "name": "eslint-plugin-enumwaii",
+  "version": "0.0.0",
+  "description": "ESLint and Oxlint-compatible rules for enumwaii",
+  "keywords": [
+    "eslint",
+    "oxlint",
+    "enum",
+    "typescript",
+    "enumwaii"
+  ],
+  "license": "MIT",
+  "author": "CatOfJupit3r",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CatOfJupit3r/enumwaii.git",
+    "directory": "packages/eslint-plugin-enumwaii"
+  },
+  "homepage": "https://github.com/CatOfJupit3r/enumwaii#linting",
+  "bugs": "https://github.com/CatOfJupit3r/enumwaii/issues",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "clean": "premove dist coverage",
+    "dev": "tsdown --watch --no-clean",
+    "test": "vitest run",
+    "test:types": "tsc --noEmit",
+    "test:build": "publint --strict && attw --pack --profile node16"
+  },
+  "dependencies": {
+    "@typescript-eslint/utils": "^8.58.1"
+  },
+  "peerDependencies": {
+    "eslint": "^8.57.0 || ^9.0.0 || ^10.0.0",
+    "typescript": ">=5.5.0 <7"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^8.58.1",
+    "enumwaii": "workspace:*",
+    "eslint": "^10.0.0"
+  }
+}

@@ -80,6 +80,8 @@
     "build": "tsdown",
     "clean": "premove dist coverage",
     "dev": "tsdown --watch --no-clean",
+    "benchmark:runtime": "pnpm run build && node --expose-gc bench/runtime.mjs",
+    "benchmark:types": "tsc -p bench/tsconfig.json --extendedDiagnostics",
     "test": "vitest run",
     "test:types": "tsc --noEmit",
     "test:build": "publint --strict && attw --pack --profile node16"

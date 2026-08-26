@@ -1,0 +1,83 @@
+import { em, type InferEnumwaii } from "../src/index";
+import { valibotSchema } from "../src/adapters/valibot";
+import { zodSchema } from "../src/adapters/zod";
+
+const enum01 = em(["A01", "B01", "C01", "D01"]);
+const enum02 = em(["A02", "B02", "C02", "D02"]);
+const enum03 = em(["A03", "B03", "C03", "D03"]);
+const enum04 = em(["A04", "B04", "C04", "D04"]);
+const enum05 = em(["A05", "B05", "C05", "D05"]);
+const enum06 = em(["A06", "B06", "C06", "D06"]);
+const enum07 = em(["A07", "B07", "C07", "D07"]);
+const enum08 = em(["A08", "B08", "C08", "D08"]);
+const enum09 = em(["A09", "B09", "C09", "D09"]);
+const enum10 = em(["A10", "B10", "C10", "D10"]);
+const enum11 = em(["A11", "B11", "C11", "D11"]);
+const enum12 = em(["A12", "B12", "C12", "D12"]);
+
+const combined01 = em.combine([enum01, enum02, enum03]);
+const combined02 = em.combine([enum04, enum05, enum06]);
+const combined03 = em.combine([enum07, enum08, enum09]);
+const combined04 = em.combine([enum10, enum11, enum12]);
+
+const picked01 = enum01.pick([enum01.enum.A01, enum01.enum.B01]);
+const picked02 = enum02.pick([enum02.enum.A02, enum02.enum.B02]);
+const picked03 = enum03.pick([enum03.enum.A03, enum03.enum.B03]);
+const picked04 = enum04.pick([enum04.enum.A04, enum04.enum.B04]);
+const picked05 = enum05.pick([enum05.enum.A05, enum05.enum.B05]);
+const picked06 = enum06.pick([enum06.enum.A06, enum06.enum.B06]);
+
+const derived01 = enum01.deriveWith((value) => value.toLowerCase());
+const derived02 = enum02.deriveWith((value) => value.toLowerCase());
+const derived03 = enum03.deriveWith((value) => value.toLowerCase());
+const derived04 = enum04.deriveWith((value) => value.toLowerCase());
+const derived05 = enum05.deriveWith((value) => value.toLowerCase());
+const derived06 = enum06.deriveWith((value) => value.toLowerCase());
+
+const zod01 = zodSchema(enum01);
+const zod02 = zodSchema(enum02);
+const zod03 = zodSchema(enum03);
+const zod04 = zodSchema(enum04);
+const valibot01 = valibotSchema(enum05);
+const valibot02 = valibotSchema(enum06);
+const valibot03 = valibotSchema(enum07);
+const valibot04 = valibotSchema(enum08);
+
+type Value01 = InferEnumwaii<typeof enum01>;
+type Value02 = InferEnumwaii<typeof enum02>;
+type Value03 = InferEnumwaii<typeof enum03>;
+type Value04 = InferEnumwaii<typeof enum04>;
+type Combined01 = InferEnumwaii<typeof combined01>;
+type Combined02 = InferEnumwaii<typeof combined02>;
+type Combined03 = InferEnumwaii<typeof combined03>;
+type Combined04 = InferEnumwaii<typeof combined04>;
+
+declare function consume<T>(value: T): void;
+consume<Value01>(enum01.enum.A01);
+consume<Value02>(enum02.enum.A02);
+consume<Value03>(enum03.enum.A03);
+consume<Value04>(enum04.enum.A04);
+consume<Combined01>(combined01.enum.A01);
+consume<Combined02>(combined02.enum.A04);
+consume<Combined03>(combined03.enum.A07);
+consume<Combined04>(combined04.enum.A10);
+consume(picked01);
+consume(picked02);
+consume(picked03);
+consume(picked04);
+consume(picked05);
+consume(picked06);
+consume(derived01);
+consume(derived02);
+consume(derived03);
+consume(derived04);
+consume(derived05);
+consume(derived06);
+consume(zod01);
+consume(zod02);
+consume(zod03);
+consume(zod04);
+consume(valibot01);
+consume(valibot02);
+consume(valibot03);
+consume(valibot04);

@@ -1,0 +1,10 @@
+typescript-version	0
+experiment-types	2
+provenance-tests	1
+runtime-tests	1
+performance-tests	1
+perf-branded	0
+perf-brandless	0
+perf-native-carrier	0
+perf-native-enum	0
+repository-check	1

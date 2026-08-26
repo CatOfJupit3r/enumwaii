@@ -1,0 +1,20 @@
+$ pnpm format:check && pnpm lint && pnpm test && pnpm test:types && pnpm test:skills && pnpm build && pnpm test:build
+$ prettier --check .
+Checking formatting...
+[[33mwarn[39m] experiments/brandless-research/brandless.ts
+[[33mwarn[39m] experiments/brandless-research/native-carrier.fixture.ts
+[[33mwarn[39m] experiments/brandless-research/native-enum.fixture.ts
+[[33mwarn[39m] experiments/brandless-research/perf/branded-declarations.ts
+[[33mwarn[39m] experiments/brandless-research/perf/brandless-declarations.ts
+[[33mwarn[39m] experiments/brandless-research/perf/native-carrier-declarations.ts
+[[33mwarn[39m] experiments/brandless-research/perf/native-enum-declarations.ts
+[[33mwarn[39m] experiments/brandless-research/provenance-analyzer.ts
+[[33mwarn[39m] experiments/brandless-research/representations.ts
+[[33mwarn[39m] experiments/brandless-research/tsconfig.json
+[[33mwarn[39m] packages/eslint-plugin-enumwaii/test/brandless-performance.test.ts
+[[33mwarn[39m] packages/eslint-plugin-enumwaii/test/brandless-research.test.ts
+[[33mwarn[39m] packages/eslint-plugin-enumwaii/test/fixtures/brandless-research/definitions.ts
+[[33mwarn[39m] packages/eslint-plugin-enumwaii/test/fixtures/brandless-research/limitations.fixture.ts
+[[33mwarn[39m] Code style issues found in 14 files. Run Prettier with --write to fix.
+[ELIFECYCLE] Command failed with exit code 1.
+[ELIFECYCLE] Command failed with exit code 1.

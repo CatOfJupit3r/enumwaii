@@ -19,6 +19,7 @@ The ESLint harness and cross-file fixtures live under `packages/eslint-plugin-en
 From the repository root:
 
 ```sh
+pnpm exec tsc --version
 pnpm exec tsc -p experiments/brandless-research/tsconfig.json
 pnpm --filter eslint-plugin-enumwaii test -- brandless-research.test.ts
 pnpm --filter eslint-plugin-enumwaii test -- brandless-runtime.test.ts

@@ -1,5 +1,18 @@
 type NonEmptyStrings = readonly [string, ...string[]];
 
+type CarrierRaw<TCarrier extends string> = `${TCarrier}`;
+
+type ExactNativeCarrierValues<
+  TCarrier extends string,
+  TValues extends NonEmptyStrings,
+> = CarrierRaw<TCarrier> extends TCarrier
+  ? never
+  : Exclude<CarrierRaw<TCarrier>, TValues[number]> extends never
+    ? Exclude<TValues[number], CarrierRaw<TCarrier>> extends never
+      ? unknown
+      : never
+    : never;
+
 type MemberMap<
   TCarrier extends string,
   TValues extends NonEmptyStrings,
@@ -22,7 +35,7 @@ export interface NativeCarrierEnumwaii<
 
 export function emNative<TCarrier extends string>() {
   return function createNativeCarrier<const TValues extends NonEmptyStrings>(
-    values: TValues,
+    values: TValues & ExactNativeCarrierValues<TCarrier, TValues>,
   ): NativeCarrierEnumwaii<TCarrier, TValues> {
     const memberSet = new Set<string>(values);
     const enumObject = Object.freeze(

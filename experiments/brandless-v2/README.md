@@ -55,7 +55,7 @@ The full `pnpm check` workflow passed on GitHub Actions with TypeScript 6.0.3, N
 ```ts
 const roles = em(["ADMIN", "USER", "GUEST"]);
 const ROLE = roles.enum;
-type Role = typeof roles["~type"]; // "ADMIN" | "USER" | "GUEST"
+type Role = (typeof roles)["~type"]; // "ADMIN" | "USER" | "GUEST"
 ```
 
 Result: native keys, derive exhaustiveness, switch narrowing, and runtime interop all work. TypeScript also accepts both `acceptRole("ADMIN")` and an overlapping foreign `actors.enum.ADMIN`. Container identity disappears as soon as a member is read.
@@ -128,8 +128,8 @@ Limitations:
 const ROLE = roles.enum; // native literals
 const ROLE_TOKEN = roles.token; // required-branded strings
 
-type Role = typeof roles["~type"];
-type OwnedRole = typeof roles["~owned"];
+type Role = (typeof roles)["~type"];
+type OwnedRole = (typeof roles)["~owned"];
 
 acceptOwnedRole(ROLE_TOKEN.ADMIN);
 roles.derive({
@@ -166,11 +166,11 @@ Intentional trust/escape cases:
 
 Fixture: 32 declarations, four members each, with identity calls, copied value arrays, `Set` callbacks, promises, and generic consumers. Timings are one CI-run semantic-check sample and are noisy; type, symbol, and instantiation counts are the more stable comparison.
 
-| Program | Check time | Types | Instantiations | Symbols | Diagnostics |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Native brandless | 255.90 ms | 2,674 | 5,569 | 40,279 | 0 |
-| Shadow required-brand | 236.88 ms | 3,067 | 6,507 | 40,423 | 0 |
-| Generated carrier registry | 304.12 ms | 4,485 | 18,332 | 41,088 | 0 |
+| Program                    | Check time | Types | Instantiations | Symbols | Diagnostics |
+| -------------------------- | ---------: | ----: | -------------: | ------: | ----------: |
+| Native brandless           |  255.90 ms | 2,674 |          5,569 |  40,279 |           0 |
+| Shadow required-brand      |  236.88 ms | 3,067 |          6,507 |  40,423 |           0 |
+| Generated carrier registry |  304.12 ms | 4,485 |         18,332 |  41,088 |           0 |
 
 Additional provenance analyzer traversal: **46.59 ms**.
 
@@ -202,21 +202,21 @@ For exact native literals, downstream users who do not install and run the check
 
 Legend: **Pass**, **Conditional**, **Fail**.
 
-| Requirement | Native + ordinary lint | Native + shadow checker | Generated carriers | Dual surface |
-| --- | --- | --- | --- | --- |
-| Reject raw literals | Conditional / high escape risk | Pass when checker is mandatory | Pass | Pass at strict-token boundaries |
-| Preserve generic and collection ownership | Fail after provenance erasure | Pass | Pass | Pass for tokens |
-| Reject different complete sets | Conditional | Pass | Pass | Pass for tokens |
-| Native computed keys | Pass | Pass in public program | Pass | Pass on native surface |
-| Exhaustive object derive | Pass | Pass | Pass | Pass on native surface |
-| Native switch/discriminated narrowing | Pass | Pass | Pass | Pass on native surface |
-| Primitive runtime strings | Pass | Pass | Pass | Pass |
-| JSON/URL/database/structured clone unchanged | Pass | Pass | Pass | Pass |
-| Exact displayed literal union | Pass | Pass | Fail: enum-member union | Pass for native type |
-| No mandatory project tooling | Pass, but weak | Fail | Fail | Pass |
-| No library-specific propagation cases | Fail for provenance lint | Pass: TypeScript propagates | Pass: TypeScript propagates | Pass: TypeScript propagates tokens |
-| Consumers without plugin remain protected | Fail | Fail | Pass after generated declarations are present | Pass at token boundaries |
-| Preferred `acceptRole(ROLE.ADMIN)` strict syntax | Conditional | Pass | Pass | Fail |
+| Requirement                                      | Native + ordinary lint         | Native + shadow checker        | Generated carriers                            | Dual surface                       |
+| ------------------------------------------------ | ------------------------------ | ------------------------------ | --------------------------------------------- | ---------------------------------- |
+| Reject raw literals                              | Conditional / high escape risk | Pass when checker is mandatory | Pass                                          | Pass at strict-token boundaries    |
+| Preserve generic and collection ownership        | Fail after provenance erasure  | Pass                           | Pass                                          | Pass for tokens                    |
+| Reject different complete sets                   | Conditional                    | Pass                           | Pass                                          | Pass for tokens                    |
+| Native computed keys                             | Pass                           | Pass in public program         | Pass                                          | Pass on native surface             |
+| Exhaustive object derive                         | Pass                           | Pass                           | Pass                                          | Pass on native surface             |
+| Native switch/discriminated narrowing            | Pass                           | Pass                           | Pass                                          | Pass on native surface             |
+| Primitive runtime strings                        | Pass                           | Pass                           | Pass                                          | Pass                               |
+| JSON/URL/database/structured clone unchanged     | Pass                           | Pass                           | Pass                                          | Pass                               |
+| Exact displayed literal union                    | Pass                           | Pass                           | Fail: enum-member union                       | Pass for native type               |
+| No mandatory project tooling                     | Pass, but weak                 | Fail                           | Fail                                          | Pass                               |
+| No library-specific propagation cases            | Fail for provenance lint       | Pass: TypeScript propagates    | Pass: TypeScript propagates                   | Pass: TypeScript propagates tokens |
+| Consumers without plugin remain protected        | Fail                           | Fail                           | Pass after generated declarations are present | Pass at token boundaries           |
+| Preferred `acceptRole(ROLE.ADMIN)` strict syntax | Conditional                    | Pass                           | Pass                                          | Fail                               |
 
 ## Recommendation before 1.0
 

@@ -1,8 +1,8 @@
 typescript-version	0
-experiment-types	2
-provenance-tests	1
-runtime-tests	1
-performance-tests	1
+experiment-types	0
+provenance-tests	0
+runtime-tests	0
+performance-tests	0
 perf-branded	0
 perf-brandless	0
 perf-native-carrier	0

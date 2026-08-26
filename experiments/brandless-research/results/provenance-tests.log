@@ -1,100 +1,17 @@
-$ vitest run -- brandless-research.test.ts --reporter=verbose
 
 [1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/runner/work/enumwaii/enumwaii/packages/eslint-plugin-enumwaii[39m
 
+ [32m✓[39m test/brandless-research.test.ts[2m > [22mbrandless provenance research[2m > [22mcovers returns and source-level summaries[33m 2706[2mms[22m[39m
+ [32m✓[39m test/brandless-research.test.ts[2m > [22mbrandless provenance research[2m > [22mcovers the mandatory flow stress matrix[32m 101[2mms[22m[39m
+ [32m✓[39m test/brandless-research.test.ts[2m > [22mbrandless provenance research[2m > [22mcovers assignments, comparisons, and switch cases[32m 33[2mms[22m[39m
+ [32m✓[39m test/brandless-research.test.ts[2m > [22mbrandless provenance research[2m > [22mrecords the generic-slot collision limitation[32m 16[2mms[22m[39m
 [90mstdout[2m | test/brandless-research.test.ts[2m > [22m[2mbrandless provenance research[2m > [22m[2mmeasures prototype lint overhead
-[22m[39mBRANDLESS_LINT_PERF {"baselineMs":19.264759333333433,"enabledMs":28.340094000000136,"overheadMs":9.075334666666702}
+[22m[39mBRANDLESS_LINT_PERF {"baselineMs":33.554430666666576,"enabledMs":43.260619333333274,"overheadMs":9.706188666666698}
 
- [31m❯[39m test/brandless-research.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 2852[2mms[22m[39m
-[31m     [31m×[31m covers returns and source-level summaries[39m[33m 2499[2mms[22m[39m
-[31m     [31m×[31m covers the mandatory flow stress matrix[39m[32m 96[2mms[22m[39m
-     [32m✓[39m covers assignments, comparisons, and switch cases[32m 23[2mms[22m[39m
-     [32m✓[39m records the generic-slot collision limitation[32m 16[2mms[22m[39m
-     [32m✓[39m measures prototype lint overhead[32m 215[2mms[22m[39m
- [32m✓[39m test/eslint-rule.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 2293[2mms[22m[39m
-     [33m[2m✓[22m[39m rejects raw comparisons and switch cases [33m 2245[2mms[22m[39m
- [31m❯[39m test/brandless-performance.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1004[2mms[22m[39m
-[31m     [31m×[31m measures TypeScript 6 representation costs[39m[33m 1003[2mms[22m[39m
- [32m✓[39m test/brandless-runtime.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m test/brandless-research.test.ts[2m > [22mbrandless provenance research[2m > [22mmeasures prototype lint overhead[33m 303[2mms[22m[39m
 
-[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 22:47:25
+[2m   Duration [22m 4.19s[2m (transform 185ms, setup 0ms, import 875ms, tests 3.16s, environment 0ms)[22m
 
-[41m[1m FAIL [22m[49m test/brandless-performance.test.ts[2m > [22mbrandless representation performance[2m > [22mmeasures TypeScript 6 representation costs
-[31m[1mError[22m: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node /home/runner/work/enumwaii/enumwaii/node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/tsc.js -p /home/runner/work/enumwaii/enumwaii/experiments/brandless-research/tsconfig.json --extendedDiagnostics --pretty false[39m
-[36m [2m❯[22m runCompiler test/brandless-performance.test.ts:[2m30:18[22m[39m
-    [90m 28|[39m
-    [90m 29|[39m [35mfunction[39m [34mrunCompiler[39m(configPath[33m:[39m string)[33m:[39m [33mCompilerMetrics[39m {
-    [90m 30|[39m   [35mconst[39m output [33m=[39m [34mexecFileSync[39m(
-    [90m   |[39m                  [31m^[39m
-    [90m 31|[39m     process[33m.[39mexecPath[33m,[39m
-    [90m 32|[39m     [tscPath, "-p", configPath, "--extendedDiagnostics", "--pretty", "…
-[90m [2m❯[22m test/brandless-performance.test.ts:[2m56:21[22m[39m
-
-[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
-
-[41m[1m FAIL [22m[49m test/brandless-research.test.ts[2m > [22mbrandless provenance research[2m > [22mcovers returns and source-level summaries
-[31m[1mAssertionError[22m: expected [ { …(8) } ] to deeply equal [][39m
-
-[32m- Expected[39m
-[31m+ Received[39m
-
-[32m- [][39m
-[31m+ [[39m
-[31m+   {[39m
-[31m+     "column": 10,[39m
-[31m+     "endColumn": 17,[39m
-[31m+     "endLine": 37,[39m
-[31m+     "line": 37,[39m
-[31m+     "message": "This raw string is not owned by enumwaii [ADMIN]. Use the owning .enum member or parser result.",[39m
-[31m+     "messageId": "raw",[39m
-[31m+     "ruleId": "research/brandless-research-provenance",[39m
-[31m+     "severity": 2,[39m
-[31m+   },[39m
-[31m+ ][39m
-
-[36m [2m❯[22m assertMarkedDiagnostics test/brandless-research.test.ts:[2m89:22[22m[39m
-    [90m 87|[39m
-    [90m 88|[39m   const unexpected = messages.filter((message) => !expected.has(messag…
-    [90m 89|[39m   [34mexpect[39m(unexpected)[33m.[39m[34mtoEqual[39m([])[33m;[39m
-    [90m   |[39m                      [31m^[39m
-    [90m 90|[39m }
-    [90m 91|[39m
-[90m [2m❯[22m test/brandless-research.test.ts:[2m94:5[22m[39m
-
-[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
-
-[41m[1m FAIL [22m[49m test/brandless-research.test.ts[2m > [22mbrandless provenance research[2m > [22mcovers the mandatory flow stress matrix
-[31m[1mAssertionError[22m: missing unowned diagnostic at consumer.fixture.ts:113: expected false to be true // Object.is equality[39m
-
-[32m- Expected[39m
-[31m+ Received[39m
-
-[32m- true[39m
-[31m+ false[39m
-
-[36m [2m❯[22m assertMarkedDiagnostics test/brandless-research.test.ts:[2m85:7[22m[39m
-    [90m 83|[39m       )[33m,[39m
-    [90m 84|[39m       [32m`missing [39m[36m${[39mexpectedKind[36m}[39m[32m diagnostic at [39m[36m${[39mname[36m}[39m[32m:[39m[36m${[39mline[36m}[39m[32m`[39m[33m,[39m
-    [90m 85|[39m     )[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
-    [90m   |[39m       [31m^[39m
-    [90m 86|[39m   }
-    [90m 87|[39m
-[90m [2m❯[22m test/brandless-research.test.ts:[2m98:5[22m[39m
-
-[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
-
-
-[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (4)[39m
-[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m11 passed[39m[22m[90m (14)[39m
-[2m   Start at [22m 22:41:34
-[2m   Duration [22m 8.29s[2m (transform 254ms, setup 0ms, import 1.70s, tests 6.15s, environment 0ms)[22m
-
-
-::error file=/home/runner/work/enumwaii/enumwaii/packages/eslint-plugin-enumwaii/test/brandless-performance.test.ts,title=test/brandless-performance.test.ts > brandless representation performance > measures TypeScript 6 representation costs,line=30,column=18::Error: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node /home/runner/work/enumwaii/enumwaii/node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/tsc.js -p /home/runner/work/enumwaii/enumwaii/experiments/brandless-research/tsconfig.json --extendedDiagnostics --pretty false%0A ❯ runCompiler test/brandless-performance.test.ts:30:18%0A ❯ test/brandless-performance.test.ts:56:21%0A%0A⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯%0ASerialized Error: { status: 2, signal: null, output: [ null, 'experiments/brandless-research/native-carrier.fixture.ts(95,7): error TS6133: \'badHolder\' is declared but its value is never read.\nFiles:                         65\nLines of Library:           10601\nLines of Definitions:       11449\nLines of TypeScript:         1933\nLines of JavaScript:            0\nLines of JSON:                  0\nLines of Other:                 0\nIdentifiers:                32179\nSymbols:                    25593\nTypes:                       5407\nInstantiations:              6742\nMemory used:               63494K\nAssignability cache size:     925\nIdentity cache size:          121\nSubtype cache size:           338\nStrict subtype cache size:    389\nI/O Read time:              0.00s\nParse time:                 0.25s\nResolveModule time:         0.01s\nProgram time:               0.28s\nBind time:                  0.17s\nCheck time:                 0.47s\nprintTime time:             0.00s\nEmit time:                  0.00s\nTotal time:                 0.91s\n', '' ], pid: 2145, stdout: 'experiments/brandless-research/native-carrier.fixture.ts(95,7): error TS6133: \'badHolder\' is declared but its value is never read.\nFiles:                         65\nLines of Library:           10601\nLines of Definitions:       11449\nLines of TypeScript:         1933\nLines of JavaScript:            0\nLines of JSON:                  0\nLines of Other:                 0\nIdentifiers:                32179\nSymbols:                    25593\nTypes:                       5407\nInstantiations:              6742\nMemory used:               63494K\nAssignability cache size:     925\nIdentity cache size:          121\nSubtype cache size:           338\nStrict subtype cache size:    389\nI/O Read time:              0.00s\nParse time:                 0.25s\nResolveModule time:         0.01s\nProgram time:               0.28s\nBind time:                  0.17s\nCheck time:                 0.47s\nprintTime time:             0.00s\nEmit time:                  0.00s\nTotal time:                 0.91s\n', stderr: '' }%0A
-
-::error file=/home/runner/work/enumwaii/enumwaii/packages/eslint-plugin-enumwaii/test/brandless-research.test.ts,title=test/brandless-research.test.ts > brandless provenance research > covers returns and source-level summaries,line=89,column=22::AssertionError: expected [ { …(8) } ] to deeply equal []%0A%0A- Expected%0A+ Received%0A%0A- []%0A+ [%0A+   {%0A+     "column": 10,%0A+     "endColumn": 17,%0A+     "endLine": 37,%0A+     "line": 37,%0A+     "message": "This raw string is not owned by enumwaii [ADMIN]. Use the owning .enum member or parser result.",%0A+     "messageId": "raw",%0A+     "ruleId": "research/brandless-research-provenance",%0A+     "severity": 2,%0A+   },%0A+ ]%0A%0A ❯ assertMarkedDiagnostics test/brandless-research.test.ts:89:22%0A ❯ test/brandless-research.test.ts:94:5%0A%0A
-
-::error file=/home/runner/work/enumwaii/enumwaii/packages/eslint-plugin-enumwaii/test/brandless-research.test.ts,title=test/brandless-research.test.ts > brandless provenance research > covers the mandatory flow stress matrix,line=85,column=7::AssertionError: missing unowned diagnostic at consumer.fixture.ts:113: expected false to be true // Object.is equality%0A%0A- Expected%0A+ Received%0A%0A- true%0A+ false%0A%0A ❯ assertMarkedDiagnostics test/brandless-research.test.ts:85:7%0A ❯ test/brandless-research.test.ts:98:5%0A%0A
-/home/runner/work/enumwaii/enumwaii/packages/eslint-plugin-enumwaii:
-[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] eslint-plugin-enumwaii@0.0.0 test: `vitest run -- brandless-research.test.ts --reporter=verbose`
-Exit status 1

@@ -616,9 +616,7 @@ void exhaustive;
     const roles = runtimeEnum(["ADMIN", "USER", "GUEST"]);
     expect(typeof roles.enum.ADMIN).toBe("string");
     expect(roles.enum.ADMIN).toBe("ADMIN");
-    expect(JSON.stringify({ role: roles.enum.ADMIN })).toBe(
-      '{"role":"ADMIN"}',
-    );
+    expect(JSON.stringify({ role: roles.enum.ADMIN })).toBe('{"role":"ADMIN"}');
     expect(new URLSearchParams({ role: roles.enum.ADMIN }).toString()).toBe(
       "role=ADMIN",
     );

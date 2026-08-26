@@ -21,9 +21,7 @@ export interface LocatedDiagnostic {
 }
 
 export type OwnershipIssueKind =
-  | "foreign-enum"
-  | "raw-string"
-  | "unsafe-assertion";
+  "foreign-enum" | "raw-string" | "unsafe-assertion";
 
 export interface OwnershipIssue {
   readonly kind: OwnershipIssueKind;
@@ -185,7 +183,9 @@ export function measureProgram(project: VirtualProject): ProgramMetrics {
   };
 }
 
-export function analyzeOwnership(project: VirtualProject): readonly OwnershipIssue[] {
+export function analyzeOwnership(
+  project: VirtualProject,
+): readonly OwnershipIssue[] {
   const checker = project.program.getTypeChecker();
   const issues: OwnershipIssue[] = [];
   const reported = new Set<string>();
@@ -363,7 +363,8 @@ export function analyzeOwnership(project: VirtualProject): readonly OwnershipIss
     }
     if (ts.isReturnStatement(node) && node.expression !== undefined) {
       const returnType = enclosingReturnType(node);
-      if (returnType !== undefined) checkOwnedTarget(node.expression, returnType);
+      if (returnType !== undefined)
+        checkOwnedTarget(node.expression, returnType);
     }
     if (ts.isAsExpression(node) || ts.isTypeAssertionExpression(node)) {
       checkAssertion(node);
@@ -376,23 +377,30 @@ export function analyzeOwnership(project: VirtualProject): readonly OwnershipIss
   for (const sourceFile of project.program.getSourceFiles()) {
     if (
       sourceFile.isDeclarationFile ||
-      !path.resolve(sourceFile.fileName).startsWith(path.resolve(project.rootDir))
+      !path
+        .resolve(sourceFile.fileName)
+        .startsWith(path.resolve(project.rootDir))
     ) {
       continue;
     }
     visit(sourceFile);
   }
 
-  return issues.sort((left, right) =>
-    left.file.localeCompare(right.file) ||
-    left.line - right.line ||
-    left.column - right.column,
+  return issues.sort(
+    (left, right) =>
+      left.file.localeCompare(right.file) ||
+      left.line - right.line ||
+      left.column - right.column,
   );
 }
 
 export function expectedIssueLocations(
   files: Readonly<Record<string, string>>,
-): readonly { readonly file: string; readonly line: number; readonly tag: string }[] {
+): readonly {
+  readonly file: string;
+  readonly line: number;
+  readonly tag: string;
+}[] {
   const expected: { file: string; line: number; tag: string }[] = [];
   for (const [file, source] of Object.entries(files)) {
     for (const [index, line] of source.split("\n").entries()) {

@@ -81,7 +81,6 @@ export interface EnumwaiiDerived<
   TIdentity extends string,
   TValue,
 > {
-  (value: EnumwaiiValue<TRaw, TIdentity>): TValue;
   readonly get: (value: EnumwaiiValue<TRaw, TIdentity>) => TValue;
   readonly record: Readonly<Record<TRaw, TValue>>;
 }

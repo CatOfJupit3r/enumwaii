@@ -37,7 +37,7 @@ const mode = em(["READ", "WRITE"]);
 
 ## Deserialization and Standard Schema
 
-An enumwaii declaration implements Standard Schema v1 and exposes itself as `.schema` for declaration-site readability.
+An enumwaii declaration implements Standard Schema v1 directly.
 
 ```ts
 roles.parse(JSON.parse(payload).role);
@@ -48,7 +48,7 @@ roles.parse(query.role, { fallback: ROLE.GUEST }); // any invalid input
 const result = roles.safeParse(query.role);
 if (result.success) useRole(result.value);
 
-const standardSchema = roles.schema;
+const standardSchema = roles;
 standardSchema["~standard"].validate(input);
 ```
 
@@ -73,12 +73,12 @@ const serviceRoles = roles.extend(["BOT"]);
 const roleOrMode = em.combine([roles, mode]);
 
 const labels = roles.derive({
-  [ROLE.ADMIN]: "Administrator",
-  [ROLE.USER]: "Member",
-  [ROLE.GUEST]: "Guest",
+  ADMIN: "Administrator",
+  USER: "Member",
+  GUEST: "Guest",
 });
 
-labels(role);
+labels.get(role);
 ```
 
 Declarations, extensions, and combinations remove duplicate members while preserving first-seen order.
@@ -90,9 +90,9 @@ const permissions = em(["READ", "WRITE"]);
 const PERMISSION = permissions.enum;
 
 const grants = roles.deriveTo(permissions, {
-  [ROLE.ADMIN]: [PERMISSION.READ, PERMISSION.WRITE],
-  [ROLE.USER]: PERMISSION.READ,
-  [ROLE.GUEST]: [],
+  ADMIN: [PERMISSION.READ, PERMISSION.WRITE],
+  USER: PERMISSION.READ,
+  GUEST: [],
 });
 ```
 
@@ -117,7 +117,7 @@ type RoleKeys = (typeof roles)["~keys"];
 type Role = (typeof roles)["~type"];
 ```
 
-`.cases` intentionally exposes unbranded literals for native discriminated-union narrowing. Use `.enum` for ordinary values.
+`.rawEnum` exposes canonical unbranded members for integrations that cannot use enumwaii's branded values. `.cases` is reserved for native discriminated-union tags and carries declaration provenance used by the type-aware lint rules. Use `.enum` for ordinary application values.
 
 ## Linting
 

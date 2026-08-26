@@ -30,11 +30,9 @@ export const noRawEnumMemberRule = createRule({
     type: "problem",
     docs: {
       description:
-        "Require enumwaii member accessors and composition APIs for subsets and derived mappings",
+        "Require enumwaii member accessors and composition APIs for subsets and targeted mappings",
     },
     messages: {
-      rawDerivedKey:
-        "Do not use the raw enum key {{key}}. Use a computed member key such as [MY_ENUM.{{key}}].",
       rawSubsetMember:
         "Do not use the raw enum member {{member}}. Reference the owning enum member instead.",
       rawTargetMember:
@@ -197,36 +195,20 @@ export const noRawEnumMemberRule = createRule({
           return;
         }
         const methodName = node.callee.property.name;
-        if (methodName === "derive" || methodName === "deriveTo") {
-          const mapping = node.arguments[0];
-          const mappingArgument =
-            methodName === "deriveTo" ? node.arguments[1] : mapping;
+        if (methodName === "deriveTo") {
+          const mappingArgument = node.arguments[1];
           if (mappingArgument?.type !== AST_NODE_TYPES.ObjectExpression) {
             return;
           }
           for (const property of mappingArgument.properties) {
-            if (
-              property.type !== AST_NODE_TYPES.Property ||
-              property.computed
-            ) {
-              if (
-                methodName === "deriveTo" &&
-                property.type === AST_NODE_TYPES.Property
-              ) {
-                reportRawTargetMembers(property.value);
-              }
-              continue;
-            }
-            const key = context.sourceCode.getText(property.key);
-            context.report({
-              node: property.key,
-              messageId: "rawDerivedKey",
-              data: { key },
-            });
-            if (methodName === "deriveTo") {
+            if (property.type === AST_NODE_TYPES.Property) {
               reportRawTargetMembers(property.value);
             }
           }
+          return;
+        }
+
+        if (methodName === "derive") {
           return;
         }
 

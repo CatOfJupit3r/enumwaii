@@ -38,6 +38,37 @@ const inlineLabels = {
 void labels;
 void inlineLabels;
 
+const derivedLabels = roles.derive({
+  ADMIN: "Administrator",
+  USER: "Member",
+});
+expectTypeOf(derivedLabels.get(ROLE.ADMIN)).toEqualTypeOf<
+  "Administrator" | "Member"
+>();
+// @ts-expect-error derived mappings must contain every enum member
+roles.derive({ ADMIN: "Administrator" });
+roles.derive({
+  ADMIN: "Administrator",
+  USER: "Member",
+  // @ts-expect-error derived mappings cannot contain unknown members
+  UNKNOWN: "Unknown",
+});
+
+const permissions = em(["READ", "WRITE"]);
+const PERMISSION = permissions.enum;
+roles.deriveTo(permissions, {
+  ADMIN: [PERMISSION.READ, PERMISSION.WRITE],
+  USER: PERMISSION.READ,
+});
+// @ts-expect-error targeted mappings must contain every source enum member
+roles.deriveTo(permissions, { ADMIN: PERMISSION.READ });
+roles.deriveTo(permissions, {
+  ADMIN: PERMISSION.READ,
+  USER: PERMISSION.WRITE,
+  // @ts-expect-error targeted mappings cannot contain unknown source members
+  UNKNOWN: PERMISSION.READ,
+});
+
 const other = em(["ADMIN"]);
 expectTypeOf(other.enum.ADMIN).not.toExtend<Role>();
 

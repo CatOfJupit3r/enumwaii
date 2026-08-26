@@ -24,7 +24,7 @@ const modes = em(["REGULAR", "READER", "CINEMATIC"]);
 export const MODE = modes.enum;
 export const RAW_MODE = modes.rawEnum;
 export type Mode = InferEnumwaii<typeof modes>;
-export const modeSchema = modes.schema;
+export const modeSchema = modes;
 ```
 
 Pass only the closed set of values to `em`. Enumwaii derives its type identity from that complete set; declarations with identical members are intentionally type-compatible.
@@ -56,23 +56,25 @@ const result = modes.safeParse(query.mode);
 if (result.success) useMode(result.value);
 ```
 
-The declaration implements Standard Schema v1; pass `modes` or `modes.schema` to consumers that accept the standard. Use `enumwaii/zod` or `enumwaii/valibot` only when an API specifically requires that library.
+The declaration implements Standard Schema v1; pass `modes` directly to consumers that accept the standard. Use `enumwaii/zod` or `enumwaii/valibot` only when an API specifically requires that library.
 
 ## Compose and derive
 
-Use `pick`, `omit`, and `extend` instead of duplicating related sets. Use `derive` for exhaustive metadata with computed owned keys.
+Use `pick`, `omit`, and `extend` instead of duplicating related sets. Use `derive` for exhaustive metadata; its object is contextually typed from the source enum, so missing and unknown keys fail type-checking.
 
 ```ts
 const labels = modes.derive({
-  [MODE.REGULAR]: "Regular",
-  [MODE.READER]: "Reader",
-  [MODE.CINEMATIC]: "Cinematic",
+  REGULAR: "Regular",
+  READER: "Reader",
+  CINEMATIC: "Cinematic",
 });
+
+labels.get(MODE.REGULAR);
 ```
 
 Declarations and compositions automatically remove duplicate values. Use `deriveTo` when values belong to another enumwaii; each result may be one owned target member or an array of owned target members. Use `typeof modes["~keys"]` for external records that use `satisfies` instead of `derive`.
 
-Do not build derived maps with bare keys; that launders raw strings and prevents the lint rules from checking ownership.
+Keep branded enum members as `deriveTo` values; its keys are checked against the source enum by TypeScript.
 
 `.cases` is reserved for raw discriminants where TypeScript needs native union narrowing. Use `.enum` everywhere else.
 

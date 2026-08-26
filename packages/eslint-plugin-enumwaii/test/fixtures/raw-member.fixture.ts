@@ -10,10 +10,10 @@ roles.derive({
 
 const permissions = em(["READ", "WRITE"]);
 const PERMISSION = permissions.enum;
-// @ts-expect-error This raw array member is the lint rule's fixture.
 roles.deriveTo(permissions, {
-  [ROLE.ADMIN]: ["READ", PERMISSION.WRITE],
-  [ROLE.USER]: PERMISSION.READ,
+  // @ts-expect-error This raw array member is the lint rule's fixture.
+  ADMIN: ["READ", PERMISSION.WRITE],
+  USER: PERMISSION.READ,
 });
 
 // @ts-expect-error This invalid call is the lint rule's fixture.

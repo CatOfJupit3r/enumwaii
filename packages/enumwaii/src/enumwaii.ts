@@ -32,7 +32,6 @@ export class Enumwaii<
     TIdentity
   >;
   public readonly rawValues: EnumwaiiValues<TRaw, TIdentity>;
-  public readonly schema: this;
   public readonly "~standard": StandardSchemaV1<
     unknown,
     EnumwaiiValue<TRaw, TIdentity>
@@ -66,7 +65,6 @@ export class Enumwaii<
     };
     this.rawEnum = members as { readonly [K in TRaw]: K };
     this.cases = members as EnumwaiiCases<TRaw, TIdentity>;
-    this.schema = this;
     this["~standard"] = createStandardSchemaProps(this);
   }
 
@@ -160,7 +158,7 @@ export class Enumwaii<
   }
 
   public derive<const TValue>(
-    mapping: Record<string, TValue>,
+    mapping: Readonly<Record<TRaw, TValue>>,
   ): EnumwaiiDerived<TRaw, TIdentity, TValue> {
     const keys = new Set(Object.keys(mapping));
     for (const value of this.rawValues) {
@@ -188,15 +186,17 @@ export class Enumwaii<
   public deriveTo<
     TTargetRaw extends string,
     TTargetIdentity extends string,
-    const TMapping extends Record<
-      string,
-      | EnumwaiiValue<TTargetRaw, TTargetIdentity>
-      | readonly EnumwaiiValue<TTargetRaw, TTargetIdentity>[]
+    const TMapping extends Readonly<
+      Record<
+        TRaw,
+        | EnumwaiiValue<TTargetRaw, TTargetIdentity>
+        | readonly EnumwaiiValue<TTargetRaw, TTargetIdentity>[]
+      >
     >,
   >(
     target: Enumwaii<TTargetRaw, TTargetIdentity>,
-    mapping: TMapping,
-  ): EnumwaiiDerived<TRaw, TIdentity, TMapping[keyof TMapping]> {
+    mapping: TMapping & Readonly<Record<Exclude<keyof TMapping, TRaw>, never>>,
+  ): EnumwaiiDerived<TRaw, TIdentity, TMapping[TRaw]> {
     const keys = new Set(Object.keys(mapping));
     for (const value of this.rawValues) {
       if (!keys.has(value)) {
@@ -216,7 +216,7 @@ export class Enumwaii<
         );
       }
     }
-    return this.buildDerived(mapping as Record<TRaw, TMapping[keyof TMapping]>);
+    return this.buildDerived(mapping);
   }
 
   private buildDerived<TValue>(
@@ -231,11 +231,9 @@ export class Enumwaii<
       return mapping[value];
     }
 
-    return Object.freeze(
-      Object.assign(lookup, {
-        get: lookup,
-        record: guardMemberAccess(Object.freeze({ ...mapping })),
-      }),
-    );
+    return Object.freeze({
+      get: lookup,
+      record: guardMemberAccess(Object.freeze({ ...mapping })),
+    });
   }
 }

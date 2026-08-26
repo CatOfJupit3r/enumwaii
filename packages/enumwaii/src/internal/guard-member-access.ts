@@ -6,7 +6,9 @@ const memberAccessGuard: ProxyHandler<object> = {
       typeof property !== "string" ||
       property in currentTarget ||
       property === "toJSON" ||
-      property === "then"
+      property === "then" ||
+      // React probes arbitrary objects to determine whether they are elements.
+      property === "$$typeof"
     ) {
       return Reflect.get(currentTarget, property, receiver);
     }

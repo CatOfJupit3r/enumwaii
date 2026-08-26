@@ -70,12 +70,10 @@ describe("eslint-plugin-enumwaii", () => {
     ).resolves.toEqual(["rawComparison", "rawSwitchCase"]);
   }, 30_000);
 
-  it("rejects raw derived, subset, and constructor members", async () => {
+  it("rejects raw targeted, subset, and constructor members", async () => {
     await expect(
       lintFixture("no-raw-enum-member", "raw-member"),
     ).resolves.toEqual([
-      "rawDerivedKey",
-      "rawDerivedKey",
       "rawTargetMember",
       "rawSubsetMember",
       "rawSubsetMember",

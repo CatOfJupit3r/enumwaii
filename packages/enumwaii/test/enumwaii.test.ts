@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { isValidElement } from "react";
+import { inspect } from "node:util";
 
 import {
   em,
@@ -81,7 +83,6 @@ describe("deserialization", () => {
   });
 
   it("implements Standard Schema v1 without an adapter", () => {
-    expect(roles.schema).toBe(roles);
     expect(roles["~standard"].validate("ADMIN")).toEqual({ value: "ADMIN" });
     expect(roles["~standard"].validate("OWNER")).toMatchObject({
       issues: [{ message: expect.any(String) }],
@@ -89,6 +90,23 @@ describe("deserialization", () => {
 
     const validate = roles["~standard"].validate;
     expect(validate("USER")).toEqual({ value: "USER" });
+  });
+
+  it("supports standard object-probing protocols", async () => {
+    expect(JSON.stringify(roles.enum)).toBe(
+      '{"ADMIN":"ADMIN","USER":"USER","GUEST":"GUEST"}',
+    );
+    await expect(Promise.resolve(roles.enum)).resolves.toBe(roles.enum);
+    expect(isValidElement(roles.enum)).toBe(false);
+    expect(inspect(roles.enum)).toContain("ADMIN");
+    expect(roles.enum).toEqual({
+      ADMIN: "ADMIN",
+      USER: "USER",
+      GUEST: "GUEST",
+    });
+    expect(
+      () => (roles.enum as Record<string, unknown>).asymmetricMatch,
+    ).toThrow(EnumwaiiUnknownMemberError);
   });
 
   it("offers optional Zod and Valibot adapters", () => {
@@ -129,13 +147,13 @@ describe("composition and exhaustive derivation", () => {
     ]);
   });
 
-  it("builds checked, callable lookup maps", () => {
+  it("builds checked lookup maps", () => {
     const labels = roles.derive({
-      [ROLE.ADMIN]: "Administrator",
-      [ROLE.USER]: "Member",
-      [ROLE.GUEST]: "Guest",
+      ADMIN: "Administrator",
+      USER: "Member",
+      GUEST: "Guest",
     });
-    expect(labels(ROLE.ADMIN)).toBe("Administrator");
+    expect(labels.get(ROLE.ADMIN)).toBe("Administrator");
     expect(labels.record.USER).toBe("Member");
     expect(() => roles.derive({ ADMIN: "Administrator" } as never)).toThrow(
       EnumwaiiError,
@@ -148,27 +166,27 @@ describe("composition and exhaustive derivation", () => {
     const lower = em(["admin", "user"]);
     const upperRoles = lower.deriveWith(uppercase);
 
-    expect(lowerRoles(ROLE.ADMIN)).toBe("admin");
-    expect(lowerRolesFromMethod(ROLE.USER)).toBe("user");
-    expect(upperRoles(lower.enum.user)).toBe("USER");
+    expect(lowerRoles.get(ROLE.ADMIN)).toBe("admin");
+    expect(lowerRolesFromMethod.get(ROLE.USER)).toBe("user");
+    expect(upperRoles.get(lower.enum.user)).toBe("USER");
   });
 
   it("derives scalar and array values into another enum", () => {
     const permissions = em(["READ", "WRITE", "DELETE"]);
     const PERMISSION = permissions.enum;
     const grants = roles.deriveTo(permissions, {
-      [ROLE.ADMIN]: [PERMISSION.READ, PERMISSION.WRITE, PERMISSION.DELETE],
-      [ROLE.USER]: [PERMISSION.READ, PERMISSION.WRITE],
-      [ROLE.GUEST]: PERMISSION.READ,
+      ADMIN: [PERMISSION.READ, PERMISSION.WRITE, PERMISSION.DELETE],
+      USER: [PERMISSION.READ, PERMISSION.WRITE],
+      GUEST: PERMISSION.READ,
     });
 
-    expect(grants(ROLE.ADMIN)).toEqual(["READ", "WRITE", "DELETE"]);
-    expect(grants(ROLE.GUEST)).toBe(PERMISSION.READ);
+    expect(grants.get(ROLE.ADMIN)).toEqual(["READ", "WRITE", "DELETE"]);
+    expect(grants.get(ROLE.GUEST)).toBe(PERMISSION.READ);
     expect(() =>
       roles.deriveTo(permissions, {
-        [ROLE.ADMIN]: [PERMISSION.READ, "UNKNOWN"],
-        [ROLE.USER]: PERMISSION.READ,
-        [ROLE.GUEST]: [],
+        ADMIN: [PERMISSION.READ, "UNKNOWN"],
+        USER: PERMISSION.READ,
+        GUEST: [],
       } as never),
     ).toThrow(EnumwaiiError);
   });

@@ -2,14 +2,14 @@ import { em } from "../../../../../experiments/brandless-research/brandless";
 
 export const roles = em(["ADMIN", "USER", "GUEST"]);
 export const ROLE = roles.enum;
-export type Role = typeof roles["~type"];
+export type Role = (typeof roles)["~type"];
 
 export const sameRoles = em(["GUEST", "ADMIN", "USER"]);
 export const SAME_ROLE = sameRoles.enum;
 
 export const actors = em(["ADMIN", "BOT"]);
 export const ACTOR = actors.enum;
-export type Actor = typeof actors["~type"];
+export type Actor = (typeof actors)["~type"];
 
 export function acceptRole(role: Role): void {
   void role;
@@ -34,7 +34,7 @@ export function overloadedIdentity(value: Role): Role {
 }
 
 export function replaceOwnedWithRaw(_role: Role): "ADMIN" {
-  return "ADMIN";
+  return "ADMIN"; // expect:raw
 }
 
 export function returnOwned(): Role {

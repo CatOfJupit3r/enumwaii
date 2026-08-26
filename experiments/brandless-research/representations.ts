@@ -2,22 +2,24 @@ declare const valueBrand: unique symbol;
 declare const containerBrand: unique symbol;
 
 type Equal<TLeft, TRight> =
-  (<T>() => T extends TLeft ? 1 : 2) extends <T>() => T extends TRight
-    ? 1
-    : 2
+  (<T>() => T extends TLeft ? 1 : 2) extends <T>() => T extends TRight ? 1 : 2
     ? true
     : false;
 type Expect<T extends true> = T;
 
-type RequiredBrand<TLiteral extends string, TIdentity extends string> =
-  TLiteral & {
-    readonly [valueBrand]: TIdentity;
-  };
+type RequiredBrand<
+  TLiteral extends string,
+  TIdentity extends string,
+> = TLiteral & {
+  readonly [valueBrand]: TIdentity;
+};
 
-type OptionalBrand<TLiteral extends string, TIdentity extends string> =
-  TLiteral & {
-    readonly [valueBrand]?: TIdentity;
-  };
+type OptionalBrand<
+  TLiteral extends string,
+  TIdentity extends string,
+> = TLiteral & {
+  readonly [valueBrand]?: TIdentity;
+};
 
 type OptionalInvariantBrand<
   TLiteral extends string,
@@ -27,8 +29,7 @@ type OptionalInvariantBrand<
 };
 
 type UnionBrand<TLiteral extends string, TIdentity extends string> =
-  | TLiteral
-  | RequiredBrand<TLiteral, TIdentity>;
+  TLiteral | RequiredBrand<TLiteral, TIdentity>;
 
 type PhantomAlias<
   TLiteral extends string,
@@ -59,9 +60,7 @@ declare const optionalInvariantActorAdmin: OptionalInvariantBrand<
 declare const unionRoleAdmin: UnionBrand<"ADMIN", "roles">;
 declare const unionActorAdmin: UnionBrand<"ADMIN", "actors">;
 
-declare function acceptRequired(
-  value: RequiredBrand<RoleRaw, "roles">,
-): void;
+declare function acceptRequired(value: RequiredBrand<RoleRaw, "roles">): void;
 declare function acceptOptional(value: OptionalBrand<RoleRaw, "roles">): void;
 declare function acceptOptionalInvariant(
   value: OptionalInvariantBrand<RoleRaw, "roles">,

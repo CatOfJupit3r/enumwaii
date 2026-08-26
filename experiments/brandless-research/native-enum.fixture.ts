@@ -16,7 +16,7 @@ const sameRoles = emFromNativeEnum(RoleCarrier);
 const actors = emFromNativeEnum(ActorCarrier);
 const ROLE = roles.enum;
 const ACTOR = actors.enum;
-type Role = typeof roles["~type"];
+type Role = (typeof roles)["~type"];
 
 declare function acceptRole(value: Role): void;
 declare const input: unknown;

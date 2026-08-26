@@ -1,12 +1,13 @@
 type NonEmptyStrings = readonly [string, ...string[]];
-type NativeMembers<
-  TCarrier extends string,
-  TValues extends NonEmptyStrings,
-> = { readonly [K in TValues[number]]: Extract<TCarrier, K> };
+type NativeMembers<TCarrier extends string, TValues extends NonEmptyStrings> = {
+  readonly [K in TValues[number]]: Extract<TCarrier, K>;
+};
 
 declare function makeNative<TCarrier extends string>(): <
   const TValues extends NonEmptyStrings,
->(values: TValues) => {
+>(
+  values: TValues,
+) => {
   readonly enum: NativeMembers<TCarrier, TValues>;
   readonly "~type": TCarrier;
 };
@@ -20,7 +21,7 @@ declare enum Carrier01 {
   D01 = "D01",
 }
 const enum01 = makeNative<Carrier01>()(["A01", "B01", "C01", "D01"]);
-type Value01 = typeof enum01["~type"];
+type Value01 = (typeof enum01)["~type"];
 consume<Value01>(enum01.enum.A01);
 consume([enum01.enum.A01, enum01.enum.B01] as const);
 consume({
@@ -37,7 +38,7 @@ declare enum Carrier02 {
   D02 = "D02",
 }
 const enum02 = makeNative<Carrier02>()(["A02", "B02", "C02", "D02"]);
-type Value02 = typeof enum02["~type"];
+type Value02 = (typeof enum02)["~type"];
 consume<Value02>(enum02.enum.A02);
 consume([enum02.enum.A02, enum02.enum.B02] as const);
 consume({
@@ -54,7 +55,7 @@ declare enum Carrier03 {
   D03 = "D03",
 }
 const enum03 = makeNative<Carrier03>()(["A03", "B03", "C03", "D03"]);
-type Value03 = typeof enum03["~type"];
+type Value03 = (typeof enum03)["~type"];
 consume<Value03>(enum03.enum.A03);
 consume([enum03.enum.A03, enum03.enum.B03] as const);
 consume({
@@ -71,7 +72,7 @@ declare enum Carrier04 {
   D04 = "D04",
 }
 const enum04 = makeNative<Carrier04>()(["A04", "B04", "C04", "D04"]);
-type Value04 = typeof enum04["~type"];
+type Value04 = (typeof enum04)["~type"];
 consume<Value04>(enum04.enum.A04);
 consume([enum04.enum.A04, enum04.enum.B04] as const);
 consume({
@@ -88,7 +89,7 @@ declare enum Carrier05 {
   D05 = "D05",
 }
 const enum05 = makeNative<Carrier05>()(["A05", "B05", "C05", "D05"]);
-type Value05 = typeof enum05["~type"];
+type Value05 = (typeof enum05)["~type"];
 consume<Value05>(enum05.enum.A05);
 consume([enum05.enum.A05, enum05.enum.B05] as const);
 consume({
@@ -105,7 +106,7 @@ declare enum Carrier06 {
   D06 = "D06",
 }
 const enum06 = makeNative<Carrier06>()(["A06", "B06", "C06", "D06"]);
-type Value06 = typeof enum06["~type"];
+type Value06 = (typeof enum06)["~type"];
 consume<Value06>(enum06.enum.A06);
 consume([enum06.enum.A06, enum06.enum.B06] as const);
 consume({
@@ -122,7 +123,7 @@ declare enum Carrier07 {
   D07 = "D07",
 }
 const enum07 = makeNative<Carrier07>()(["A07", "B07", "C07", "D07"]);
-type Value07 = typeof enum07["~type"];
+type Value07 = (typeof enum07)["~type"];
 consume<Value07>(enum07.enum.A07);
 consume([enum07.enum.A07, enum07.enum.B07] as const);
 consume({
@@ -139,7 +140,7 @@ declare enum Carrier08 {
   D08 = "D08",
 }
 const enum08 = makeNative<Carrier08>()(["A08", "B08", "C08", "D08"]);
-type Value08 = typeof enum08["~type"];
+type Value08 = (typeof enum08)["~type"];
 consume<Value08>(enum08.enum.A08);
 consume([enum08.enum.A08, enum08.enum.B08] as const);
 consume({
@@ -156,7 +157,7 @@ declare enum Carrier09 {
   D09 = "D09",
 }
 const enum09 = makeNative<Carrier09>()(["A09", "B09", "C09", "D09"]);
-type Value09 = typeof enum09["~type"];
+type Value09 = (typeof enum09)["~type"];
 consume<Value09>(enum09.enum.A09);
 consume([enum09.enum.A09, enum09.enum.B09] as const);
 consume({
@@ -173,7 +174,7 @@ declare enum Carrier10 {
   D10 = "D10",
 }
 const enum10 = makeNative<Carrier10>()(["A10", "B10", "C10", "D10"]);
-type Value10 = typeof enum10["~type"];
+type Value10 = (typeof enum10)["~type"];
 consume<Value10>(enum10.enum.A10);
 consume([enum10.enum.A10, enum10.enum.B10] as const);
 consume({
@@ -190,7 +191,7 @@ declare enum Carrier11 {
   D11 = "D11",
 }
 const enum11 = makeNative<Carrier11>()(["A11", "B11", "C11", "D11"]);
-type Value11 = typeof enum11["~type"];
+type Value11 = (typeof enum11)["~type"];
 consume<Value11>(enum11.enum.A11);
 consume([enum11.enum.A11, enum11.enum.B11] as const);
 consume({
@@ -207,7 +208,7 @@ declare enum Carrier12 {
   D12 = "D12",
 }
 const enum12 = makeNative<Carrier12>()(["A12", "B12", "C12", "D12"]);
-type Value12 = typeof enum12["~type"];
+type Value12 = (typeof enum12)["~type"];
 consume<Value12>(enum12.enum.A12);
 consume([enum12.enum.A12, enum12.enum.B12] as const);
 consume({
@@ -216,4 +217,3 @@ consume({
   [enum12.enum.C12]: 3,
   [enum12.enum.D12]: 4,
 } satisfies Record<Value12, number>);
-

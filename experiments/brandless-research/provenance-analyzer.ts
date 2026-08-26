@@ -195,7 +195,9 @@ export class BrandlessProvenanceAnalyzer {
     this.#collectAssignments();
   }
 
-  public analyzeSourceFile(sourceFile: ts.SourceFile): readonly BrandlessDiagnostic[] {
+  public analyzeSourceFile(
+    sourceFile: ts.SourceFile,
+  ): readonly BrandlessDiagnostic[] {
     const diagnostics: BrandlessDiagnostic[] = [];
     const seen = new Set<string>();
     const context: EvaluationContext = {
@@ -212,7 +214,9 @@ export class BrandlessProvenanceAnalyzer {
         node,
         expectedIdentity,
         value,
-        ts.isExpression(node) ? this.#checker.getTypeAtLocation(node) : undefined,
+        ts.isExpression(node)
+          ? this.#checker.getTypeAtLocation(node)
+          : undefined,
       );
       if (!diagnostic) return;
       const key = `${diagnostic.kind}:${node.getSourceFile().fileName}:${node.getStart()}:${expectedIdentity}`;
@@ -261,7 +265,9 @@ export class BrandlessProvenanceAnalyzer {
           );
         }
       } else if (ts.isPropertyAssignment(node)) {
-        const expectedIdentity = this.#identityFromContextualType(node.initializer);
+        const expectedIdentity = this.#identityFromContextualType(
+          node.initializer,
+        );
         if (expectedIdentity) {
           report(
             node.initializer,
@@ -275,7 +281,9 @@ export class BrandlessProvenanceAnalyzer {
         ts.isBinaryExpression(node) &&
         this.#isAssignmentOperator(node.operatorToken.kind)
       ) {
-        const expectedIdentity = this.#identityExpectedFromExpression(node.left);
+        const expectedIdentity = this.#identityExpectedFromExpression(
+          node.left,
+        );
         if (expectedIdentity) {
           report(
             node.right,
@@ -290,17 +298,9 @@ export class BrandlessProvenanceAnalyzer {
         const leftIdentity = this.#identityExpectedFromExpression(node.left);
         const rightIdentity = this.#identityExpectedFromExpression(node.right);
         if (leftIdentity) {
-          report(
-            node.right,
-            leftIdentity,
-            this.#evaluate(node.right, context),
-          );
+          report(node.right, leftIdentity, this.#evaluate(node.right, context));
         } else if (rightIdentity) {
-          report(
-            node.left,
-            rightIdentity,
-            this.#evaluate(node.left, context),
-          );
+          report(node.left, rightIdentity, this.#evaluate(node.left, context));
         }
       } else if (ts.isCaseClause(node)) {
         const switchStatement = node.parent.parent;
@@ -344,7 +344,10 @@ export class BrandlessProvenanceAnalyzer {
 
   #collectAssignments(): void {
     const mutable = new Map<ts.Symbol, AssignmentSource[]>();
-    const add = (symbol: ts.Symbol | undefined, expression: ts.Expression): void => {
+    const add = (
+      symbol: ts.Symbol | undefined,
+      expression: ts.Expression,
+    ): void => {
       const resolved = this.#resolveSymbol(symbol);
       if (!resolved) return;
       const bucket = mutable.get(resolved) ?? [];
@@ -431,7 +434,10 @@ export class BrandlessProvenanceAnalyzer {
       .find((property) => String(property.escapedName).includes(markerName));
     if (!marker) return undefined;
 
-    const markerType = this.#checker.getTypeOfSymbolAtLocation(marker, location);
+    const markerType = this.#checker.getTypeOfSymbolAtLocation(
+      marker,
+      location,
+    );
     const members = markerType
       .getProperties()
       .map((property) => String(property.escapedName))
@@ -537,7 +543,9 @@ export class BrandlessProvenanceAnalyzer {
     node: ts.TypeNode,
     seenSymbols = new Set<ts.Symbol>(),
   ): string | undefined {
-    const direct = this.#identityFromType(this.#checker.getTypeFromTypeNode(node));
+    const direct = this.#identityFromType(
+      this.#checker.getTypeFromTypeNode(node),
+    );
     if (direct) return direct;
 
     if (ts.isTypeReferenceNode(node)) {
@@ -583,6 +591,21 @@ export class BrandlessProvenanceAnalyzer {
       }
     });
     return result;
+  }
+
+  #identityFromTrustedDeclarationTypeNode(
+    node: ts.TypeNode,
+  ): string | undefined {
+    const unwrapped = ts.isParenthesizedTypeNode(node) ? node.type : node;
+    if (
+      !ts.isTypeReferenceNode(unwrapped) &&
+      !ts.isTypeQueryNode(unwrapped) &&
+      !ts.isIndexedAccessTypeNode(unwrapped) &&
+      !ts.isConditionalTypeNode(unwrapped)
+    ) {
+      return undefined;
+    }
+    return this.#identityFromTypeNode(unwrapped);
   }
 
   #identityExpectedFromExpression(
@@ -647,7 +670,8 @@ export class BrandlessProvenanceAnalyzer {
         : undefined;
     if (!memberName) return undefined;
 
-    const identity = this.#identityFromEnumContainerExpression(objectExpression);
+    const identity =
+      this.#identityFromEnumContainerExpression(objectExpression);
     return identity && identityMembers(identity).includes(memberName)
       ? identity
       : undefined;
@@ -658,7 +682,11 @@ export class BrandlessProvenanceAnalyzer {
     seen.add(type);
 
     if (type.isUnionOrIntersection()) {
-      return [...new Set(type.types.flatMap((member) => this.#typeLeafKeys(member, seen)))];
+      return [
+        ...new Set(
+          type.types.flatMap((member) => this.#typeLeafKeys(member, seen)),
+        ),
+      ];
     }
     if (type.isStringLiteral()) return [`string:${type.value}`];
 
@@ -673,11 +701,15 @@ export class BrandlessProvenanceAnalyzer {
     if (type.flags & ts.TypeFlags.String) return ["string:*"];
 
     if (type.flags & ts.TypeFlags.Object) {
-      const typeArguments = this.#checker.getTypeArguments(type as ts.TypeReference);
+      const typeArguments = this.#checker.getTypeArguments(
+        type as ts.TypeReference,
+      );
       if (typeArguments.length > 0) {
         return [
           ...new Set(
-            typeArguments.flatMap((argument) => this.#typeLeafKeys(argument, seen)),
+            typeArguments.flatMap((argument) =>
+              this.#typeLeafKeys(argument, seen),
+            ),
           ),
         ];
       }
@@ -742,7 +774,8 @@ export class BrandlessProvenanceAnalyzer {
     if (
       ts.isStringLiteral(unwrapped) ||
       ts.isNoSubstitutionTemplateLiteral(unwrapped) ||
-      (ts.isTemplateExpression(unwrapped) && unwrapped.templateSpans.length === 0)
+      (ts.isTemplateExpression(unwrapped) &&
+        unwrapped.templateSpans.length === 0)
     ) {
       return this.#rawValue(type);
     }
@@ -778,7 +811,8 @@ export class BrandlessProvenanceAnalyzer {
       const objectValue = this.#evaluate(unwrapped.expression, context);
       const name = ts.isPropertyAccessExpression(unwrapped)
         ? unwrapped.name.text
-        : unwrapped.argumentExpression && ts.isStringLiteral(unwrapped.argumentExpression)
+        : unwrapped.argumentExpression &&
+            ts.isStringLiteral(unwrapped.argumentExpression)
           ? unwrapped.argumentExpression.text
           : undefined;
       if (name) {
@@ -790,7 +824,8 @@ export class BrandlessProvenanceAnalyzer {
         unwrapped.argumentExpression &&
         ts.isNumericLiteral(unwrapped.argumentExpression)
       ) {
-        const tupleValue = objectValue.tuple[Number(unwrapped.argumentExpression.text)];
+        const tupleValue =
+          objectValue.tuple[Number(unwrapped.argumentExpression.text)];
         if (tupleValue) return tupleValue;
       }
       return this.#transferToType([objectValue], type);
@@ -810,7 +845,8 @@ export class BrandlessProvenanceAnalyzer {
     if (
       ts.isBinaryExpression(unwrapped) &&
       (unwrapped.operatorToken.kind === ts.SyntaxKind.BarBarToken ||
-        unwrapped.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
+        unwrapped.operatorToken.kind ===
+          ts.SyntaxKind.AmpersandAmpersandToken ||
         unwrapped.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken)
     ) {
       return joinValues([
@@ -857,7 +893,9 @@ export class BrandlessProvenanceAnalyzer {
     identifier: ts.Identifier,
     context: EvaluationContext,
   ): AbstractValue {
-    const symbol = this.#resolveSymbol(this.#checker.getSymbolAtLocation(identifier));
+    const symbol = this.#resolveSymbol(
+      this.#checker.getSymbolAtLocation(identifier),
+    );
     const type = this.#checker.getTypeAtLocation(identifier);
     if (!symbol) return this.#unknownValue(type);
 
@@ -870,7 +908,10 @@ export class BrandlessProvenanceAnalyzer {
         if (fromBinding) return fromBinding;
       }
       if (ts.isParameter(declaration)) {
-        const fromCallback = this.#evaluateCallbackParameter(declaration, context);
+        const fromCallback = this.#evaluateCallbackParameter(
+          declaration,
+          context,
+        );
         if (fromCallback) return fromCallback;
         if (declaration.type) {
           const identity = this.#identityFromTypeNode(declaration.type);
@@ -912,7 +953,9 @@ export class BrandlessProvenanceAnalyzer {
           ts.isPropertySignature(declaration)) &&
         declaration.type
       ) {
-        const identity = this.#identityFromTypeNode(declaration.type);
+        const identity = this.#identityFromTrustedDeclarationTypeNode(
+          declaration.type,
+        );
         if (
           identity &&
           (declaration.getSourceFile().isDeclarationFile ||
@@ -932,7 +975,10 @@ export class BrandlessProvenanceAnalyzer {
     context: EvaluationContext,
   ): AbstractValue | undefined {
     const variableDeclaration = binding.parent.parent;
-    if (!ts.isVariableDeclaration(variableDeclaration) || !variableDeclaration.initializer) {
+    if (
+      !ts.isVariableDeclaration(variableDeclaration) ||
+      !variableDeclaration.initializer
+    ) {
       return undefined;
     }
     const source = this.#evaluate(variableDeclaration.initializer, context);
@@ -962,7 +1008,8 @@ export class BrandlessProvenanceAnalyzer {
       return undefined;
     }
     const call = functionLike.parent;
-    if (!ts.isCallExpression(call) && !ts.isNewExpression(call)) return undefined;
+    if (!ts.isCallExpression(call) && !ts.isNewExpression(call))
+      return undefined;
     const callbackIndex = call.arguments?.indexOf(functionLike) ?? -1;
     if (callbackIndex < 0) return undefined;
 
@@ -1015,7 +1062,8 @@ export class BrandlessProvenanceAnalyzer {
         allValues.push(value);
       } else if (ts.isSpreadAssignment(property)) {
         const spread = this.#evaluate(property.expression, context);
-        for (const [name, value] of spread.properties) properties.set(name, value);
+        for (const [name, value] of spread.properties)
+          properties.set(name, value);
         allValues.push(spread);
       }
     }
@@ -1034,7 +1082,9 @@ export class BrandlessProvenanceAnalyzer {
     context: EvaluationContext,
   ): AbstractValue {
     const type = this.#checker.getTypeAtLocation(call);
-    const producerIdentity = this.#identityFromProducerExpression(call.expression);
+    const producerIdentity = this.#identityFromProducerExpression(
+      call.expression,
+    );
     if (producerIdentity) return this.#ownedValue(type, producerIdentity);
 
     if (ts.isPropertyAccessExpression(call.expression)) {
@@ -1104,7 +1154,10 @@ export class BrandlessProvenanceAnalyzer {
     excludedArgumentIndex = -1,
   ): readonly AbstractValue[] {
     const sources: AbstractValue[] = [];
-    if (ts.isCallExpression(call) && ts.isPropertyAccessExpression(call.expression)) {
+    if (
+      ts.isCallExpression(call) &&
+      ts.isPropertyAccessExpression(call.expression)
+    ) {
       sources.push(this.#evaluate(call.expression.expression, context));
     }
     (call.arguments ?? []).forEach((argument, index) => {
@@ -1141,7 +1194,9 @@ export class BrandlessProvenanceAnalyzer {
   #getFunctionImplementation(
     expression: ts.Expression,
   ): ts.FunctionLikeDeclaration | undefined {
-    const symbol = this.#resolveSymbol(this.#checker.getSymbolAtLocation(expression));
+    const symbol = this.#resolveSymbol(
+      this.#checker.getSymbolAtLocation(expression),
+    );
     for (const declaration of symbol?.declarations ?? []) {
       if (
         (ts.isFunctionDeclaration(declaration) ||
@@ -1190,7 +1245,9 @@ export class BrandlessProvenanceAnalyzer {
     return values;
   }
 
-  #findEnclosingFunction(node: ts.Node): ts.FunctionLikeDeclaration | undefined {
+  #findEnclosingFunction(
+    node: ts.Node,
+  ): ts.FunctionLikeDeclaration | undefined {
     let current = node.parent;
     while (current) {
       if (
@@ -1218,7 +1275,9 @@ export class BrandlessProvenanceAnalyzer {
     }
     const signature = this.#checker.getSignatureFromDeclaration(functionLike);
     return signature
-      ? this.#identityFromType(this.#checker.getReturnTypeOfSignature(signature))
+      ? this.#identityFromType(
+          this.#checker.getReturnTypeOfSignature(signature),
+        )
       : undefined;
   }
 
@@ -1259,14 +1318,13 @@ export class BrandlessProvenanceAnalyzer {
     ) => void,
   ): void {
     for (const [index, argument] of (call.arguments ?? []).entries()) {
-      if (
-        ts.isArrowFunction(argument) ||
-        ts.isFunctionExpression(argument)
-      ) {
+      if (ts.isArrowFunction(argument) || ts.isFunctionExpression(argument)) {
         continue;
       }
       const implementation = this.#getFunctionImplementation(argument);
-      const symbol = this.#resolveSymbol(this.#checker.getSymbolAtLocation(argument));
+      const symbol = this.#resolveSymbol(
+        this.#checker.getSymbolAtLocation(argument),
+      );
       const declarations = implementation
         ? [implementation]
         : (symbol?.declarations ?? []).filter(ts.isFunctionLike);
@@ -1301,11 +1359,15 @@ export class BrandlessProvenanceAnalyzer {
     if (!targetType) return;
     const source = this.#evaluate(spread.expression, context);
     for (const property of targetType.getProperties()) {
-      const propertyType = this.#checker.getTypeOfSymbolAtLocation(property, spread);
+      const propertyType = this.#checker.getTypeOfSymbolAtLocation(
+        property,
+        spread,
+      );
       const expectedIdentity = this.#identityFromType(propertyType);
       if (!expectedIdentity) continue;
       const propertyValue = source.properties.get(String(property.escapedName));
-      if (propertyValue) report(spread.expression, expectedIdentity, propertyValue);
+      if (propertyValue)
+        report(spread.expression, expectedIdentity, propertyValue);
     }
   }
 

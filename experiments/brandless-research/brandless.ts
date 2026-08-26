@@ -67,7 +67,9 @@ export function em<const TValues extends NonEmptyStrings>(
 
   const mutableValues = [...new Set(inputValues)];
   attachIdentity(mutableValues, ENUMWAII_VALUES_IDENTITY, mutableValues);
-  const values = Object.freeze(mutableValues) as unknown as BrandlessValues<TRaw>;
+  const values = Object.freeze(
+    mutableValues,
+  ) as unknown as BrandlessValues<TRaw>;
 
   const enumObject = Object.freeze(
     attachIdentity(

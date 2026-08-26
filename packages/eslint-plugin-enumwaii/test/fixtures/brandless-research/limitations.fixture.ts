@@ -1,8 +1,6 @@
 import { ROLE, acceptRole } from "./reexport";
 
-const collidingSlots = new Map([
-  ["ADMIN" as const, ROLE.ADMIN],
-] as const);
+const collidingSlots = new Map([["ADMIN" as const, ROLE.ADMIN]] as const);
 
 for (const validValue of collidingSlots.values()) {
   acceptRole(validValue); // expect:false-positive-raw

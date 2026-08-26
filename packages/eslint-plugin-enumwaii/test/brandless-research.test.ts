@@ -12,10 +12,7 @@ const packageRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
 );
-const fixtureRoot = path.join(
-  packageRoot,
-  "test/fixtures/brandless-research",
-);
+const fixtureRoot = path.join(packageRoot, "test/fixtures/brandless-research");
 
 const plugin: ESLint.Plugin = {
   rules: {
@@ -63,7 +60,9 @@ async function expectedByLine(
   );
 }
 
-async function lintFixture(name: string): Promise<readonly Linter.LintMessage[]> {
+async function lintFixture(
+  name: string,
+): Promise<readonly Linter.LintMessage[]> {
   const fixturePath = path.join(fixtureRoot, name);
   const [result] = await createEslint(true).lintFiles([fixturePath]);
   return result?.messages ?? [];

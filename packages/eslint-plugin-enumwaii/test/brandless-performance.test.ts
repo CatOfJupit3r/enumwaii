@@ -22,7 +22,8 @@ const repositoryRoot = path.resolve(packageRoot, "../..");
 
 function metric(output: string, name: string): number {
   const match = new RegExp(`^${name}:\\s+([0-9.]+)`, "mu").exec(output)?.[1];
-  if (!match) throw new Error(`Missing ${name} in TypeScript diagnostics:\n${output}`);
+  if (!match)
+    throw new Error(`Missing ${name} in TypeScript diagnostics:\n${output}`);
   return Number(match);
 }
 
@@ -54,7 +55,10 @@ describe("brandless representation performance", () => {
     );
     const measurements = {
       stressMatrix: runCompiler(
-        path.join(repositoryRoot, "experiments/brandless-research/tsconfig.json"),
+        path.join(
+          repositoryRoot,
+          "experiments/brandless-research/tsconfig.json",
+        ),
       ),
       currentProductionBenchmark: runCompiler(
         path.join(repositoryRoot, "packages/enumwaii/bench/tsconfig.json"),

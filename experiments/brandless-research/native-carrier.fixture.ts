@@ -24,15 +24,11 @@ const duplicateRoles = emNative<DuplicateRoleCarrier>()([
   "USER",
   "GUEST",
 ]);
-const sameCarrierRoles = emNative<RoleCarrier>()([
-  "GUEST",
-  "ADMIN",
-  "USER",
-]);
+const sameCarrierRoles = emNative<RoleCarrier>()(["GUEST", "ADMIN", "USER"]);
 
 const ROLE = roles.enum;
 const ACTOR = actors.enum;
-type Role = typeof roles["~type"];
+type Role = (typeof roles)["~type"];
 
 declare const input: unknown;
 declare function acceptRole(role: Role): void;
@@ -140,6 +136,7 @@ function narrow(value: Tagged): boolean {
 }
 
 void labels;
+void badHolder;
 void returnOwned;
 void returnRaw;
 void narrow;

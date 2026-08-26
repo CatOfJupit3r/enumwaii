@@ -21,6 +21,8 @@ describe("em", () => {
     expect(roles.values).toEqual(["ADMIN", "USER", "GUEST"]);
     expect(Object.isFrozen(ROLE)).toBe(true);
     expect(Object.isFrozen(roles.rawEnum)).toBe(true);
+    expect(Object.is(roles.enum, roles.rawEnum)).toBe(true);
+    expect(Object.is(roles.enum, roles.cases)).toBe(true);
     expect(() => (ROLE as Record<string, unknown>).MISSING).toThrow(
       EnumwaiiUnknownMemberError,
     );
@@ -84,6 +86,9 @@ describe("deserialization", () => {
     expect(roles["~standard"].validate("OWNER")).toMatchObject({
       issues: [{ message: expect.any(String) }],
     });
+
+    const validate = roles["~standard"].validate;
+    expect(validate("USER")).toEqual({ value: "USER" });
   });
 
   it("offers optional Zod and Valibot adapters", () => {

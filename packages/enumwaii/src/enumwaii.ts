@@ -58,23 +58,16 @@ export class Enumwaii<
       EnumwaiiValue<TRaw, TIdentity>,
       TIdentity
     >;
-    this.enum = guardMemberAccess(
-      Object.fromEntries(ownedRawValues.map((value) => [value, value])) as {
-        readonly [K in TRaw]: EnumwaiiValue<K, TIdentity>;
-      },
+    const members = guardMemberAccess(
+      Object.fromEntries(ownedRawValues.map((value) => [value, value])),
     );
-    this.rawEnum = guardMemberAccess(
-      Object.fromEntries(ownedRawValues.map((value) => [value, value])) as {
-        readonly [K in TRaw]: K;
-      },
-    );
-    this.cases = guardMemberAccess(
-      Object.fromEntries(
-        ownedRawValues.map((value) => [value, value]),
-      ) as EnumwaiiCases<TRaw, TIdentity>,
-    );
+    this.enum = members as {
+      readonly [K in TRaw]: EnumwaiiValue<K, TIdentity>;
+    };
+    this.rawEnum = members as { readonly [K in TRaw]: K };
+    this.cases = members as EnumwaiiCases<TRaw, TIdentity>;
     this.schema = this;
-    this["~standard"] = createStandardSchemaProps(this.is.bind(this));
+    this["~standard"] = createStandardSchemaProps(this);
   }
 
   public is(input: unknown): input is EnumwaiiValue<TRaw, TIdentity> {

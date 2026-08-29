@@ -17,6 +17,8 @@ role === ROLE.ADMIN; // use the owning member, not a raw string
 
 At runtime, a value is still a string, so JSON, URLs, databases, and structured cloning require no wrapper. At compile time, a brand prevents raw strings and members from declarations with different value sets from entering an enum-typed position.
 
+The tradeoffs and known escape hatches are documented in [Branding and identity](docs/branding-and-identity.md).
+
 Use `.rawEnum` when an integration needs canonical named members without enumwaii's brand, just as `.rawValues` provides the canonical unbranded array:
 
 ```ts
@@ -25,6 +27,8 @@ RAW_ROLE.ADMIN; // unbranded "ADMIN"
 roles.rawValues; // readonly ["ADMIN", "USER", "GUEST"]
 ```
 
+See [Member surfaces](docs/member-surfaces.md) before using `.rawEnum`, `.rawValues`, or `.cases`; they solve specific integration and TypeScript limitations.
+
 ## Why `em()`
 
 The short factory is deliberately values-only. Enumwaii derives its type identity from the complete member set, so there is no separate name to keep synchronized. Declarations with the same members are intentionally compatible.
@@ -32,6 +36,8 @@ The short factory is deliberately values-only. Enumwaii derives its type identit
 ```ts
 const mode = em(["READ", "WRITE"]);
 ```
+
+See the [design and API guide](docs/index.md) for the alternatives considered and the reasons behind the values-only identity model.
 
 `CONSTANT_CASE` is not a runtime restriction. It belongs to `eslint-plugin-enumwaii`, where external wire values can opt out without needing a second runtime API.
 
@@ -64,6 +70,8 @@ const vRole = valibotSchema(roles);
 
 Install only the adapter's peer dependency you use.
 
+Parsing behavior, serialization, and the limits of runtime provenance are covered in [Runtime boundaries and integrations](docs/runtime-boundaries.md).
+
 ## Composition
 
 ```ts
@@ -72,11 +80,11 @@ const NON_GUEST = roles.omit([ROLE.GUEST]);
 const serviceRoles = roles.extend(["BOT"]);
 const roleOrMode = em.combine([roles, mode]);
 
-const labels = roles.derive({
-  ADMIN: "Administrator",
-  USER: "Member",
-  GUEST: "Guest",
-});
+const labels = roles.derive(
+  [ROLE.ADMIN, "Administrator"],
+  [ROLE.USER, "Member"],
+  [ROLE.GUEST, "Guest"],
+);
 
 labels.get(role);
 ```
@@ -89,20 +97,23 @@ Declarations, extensions, and combinations remove duplicate members while preser
 const permissions = em(["READ", "WRITE"]);
 const PERMISSION = permissions.enum;
 
-const grants = roles.deriveTo(permissions, {
-  ADMIN: [PERMISSION.READ, PERMISSION.WRITE],
-  USER: PERMISSION.READ,
-  GUEST: [],
-});
+const grants = roles.deriveTo(
+  permissions,
+  [ROLE.ADMIN, [PERMISSION.READ, PERMISSION.WRITE]],
+  [ROLE.USER, PERMISSION.READ],
+  [ROLE.GUEST, []],
+);
 ```
 
-Common `deriveWith` callbacks live in an optional subpath:
+Common derivation callbacks live in an optional subpath:
 
 ```ts
 import { lowercase } from "enumwaii/derive-with";
 
-const wireRoles = roles.deriveWith(lowercase);
+const wireRoles = roles.derive(lowercase);
 ```
+
+The tuple syntax is intentional: object keys erase branded provenance in TypeScript. See [Derivation](docs/derivation.md) for the decision, guarantees, and limitations.
 
 For external records, use the declaration-local `~keys` type:
 
@@ -118,6 +129,8 @@ type Role = (typeof roles)["~type"];
 ```
 
 `.rawEnum` exposes canonical unbranded members for integrations that cannot use enumwaii's branded values. `.cases` is reserved for native discriminated-union tags and carries declaration provenance used by the type-aware lint rules. Use `.enum` for ordinary application values.
+
+The exact distinction—including why the three objects are referentially identical at runtime—is documented in [Member surfaces](docs/member-surfaces.md).
 
 ## Linting
 
@@ -148,6 +161,8 @@ Oxlint can load the same package as a JavaScript plugin. Its JS plugin support i
   "rules": { "enumwaii/enforce-enum-casing": "error" },
 }
 ```
+
+See [Linting boundaries](docs/linting.md) for what lint can enforce, what branding enforces, and why neither replaces the other.
 
 ## Packages
 

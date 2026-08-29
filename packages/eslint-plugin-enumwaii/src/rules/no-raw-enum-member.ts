@@ -196,13 +196,16 @@ export const noRawEnumMemberRule = createRule({
         }
         const methodName = node.callee.property.name;
         if (methodName === "deriveTo") {
-          const mappingArgument = node.arguments[1];
-          if (mappingArgument?.type !== AST_NODE_TYPES.ObjectExpression) {
-            return;
-          }
-          for (const property of mappingArgument.properties) {
-            if (property.type === AST_NODE_TYPES.Property) {
-              reportRawTargetMembers(property.value);
+          for (const entry of node.arguments.slice(1)) {
+            if (entry.type !== AST_NODE_TYPES.ArrayExpression) {
+              continue;
+            }
+            const targetValue = entry.elements[1];
+            if (
+              targetValue &&
+              targetValue.type !== AST_NODE_TYPES.SpreadElement
+            ) {
+              reportRawTargetMembers(targetValue);
             }
           }
           return;

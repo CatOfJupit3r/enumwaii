@@ -5,11 +5,12 @@ export type { Em } from "./em";
 export { Enumwaii } from "./enumwaii";
 export { EnumwaiiError } from "./errors/enumwaii-error";
 export { EnumwaiiParseError } from "./errors/enumwaii-parse-error";
-export { EnumwaiiUnknownMemberError } from "./errors/enumwaii-unknown-member-error";
 export type {
   EnumwaiiBrand,
   EnumwaiiCases,
+  EnumwaiiDeriveEntry,
   EnumwaiiDerived,
+  EnumwaiiDeriveToEntry,
   EnumwaiiIdentity,
   EnumwaiiParseOptions,
   EnumwaiiSafeParseResult,

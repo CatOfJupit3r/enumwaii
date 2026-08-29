@@ -85,5 +85,62 @@ export interface EnumwaiiDerived<
   readonly record: Readonly<Record<TRaw, TValue>>;
 }
 
+export type EnumwaiiDeriveEntry<
+  TRaw extends string,
+  TIdentity extends string,
+  TValue = unknown,
+> = readonly [EnumwaiiValue<TRaw, TIdentity>, TValue];
+
+export type EnumwaiiDeriveToEntry<
+  TRaw extends string,
+  TIdentity extends string,
+  TTargetRaw extends string,
+  TTargetIdentity extends string,
+> = readonly [
+  EnumwaiiValue<TRaw, TIdentity>,
+  (
+    | EnumwaiiValue<TTargetRaw, TTargetIdentity>
+    | readonly EnumwaiiValue<TTargetRaw, TTargetIdentity>[]
+  ),
+];
+
+type EnumwaiiDeriveEntriesRaw<
+  TEntries extends readonly (readonly [string, unknown])[],
+  TIdentity extends string,
+> = EnumwaiiRawValue<TEntries[number][0], TIdentity>;
+
+type EnumwaiiDuplicateDeriveEntryKeys<
+  TEntries extends readonly (readonly [string, unknown])[],
+  TSeen extends string = never,
+> = TEntries extends readonly [
+  readonly [infer TKey extends string, unknown],
+  ...infer TRest extends readonly (readonly [string, unknown])[],
+]
+  ? TKey extends TSeen
+    ? TKey | EnumwaiiDuplicateDeriveEntryKeys<TRest, TSeen>
+    : EnumwaiiDuplicateDeriveEntryKeys<TRest, TSeen | TKey>
+  : never;
+
+export type EnumwaiiValidateDeriveEntries<
+  TRaw extends string,
+  TIdentity extends string,
+  TEntries extends readonly EnumwaiiDeriveEntry<TRaw, TIdentity>[],
+> = [Exclude<TRaw, EnumwaiiDeriveEntriesRaw<TEntries, TIdentity>>] extends [
+  never,
+]
+  ? [EnumwaiiDuplicateDeriveEntryKeys<TEntries>] extends [never]
+    ? unknown
+    : {
+        readonly "~enumwaii-error": "Duplicate entry for member";
+        readonly member: EnumwaiiDuplicateDeriveEntryKeys<TEntries>;
+      }[]
+  : {
+      readonly "~enumwaii-error": "Missing entry for member";
+      readonly member: Exclude<
+        TRaw,
+        EnumwaiiDeriveEntriesRaw<TEntries, TIdentity>
+      >;
+    }[];
+
 export type EnumwaiiRawValue<TValue, TIdentity extends string> =
   TValue extends EnumwaiiValue<infer TRaw, TIdentity> ? TRaw : never;

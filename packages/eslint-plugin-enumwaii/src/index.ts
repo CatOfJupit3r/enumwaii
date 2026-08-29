@@ -1,6 +1,7 @@
 import type { ESLint, Linter } from "eslint";
 
 import { enforceEnumCasingRule } from "./rules/enforce-enum-casing";
+import { noDirectEnumwaiiReferenceRule } from "./rules/no-direct-enumwaii-reference";
 import { noEnumwaiiCaseMisuseRule } from "./rules/no-enumwaii-case-misuse";
 import { noRawEnumComparisonRule } from "./rules/no-raw-enum-comparison";
 import { noRawEnumMemberRule } from "./rules/no-raw-enum-member";
@@ -8,6 +9,7 @@ import { noUnionPropertyInRule } from "./rules/no-union-property-in";
 
 export const rules = {
   "enforce-enum-casing": enforceEnumCasingRule,
+  "no-direct-enumwaii-reference": noDirectEnumwaiiReferenceRule,
   "no-enumwaii-case-misuse": noEnumwaiiCaseMisuseRule,
   "no-raw-enum-comparison": noRawEnumComparisonRule,
   "no-raw-enum-member": noRawEnumMemberRule,
@@ -20,6 +22,7 @@ const syntaxRules = {
 
 const typeCheckedRules = {
   ...syntaxRules,
+  "enumwaii/no-direct-enumwaii-reference": "error",
   "enumwaii/no-enumwaii-case-misuse": "error",
   "enumwaii/no-raw-enum-comparison": "error",
   "enumwaii/no-raw-enum-member": "error",
@@ -68,6 +71,7 @@ plugin.configs["flat/recommended-type-checked"][0]!.plugins!.enumwaii = plugin;
 export default plugin;
 export {
   enforceEnumCasingRule,
+  noDirectEnumwaiiReferenceRule,
   noEnumwaiiCaseMisuseRule,
   noRawEnumComparisonRule,
   noRawEnumMemberRule,

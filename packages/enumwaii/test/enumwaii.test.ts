@@ -2,12 +2,7 @@ import { describe, expect, it } from "vitest";
 import { isValidElement } from "react";
 import { inspect } from "node:util";
 
-import {
-  em,
-  EnumwaiiError,
-  EnumwaiiParseError,
-  EnumwaiiUnknownMemberError,
-} from "../src/index";
+import { em, EnumwaiiError, EnumwaiiParseError } from "../src/index";
 import { valibotSchema } from "../src/adapters/valibot";
 import { lowercase, uppercase } from "../src/derive-with";
 import { zodSchema } from "../src/adapters/zod";
@@ -15,25 +10,19 @@ import * as v from "valibot";
 
 const roles = em(["ADMIN", "USER", "GUEST"]);
 const ROLE = roles.enum;
+const RAW_ROLE = roles.rawEnum;
 
 describe("em", () => {
-  it("creates frozen, guarded member accessors", () => {
+  it("creates frozen, plain member objects", () => {
     expect(ROLE.ADMIN).toBe("ADMIN");
-    expect(roles.rawEnum.ADMIN).toBe("ADMIN");
+    expect(RAW_ROLE.ADMIN).toBe("ADMIN");
     expect(roles.values).toEqual(["ADMIN", "USER", "GUEST"]);
     expect(Object.isFrozen(ROLE)).toBe(true);
     expect(Object.isFrozen(roles.rawEnum)).toBe(true);
     expect(Object.is(roles.enum, roles.rawEnum)).toBe(true);
     expect(Object.is(roles.enum, roles.cases)).toBe(true);
-    expect(() => (ROLE as Record<string, unknown>).MISSING).toThrow(
-      EnumwaiiUnknownMemberError,
-    );
-    expect(() => (roles.rawEnum as Record<string, unknown>).MISSING).toThrow(
-      EnumwaiiUnknownMemberError,
-    );
-    expect(() => (roles.rawEnum as Record<string, unknown>).MISSING).toThrow(
-      /^Unknown member/,
-    );
+    expect((ROLE as Record<string, unknown>).MISSING).toBeUndefined();
+    expect((roles.rawEnum as Record<string, unknown>).MISSING).toBeUndefined();
   });
 
   it("owns mutable input without exposing an enum name", () => {
@@ -105,8 +94,8 @@ describe("deserialization", () => {
       GUEST: "GUEST",
     });
     expect(
-      () => (roles.enum as Record<string, unknown>).asymmetricMatch,
-    ).toThrow(EnumwaiiUnknownMemberError);
+      (roles.enum as Record<string, unknown>).asymmetricMatch,
+    ).toBeUndefined();
   });
 
   it("offers optional Zod and Valibot adapters", () => {
@@ -148,46 +137,62 @@ describe("composition and exhaustive derivation", () => {
   });
 
   it("builds checked lookup maps", () => {
-    const labels = roles.derive({
-      ADMIN: "Administrator",
-      USER: "Member",
-      GUEST: "Guest",
-    });
+    const labels = roles.derive(
+      [ROLE.ADMIN, "Administrator"],
+      [ROLE.USER, "Member"],
+      [ROLE.GUEST, "Guest"],
+    );
     expect(labels.get(ROLE.ADMIN)).toBe("Administrator");
     expect(labels.record.USER).toBe("Member");
-    expect(() => roles.derive({ ADMIN: "Administrator" } as never)).toThrow(
+    expect(Object.isFrozen(labels.record)).toBe(true);
+    expect((labels.record as Record<string, unknown>).MISSING).toBeUndefined();
+    expect(() => roles.derive([ROLE.ADMIN, "Administrator"] as never)).toThrow(
       EnumwaiiError,
     );
+    const deriveUnchecked = roles.derive.bind(roles) as (
+      ...entries: readonly (readonly [string, string])[]
+    ) => unknown;
+    expect(() =>
+      deriveUnchecked(
+        [ROLE.ADMIN, "First"],
+        [ROLE.ADMIN, "Second"],
+        [ROLE.USER, "Member"],
+        [ROLE.GUEST, "Guest"],
+      ),
+    ).toThrow(EnumwaiiError);
   });
 
   it("derives values with optional helper functions", () => {
-    const lowerRoles = roles.deriveWith(lowercase);
-    const lowerRolesFromMethod = roles.deriveWith((role) => role.toLowerCase());
+    const lowerRoles = roles.derive(lowercase);
+    const lowerRolesFromMethod = roles.derive((role) => role.toLowerCase());
     const lower = em(["admin", "user"]);
-    const upperRoles = lower.deriveWith(uppercase);
+    const LOWER = lower.enum;
+    const upperRoles = lower.derive(uppercase);
 
     expect(lowerRoles.get(ROLE.ADMIN)).toBe("admin");
     expect(lowerRolesFromMethod.get(ROLE.USER)).toBe("user");
-    expect(upperRoles.get(lower.enum.user)).toBe("USER");
+    expect(upperRoles.get(LOWER.user)).toBe("USER");
   });
 
   it("derives scalar and array values into another enum", () => {
     const permissions = em(["READ", "WRITE", "DELETE"]);
     const PERMISSION = permissions.enum;
-    const grants = roles.deriveTo(permissions, {
-      ADMIN: [PERMISSION.READ, PERMISSION.WRITE, PERMISSION.DELETE],
-      USER: [PERMISSION.READ, PERMISSION.WRITE],
-      GUEST: PERMISSION.READ,
-    });
+    const grants = roles.deriveTo(
+      permissions,
+      [ROLE.ADMIN, [PERMISSION.READ, PERMISSION.WRITE, PERMISSION.DELETE]],
+      [ROLE.USER, [PERMISSION.READ, PERMISSION.WRITE]],
+      [ROLE.GUEST, PERMISSION.READ],
+    );
 
     expect(grants.get(ROLE.ADMIN)).toEqual(["READ", "WRITE", "DELETE"]);
     expect(grants.get(ROLE.GUEST)).toBe(PERMISSION.READ);
     expect(() =>
-      roles.deriveTo(permissions, {
-        ADMIN: [PERMISSION.READ, "UNKNOWN"],
-        USER: PERMISSION.READ,
-        GUEST: [],
-      } as never),
+      roles.deriveTo(
+        permissions,
+        [ROLE.ADMIN, [PERMISSION.READ, "UNKNOWN" as never]],
+        [ROLE.USER, PERMISSION.READ],
+        [ROLE.GUEST, []],
+      ),
     ).toThrow(EnumwaiiError);
   });
 });

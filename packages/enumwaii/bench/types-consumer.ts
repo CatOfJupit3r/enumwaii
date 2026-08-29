@@ -15,24 +15,36 @@ const enum10 = em(["A10", "B10", "C10", "D10"]);
 const enum11 = em(["A11", "B11", "C11", "D11"]);
 const enum12 = em(["A12", "B12", "C12", "D12"]);
 
+const ENUM01 = enum01.enum;
+const ENUM02 = enum02.enum;
+const ENUM03 = enum03.enum;
+const ENUM04 = enum04.enum;
+const ENUM05 = enum05.enum;
+const ENUM06 = enum06.enum;
+
 const combined01 = em.combine([enum01, enum02, enum03]);
 const combined02 = em.combine([enum04, enum05, enum06]);
 const combined03 = em.combine([enum07, enum08, enum09]);
 const combined04 = em.combine([enum10, enum11, enum12]);
 
-const picked01 = enum01.pick([enum01.enum.A01, enum01.enum.B01]);
-const picked02 = enum02.pick([enum02.enum.A02, enum02.enum.B02]);
-const picked03 = enum03.pick([enum03.enum.A03, enum03.enum.B03]);
-const picked04 = enum04.pick([enum04.enum.A04, enum04.enum.B04]);
-const picked05 = enum05.pick([enum05.enum.A05, enum05.enum.B05]);
-const picked06 = enum06.pick([enum06.enum.A06, enum06.enum.B06]);
+const COMBINED01 = combined01.enum;
+const COMBINED02 = combined02.enum;
+const COMBINED03 = combined03.enum;
+const COMBINED04 = combined04.enum;
 
-const derived01 = enum01.deriveWith((value) => value.toLowerCase());
-const derived02 = enum02.deriveWith((value) => value.toLowerCase());
-const derived03 = enum03.deriveWith((value) => value.toLowerCase());
-const derived04 = enum04.deriveWith((value) => value.toLowerCase());
-const derived05 = enum05.deriveWith((value) => value.toLowerCase());
-const derived06 = enum06.deriveWith((value) => value.toLowerCase());
+const picked01 = enum01.pick([ENUM01.A01, ENUM01.B01]);
+const picked02 = enum02.pick([ENUM02.A02, ENUM02.B02]);
+const picked03 = enum03.pick([ENUM03.A03, ENUM03.B03]);
+const picked04 = enum04.pick([ENUM04.A04, ENUM04.B04]);
+const picked05 = enum05.pick([ENUM05.A05, ENUM05.B05]);
+const picked06 = enum06.pick([ENUM06.A06, ENUM06.B06]);
+
+const derived01 = enum01.derive((value) => value.toLowerCase());
+const derived02 = enum02.derive((value) => value.toLowerCase());
+const derived03 = enum03.derive((value) => value.toLowerCase());
+const derived04 = enum04.derive((value) => value.toLowerCase());
+const derived05 = enum05.derive((value) => value.toLowerCase());
+const derived06 = enum06.derive((value) => value.toLowerCase());
 
 const zod01 = zodSchema(enum01);
 const zod02 = zodSchema(enum02);
@@ -53,14 +65,14 @@ type Combined03 = InferEnumwaii<typeof combined03>;
 type Combined04 = InferEnumwaii<typeof combined04>;
 
 declare function consume<T>(value: T): void;
-consume<Value01>(enum01.enum.A01);
-consume<Value02>(enum02.enum.A02);
-consume<Value03>(enum03.enum.A03);
-consume<Value04>(enum04.enum.A04);
-consume<Combined01>(combined01.enum.A01);
-consume<Combined02>(combined02.enum.A04);
-consume<Combined03>(combined03.enum.A07);
-consume<Combined04>(combined04.enum.A10);
+consume<Value01>(ENUM01.A01);
+consume<Value02>(ENUM02.A02);
+consume<Value03>(ENUM03.A03);
+consume<Value04>(ENUM04.A04);
+consume<Combined01>(COMBINED01.A01);
+consume<Combined02>(COMBINED02.A04);
+consume<Combined03>(COMBINED03.A07);
+consume<Combined04>(COMBINED04.A10);
 consume(picked01);
 consume(picked02);
 consume(picked03);

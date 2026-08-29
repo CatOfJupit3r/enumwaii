@@ -2,17 +2,18 @@ import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 import { EnumwaiiError } from "./errors/enumwaii-error";
 import { EnumwaiiParseError } from "./errors/enumwaii-parse-error";
-import { EnumwaiiUnknownMemberError } from "./errors/enumwaii-unknown-member-error";
 import { createStandardSchemaProps } from "./internal/create-standard-schema";
-import { guardMemberAccess } from "./internal/guard-member-access";
 import type {
   EnumwaiiCases,
+  EnumwaiiDeriveEntry,
   EnumwaiiDerived,
+  EnumwaiiDeriveToEntry,
   EnumwaiiIdentity,
   EnumwaiiParseOptions,
   EnumwaiiRawValue,
   EnumwaiiSafeParseResult,
   EnumwaiiValue,
+  EnumwaiiValidateDeriveEntries,
   EnumwaiiValues,
 } from "./types/enumwaii";
 
@@ -57,7 +58,7 @@ export class Enumwaii<
       EnumwaiiValue<TRaw, TIdentity>,
       TIdentity
     >;
-    const members = guardMemberAccess(
+    const members = Object.freeze(
       Object.fromEntries(ownedRawValues.map((value) => [value, value])),
     );
     this.enum = members as {
@@ -157,57 +158,52 @@ export class Enumwaii<
     >;
   }
 
-  public derive<const TValue>(
-    mapping: Readonly<Record<TRaw, TValue>>,
-  ): EnumwaiiDerived<TRaw, TIdentity, TValue> {
-    const keys = new Set(Object.keys(mapping));
-    for (const value of this.rawValues) {
-      if (!keys.has(value)) {
-        throw new EnumwaiiError(`Derived mapping is missing "${value}"`);
-      }
-    }
-    for (const key of keys) {
-      if (!this.memberSet.has(key)) {
-        throw new EnumwaiiError(`Derived mapping has unknown key "${key}"`);
-      }
-    }
-    return this.buildDerived(mapping as Record<TRaw, TValue>);
-  }
-
-  public deriveWith<TValue>(
+  public derive<TValue>(
     build: (value: EnumwaiiValue<TRaw, TIdentity>) => TValue,
+  ): EnumwaiiDerived<TRaw, TIdentity, TValue>;
+
+  public derive<
+    const TEntries extends readonly [
+      EnumwaiiDeriveEntry<TRaw, TIdentity>,
+      ...EnumwaiiDeriveEntry<TRaw, TIdentity>[],
+    ],
+  >(
+    ...entries: TEntries &
+      EnumwaiiValidateDeriveEntries<TRaw, TIdentity, TEntries>
+  ): EnumwaiiDerived<TRaw, TIdentity, TEntries[number][1]>;
+
+  public derive<TValue>(
+    ...input: readonly unknown[]
   ): EnumwaiiDerived<TRaw, TIdentity, TValue> {
-    const mapping = Object.fromEntries(
-      this.values.map((value) => [value, build(value)]),
-    ) as Record<TRaw, TValue>;
-    return this.buildDerived(mapping);
+    const first = input[0];
+    if (typeof first === "function") {
+      const build = first as (value: EnumwaiiValue<TRaw, TIdentity>) => TValue;
+      const mapping = Object.fromEntries(
+        this.values.map((value) => [value, build(value)]),
+      ) as Record<TRaw, TValue>;
+      return this.buildDerived(mapping);
+    }
+
+    return this.buildDerived(
+      this.createDerivedMapping(
+        input as readonly EnumwaiiDeriveEntry<TRaw, TIdentity, TValue>[],
+      ),
+    );
   }
 
   public deriveTo<
     TTargetRaw extends string,
     TTargetIdentity extends string,
-    const TMapping extends Readonly<
-      Record<
-        TRaw,
-        | EnumwaiiValue<TTargetRaw, TTargetIdentity>
-        | readonly EnumwaiiValue<TTargetRaw, TTargetIdentity>[]
-      >
-    >,
+    const TEntries extends readonly [
+      EnumwaiiDeriveToEntry<TRaw, TIdentity, TTargetRaw, TTargetIdentity>,
+      ...EnumwaiiDeriveToEntry<TRaw, TIdentity, TTargetRaw, TTargetIdentity>[],
+    ],
   >(
     target: Enumwaii<TTargetRaw, TTargetIdentity>,
-    mapping: TMapping & Readonly<Record<Exclude<keyof TMapping, TRaw>, never>>,
-  ): EnumwaiiDerived<TRaw, TIdentity, TMapping[TRaw]> {
-    const keys = new Set(Object.keys(mapping));
-    for (const value of this.rawValues) {
-      if (!keys.has(value)) {
-        throw new EnumwaiiError(`Derived mapping is missing "${value}"`);
-      }
-    }
-    for (const key of keys) {
-      if (!this.memberSet.has(key)) {
-        throw new EnumwaiiError(`Derived mapping has unknown key "${key}"`);
-      }
-    }
+    ...entries: TEntries &
+      EnumwaiiValidateDeriveEntries<TRaw, TIdentity, TEntries>
+  ): EnumwaiiDerived<TRaw, TIdentity, TEntries[number][1]> {
+    const mapping = this.createDerivedMapping(entries);
     for (const value of Object.values(mapping)) {
       const targetValues = Array.isArray(value) ? value : [value];
       if (targetValues.some((targetValue) => !target.is(targetValue))) {
@@ -219,21 +215,37 @@ export class Enumwaii<
     return this.buildDerived(mapping);
   }
 
+  private createDerivedMapping<TValue>(
+    entries: readonly EnumwaiiDeriveEntry<TRaw, TIdentity, TValue>[],
+  ): Record<TRaw, TValue> {
+    const seen = new Set<string>();
+    for (const [key] of entries) {
+      if (!this.memberSet.has(key)) {
+        throw new EnumwaiiError(`Derived mapping has unknown key "${key}"`);
+      }
+      if (seen.has(key)) {
+        throw new EnumwaiiError(`Derived mapping has duplicate key "${key}"`);
+      }
+      seen.add(key);
+    }
+    for (const value of this.rawValues) {
+      if (!seen.has(value)) {
+        throw new EnumwaiiError(`Derived mapping is missing "${value}"`);
+      }
+    }
+    return Object.fromEntries(entries) as Record<TRaw, TValue>;
+  }
+
   private buildDerived<TValue>(
     mapping: Record<TRaw, TValue>,
   ): EnumwaiiDerived<TRaw, TIdentity, TValue> {
-    const { memberSet } = this;
-
     function lookup(value: EnumwaiiValue<TRaw, TIdentity>): TValue {
-      if (!memberSet.has(value)) {
-        throw new EnumwaiiUnknownMemberError(value);
-      }
       return mapping[value];
     }
 
     return Object.freeze({
       get: lookup,
-      record: guardMemberAccess(Object.freeze({ ...mapping })),
+      record: Object.freeze(mapping),
     });
   }
 }

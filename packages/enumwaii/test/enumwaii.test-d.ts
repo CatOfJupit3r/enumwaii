@@ -11,6 +11,7 @@ import {
 
 const roles = em(["ADMIN", "USER"]);
 const ROLE = roles.enum;
+const RAW_ROLE = roles.rawEnum;
 type Role = InferEnumwaii<typeof roles>;
 
 expectTypeOf<Role>().toEqualTypeOf<
@@ -18,8 +19,8 @@ expectTypeOf<Role>().toEqualTypeOf<
 >();
 expectTypeOf<"ADMIN">().not.toExtend<Role>();
 expectTypeOf(ROLE.ADMIN).toExtend<Role>();
-expectTypeOf(roles.rawEnum.ADMIN).toEqualTypeOf<"ADMIN">();
-expectTypeOf(roles.rawEnum.ADMIN).not.toExtend<Role>();
+expectTypeOf(RAW_ROLE.ADMIN).toEqualTypeOf<"ADMIN">();
+expectTypeOf(RAW_ROLE.ADMIN).not.toExtend<Role>();
 expectTypeOf<InferEnumwaiiCase<typeof roles>>().toEqualTypeOf<
   "ADMIN" | "USER"
 >();
@@ -38,43 +39,66 @@ const inlineLabels = {
 void labels;
 void inlineLabels;
 
-const derivedLabels = roles.derive({
-  ADMIN: "Administrator",
-  USER: "Member",
-});
+const derivedLabels = roles.derive(
+  [ROLE.ADMIN, "Administrator"],
+  [ROLE.USER, "Member"],
+);
 expectTypeOf(derivedLabels.get(ROLE.ADMIN)).toEqualTypeOf<
   "Administrator" | "Member"
 >();
 // @ts-expect-error derived mappings must contain every enum member
-roles.derive({ ADMIN: "Administrator" });
-roles.derive({
-  ADMIN: "Administrator",
-  USER: "Member",
-  // @ts-expect-error derived mappings cannot contain unknown members
-  UNKNOWN: "Unknown",
-});
+roles.derive([ROLE.ADMIN, "Administrator"]);
+// @ts-expect-error derived mappings require owned source members
+roles.derive(["ADMIN", "Administrator"], [ROLE.USER, "Member"]);
+
+const other = em(["ADMIN"]);
+const OTHER = other.enum;
+// @ts-expect-error members from declarations with different sets are distinct
+roles.derive([OTHER.ADMIN, "Administrator"], [ROLE.USER, "Member"]);
+roles.derive(
+  // @ts-expect-error derived mappings cannot contain duplicate members
+  [ROLE.ADMIN, "First"],
+  [ROLE.ADMIN, "Second"],
+  [ROLE.USER, "Member"],
+);
+
+const lowerRoles = roles.derive((role) => role.toLowerCase());
+expectTypeOf(lowerRoles.get(ROLE.ADMIN)).toEqualTypeOf<string>();
 
 const permissions = em(["READ", "WRITE"]);
 const PERMISSION = permissions.enum;
-roles.deriveTo(permissions, {
-  ADMIN: [PERMISSION.READ, PERMISSION.WRITE],
-  USER: PERMISSION.READ,
-});
+roles.deriveTo(
+  permissions,
+  [ROLE.ADMIN, [PERMISSION.READ, PERMISSION.WRITE]],
+  [ROLE.USER, PERMISSION.READ],
+);
 // @ts-expect-error targeted mappings must contain every source enum member
-roles.deriveTo(permissions, { ADMIN: PERMISSION.READ });
-roles.deriveTo(permissions, {
-  ADMIN: PERMISSION.READ,
-  USER: PERMISSION.WRITE,
-  // @ts-expect-error targeted mappings cannot contain unknown source members
-  UNKNOWN: PERMISSION.READ,
-});
+roles.deriveTo(permissions, [ROLE.ADMIN, PERMISSION.READ]);
+roles.deriveTo(
+  permissions,
+  // @ts-expect-error targeted mappings require owned source members
+  ["ADMIN", PERMISSION.READ],
+  [ROLE.USER, PERMISSION.WRITE],
+);
+roles.deriveTo(
+  permissions,
+  // @ts-expect-error targeted mappings require owned target members
+  [ROLE.ADMIN, "READ"],
+  [ROLE.USER, PERMISSION.WRITE],
+);
+roles.deriveTo(
+  permissions,
+  // @ts-expect-error targeted mappings reject members from other target enums
+  [ROLE.ADMIN, ROLE.ADMIN],
+  [ROLE.USER, PERMISSION.WRITE],
+);
 
-const other = em(["ADMIN"]);
-expectTypeOf(other.enum.ADMIN).not.toExtend<Role>();
+expectTypeOf(OTHER.ADMIN).not.toExtend<Role>();
 
 const anonymousA = em(["ON", "OFF"]);
 const anonymousB = em(["ON", "OFF"]);
-expectTypeOf(anonymousA.enum.ON).toExtend<InferEnumwaii<typeof anonymousB>>();
+const ANONYMOUS_A = anonymousA.enum;
+expectTypeOf(ANONYMOUS_A.ON).toExtend<InferEnumwaii<typeof anonymousB>>();
 
 const parsed = roles.safeParse("ADMIN");
 if (parsed.success) expectTypeOf(parsed.value).toEqualTypeOf<Role>();
@@ -94,5 +118,5 @@ const rawRole: Role = "ADMIN";
 void rawRole;
 
 // @ts-expect-error members from declarations with different sets are distinct
-const wrongRole: Role = other.enum.ADMIN;
+const wrongRole: Role = OTHER.ADMIN;
 void wrongRole;

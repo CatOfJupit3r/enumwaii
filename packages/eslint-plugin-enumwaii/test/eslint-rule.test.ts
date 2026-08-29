@@ -70,6 +70,23 @@ describe("eslint-plugin-enumwaii", () => {
     ).resolves.toEqual(["rawComparison", "rawSwitchCase"]);
   }, 30_000);
 
+  it("requires member views to be extracted before use", async () => {
+    await expect(
+      lintFixture("no-direct-enumwaii-reference", "direct-reference"),
+    ).resolves.toEqual([
+      "directMemberView",
+      "directMemberView",
+      "directMemberView",
+      "directMemberView",
+    ]);
+  }, 30_000);
+
+  it("allows extracted views and other Enumwaii APIs", async () => {
+    await expect(
+      lintFixture("no-direct-enumwaii-reference", "extracted-reference"),
+    ).resolves.toEqual([]);
+  }, 30_000);
+
   it("rejects raw targeted, subset, and constructor members", async () => {
     await expect(
       lintFixture("no-raw-enum-member", "raw-member"),

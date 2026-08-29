@@ -60,24 +60,24 @@ The declaration implements Standard Schema v1; pass `modes` directly to consumer
 
 ## Compose and derive
 
-Use `pick`, `omit`, and `extend` instead of duplicating related sets. Use `derive` for exhaustive metadata; its object is contextually typed from the source enum, so missing and unknown keys fail type-checking.
+Use `pick`, `omit`, and `extend` instead of duplicating related sets. Use `derive` for exhaustive metadata. Each entry starts with an owned source member, so TypeScript checks provenance, missing members, and duplicates.
 
 ```ts
-const labels = modes.derive({
-  REGULAR: "Regular",
-  READER: "Reader",
-  CINEMATIC: "Cinematic",
-});
+const labels = modes.derive(
+  [MODE.REGULAR, "Regular"],
+  [MODE.READER, "Reader"],
+  [MODE.CINEMATIC, "Cinematic"],
+);
 
 labels.get(MODE.REGULAR);
 ```
 
-Declarations and compositions automatically remove duplicate values. Use `deriveTo` when values belong to another enumwaii; each result may be one owned target member or an array of owned target members. Use `typeof modes["~keys"]` for external records that use `satisfies` instead of `derive`.
+Declarations and compositions automatically remove duplicate values. Pass a callback to `derive` when every result follows the same rule. Use `deriveTo` when values belong to another enumwaii; each entry begins with an owned source member and ends with one owned target member or an array of owned target members. Use `typeof modes["~keys"]` for external records that use `satisfies` instead of `derive`.
 
-Keep branded enum members as `deriveTo` values; its keys are checked against the source enum by TypeScript.
+Keep branded enum members on both sides of `deriveTo`; TypeScript checks them against their respective declarations.
 
 `.cases` is reserved for raw discriminants where TypeScript needs native union narrowing. Use `.enum` everywhere else.
 
 ## Lint boundary
 
-Install `eslint-plugin-enumwaii`. Internal values normally use `CONSTANT_CASE`, enforced by lint rather than runtime because external wire formats may be lowercase or kebab-case. The type-aware config also catches raw comparisons, raw derived keys, `.cases` misuse, and structural object-union narrowing.
+Install `eslint-plugin-enumwaii`. Internal values normally use `CONSTANT_CASE`, enforced by lint rather than runtime because external wire formats may be lowercase or kebab-case. Extract `.enum`, `.rawEnum`, and `.cases` once before referencing their members. The type-aware config also catches direct member-view references, raw comparisons, raw derived keys, `.cases` misuse, and structural object-union narrowing.

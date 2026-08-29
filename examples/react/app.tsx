@@ -137,6 +137,8 @@ export function filterFromUrl(input: unknown): Filter {
 export interface FilterPanelProps {
   /** A URL, query string, URLSearchParams, or unknown external value. */
   readonly initialUrl?: unknown;
+  /** Data may arrive already hydrated from an application-owned boundary. */
+  readonly tasks?: readonly Task[];
 }
 
 const styles = {
@@ -266,14 +268,17 @@ const styles = {
   },
 } as const;
 
-export function FilterPanel({ initialUrl }: FilterPanelProps = {}) {
+export function FilterPanel({
+  initialUrl,
+  tasks = TASKS,
+}: FilterPanelProps = {}) {
   const [state, dispatch] = useReducer(
     filterReducer,
     filterFromUrl(initialUrl),
     (selected): FilterState => ({ selected }),
   );
   const selectedMetadata = FILTER_METADATA.get(state.selected);
-  const visibleTasks = TASKS.filter(selectedMetadata.matches);
+  const visibleTasks = tasks.filter(selectedMetadata.matches);
 
   return (
     <main style={styles.shell}>
@@ -291,7 +296,7 @@ export function FilterPanel({ initialUrl }: FilterPanelProps = {}) {
           {FILTERS.values.map((filter) => {
             const metadata = FILTER_METADATA.get(filter);
             const selected = filter === state.selected;
-            const count = TASKS.filter(metadata.matches).length;
+            const count = tasks.filter(metadata.matches).length;
 
             return (
               <button

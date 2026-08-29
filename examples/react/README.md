@@ -11,13 +11,18 @@ This compact React 19 example shows enumwaii in a realistic task queue:
 - `filterFromUrl` treats URL/query data as unknown at the boundary and applies
   a nil default plus an invalid-input fallback before state is created.
 - `app.test.tsx` uses React DOM server rendering, so the example needs no
-  browser, bundler, CSS pipeline, router, or hydration setup.
+  browser, bundler, CSS pipeline, router, or hydration setup. It covers every
+  accepted URL shape, invalid and nil input, reducer transitions, filtered
+  rendering, and derived empty-state copy.
+- `type-contract.test-d.ts` proves raw strings cannot enter component state or
+  reducer payloads even though the values remain ordinary strings at runtime.
 
 Files:
 
 - `app.tsx` — enum declarations, parser boundary, reducer, derived metadata,
   and the `FilterPanel` component.
 - `app.test.tsx` — parser, reducer, derivation, and server-rendering tests.
+- `type-contract.test-d.ts` — compile-time ownership contracts.
 
 From the repository root, run:
 

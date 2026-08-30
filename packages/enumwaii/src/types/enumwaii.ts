@@ -307,7 +307,7 @@ export type EnumwaiiSafeParseResult<
  * labels.record.ADMIN;
  * ```
  *
- * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/derivation.md#the-get-and-record
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/derivation.md#get-and-record
  */
 export interface EnumwaiiDerived<
   TRaw extends string,

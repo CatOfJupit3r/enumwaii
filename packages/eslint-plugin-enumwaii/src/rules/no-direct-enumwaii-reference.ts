@@ -3,7 +3,8 @@ import type { TSESTree } from "@typescript-eslint/utils";
 import type { Type } from "typescript";
 
 const createRule = ESLintUtils.RuleCreator(
-  (ruleName) => `https://github.com/CatOfJupit3r/enumwaii#${ruleName}`,
+  (ruleName) =>
+    `https://catofjupit3r.github.io/enumwaii/docs/eslint-plugin/#${ruleName}`,
 );
 
 const MEMBER_VIEW_NAMES = new Set(["cases", "enum", "rawEnum"]);

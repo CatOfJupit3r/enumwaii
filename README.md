@@ -1,64 +1,92 @@
 # enumwaii
 
-String enums that are difficult for humans—and especially code-generating agents—to misuse.
+[![npm version](https://img.shields.io/npm/v/enumwaii?logo=npm&color=cb3837)](https://www.npmjs.com/package/enumwaii)
+[![npm downloads](https://img.shields.io/npm/dm/enumwaii?logo=npm)](https://www.npmjs.com/package/enumwaii)
+[![CI](https://github.com/CatOfJupit3r/enumwaii/actions/workflows/ci.yml/badge.svg)](https://github.com/CatOfJupit3r/enumwaii/actions/workflows/ci.yml)
+[![documentation](https://img.shields.io/badge/docs-GitHub%20Pages-c8f45d)](https://catofjupit3r.github.io/enumwaii/)
+[![license](https://img.shields.io/github/license/CatOfJupit3r/enumwaii)](LICENSE)
+
+String enums that are difficult for humans—and especially code-generating
+agents—to misuse.
+
+Enumwaii keeps values as ordinary strings at runtime while TypeScript tracks the
+declaration that owns them. It adds boundary parsing, Standard Schema support,
+composition, exhaustive derivation, optional Zod and Valibot adapters, and a
+separate lint package for authoring conventions.
 
 ```ts
-import { em, type InferEnumwaii } from "enumwaii";
+import { em } from "enumwaii";
 
 const roles = em(["ADMIN", "USER", "GUEST"]);
+const ROLE = roles.enum;
+type Role = (typeof roles)["~type"];
 
-export const ROLE = roles.enum;
-export const RAW_ROLE = roles.rawEnum;
-export type Role = InferEnumwaii<typeof roles>;
+function authorize(role: Role): boolean {
+  return role === ROLE.ADMIN;
+}
 
-const role: Role = roles.parse(input); // validate while deserializing
-role === ROLE.ADMIN; // use the owning member, not a raw string
+authorize(ROLE.ADMIN); // valid
+authorize("ADMIN"); // TypeScript error
 ```
 
-At runtime, a value is still a string, so JSON, URLs, databases, and structured cloning require no wrapper. At compile time, a brand prevents raw strings and members from declarations with different value sets from entering an enum-typed position.
+## Why enumwaii?
 
-The tradeoffs and known escape hatches are documented in [Branding and identity](docs/branding-and-identity.md).
+- Raw strings cannot enter an enum-typed position by accident.
+- Members from declarations with different value sets remain incompatible.
+- Values serialize naturally through JSON, URLs, forms, and database drivers.
+- `parse`, `safeParse`, and `is` validate external values where they enter.
+- Every declaration is a Standard Schema v1 schema.
+- Composition and derivation retain source-member provenance.
+- Optional lint rules catch raw comparisons and misuse of narrow escape hatches.
 
-Use `.rawEnum` when an integration needs canonical named members without enumwaii's brand, just as `.rawValues` provides the canonical unbranded array:
+The brand is a TypeScript guarantee, not runtime magic. Its exact behavior and
+known limitations are documented in [Branding and identity](https://catofjupit3r.github.io/enumwaii/docs/branding-and-identity/).
+
+## Install
+
+```sh
+npm install enumwaii
+```
+
+Node.js 18 or newer is supported. The package publishes ESM and CommonJS entry
+points with declarations and source maps.
+
+## Parse at boundaries
 
 ```ts
-ROLE.ADMIN; // branded member
-RAW_ROLE.ADMIN; // unbranded "ADMIN"
-roles.rawValues; // readonly ["ADMIN", "USER", "GUEST"]
+const role = roles.parse(payload.role);
+
+const result = roles.safeParse(searchParams.get("role"));
+if (result.success) {
+  authorize(result.value);
+} else {
+  report(result.error);
+}
 ```
 
-See [Member surfaces](docs/member-surfaces.md) before using `.rawEnum`, `.rawValues`, or `.cases`; they solve specific integration and TypeScript limitations.
-
-## Why `em()`
-
-The short factory is deliberately values-only. Enumwaii derives its type identity from the complete member set, so there is no separate name to keep synchronized. Declarations with the same members are intentionally compatible.
+Parsing can distinguish absence from malformed input:
 
 ```ts
-const mode = em(["READ", "WRITE"]);
+roles.parse(input, { default: ROLE.GUEST }); // null or undefined
+roles.parse(input, { fallback: ROLE.USER }); // any invalid value
 ```
 
-See the [design and API guide](docs/index.md) for the alternatives considered and the reasons behind the values-only identity model.
+If both options apply to a nil value, `default` wins. Without recovery,
+`parse` throws `EnumwaiiParseError` and `safeParse` returns a failure result.
 
-`CONSTANT_CASE` is not a runtime restriction. It belongs to `eslint-plugin-enumwaii`, where external wire values can opt out without needing a second runtime API.
+There is no `serialize` method: branded members already are strings at runtime.
 
-## Deserialization and Standard Schema
+## Standard Schema and adapters
 
-An enumwaii declaration implements Standard Schema v1 directly.
+Pass a declaration directly to any Standard Schema-compatible consumer:
 
 ```ts
-roles.parse(JSON.parse(payload).role);
-
-roles.parse(query.role, { default: ROLE.GUEST }); // null or undefined only
-roles.parse(query.role, { fallback: ROLE.GUEST }); // any invalid input
-
-const result = roles.safeParse(query.role);
-if (result.success) useRole(result.value);
-
-const standardSchema = roles;
-standardSchema["~standard"].validate(input);
+consumer.acceptSchema(roles);
+await roles["~standard"].validate(input);
 ```
 
-Consumers that accept Standard Schema need no adapter. Enumwaii uses the official `@standard-schema/spec` package for its public types; that package is types-only and adds no runtime code. For APIs coupled to a specific validator, optional entry points are available:
+Use an optional adapter only when an integration requires a library-specific
+schema type:
 
 ```ts
 import { zodSchema } from "enumwaii/zod";
@@ -68,17 +96,17 @@ const zRole = zodSchema(roles);
 const vRole = valibotSchema(roles);
 ```
 
-Install only the adapter's peer dependency you use.
+Install only the adapter peer dependency you use. See [Schemas and adapters](https://catofjupit3r.github.io/enumwaii/docs/adapters/).
 
-Parsing behavior, serialization, and the limits of runtime provenance are covered in [Runtime boundaries and integrations](docs/runtime-boundaries.md).
-
-## Composition
+## Compose and derive
 
 ```ts
 const STAFF = roles.pick([ROLE.ADMIN, ROLE.USER]);
 const NON_GUEST = roles.omit([ROLE.GUEST]);
 const serviceRoles = roles.extend(["BOT"]);
-const roleOrMode = em.combine([roles, mode]);
+
+const modes = em(["READ", "WRITE"]);
+const roleOrMode = em.combine([roles, modes]);
 
 const labels = roles.derive(
   [ROLE.ADMIN, "Administrator"],
@@ -86,26 +114,13 @@ const labels = roles.derive(
   [ROLE.GUEST, "Guest"],
 );
 
-labels.get(role);
+labels.get(ROLE.ADMIN);
 ```
 
-Declarations, extensions, and combinations remove duplicate members while preserving first-seen order.
+Duplicates are removed in first-seen order. Tuple derivation is deliberate:
+object keys erase branded provenance in TypeScript.
 
-`deriveTo` maps into another enumwaii and accepts either one target member or an array of target members:
-
-```ts
-const permissions = em(["READ", "WRITE"]);
-const PERMISSION = permissions.enum;
-
-const grants = roles.deriveTo(
-  permissions,
-  [ROLE.ADMIN, [PERMISSION.READ, PERMISSION.WRITE]],
-  [ROLE.USER, PERMISSION.READ],
-  [ROLE.GUEST, []],
-);
-```
-
-Common derivation callbacks live in an optional subpath:
+For uniform transforms, optional helpers live outside the main entry point:
 
 ```ts
 import { lowercase } from "enumwaii/derive-with";
@@ -113,73 +128,64 @@ import { lowercase } from "enumwaii/derive-with";
 const wireRoles = roles.derive(lowercase);
 ```
 
-The tuple syntax is intentional: object keys erase branded provenance in TypeScript. See [Derivation](docs/derivation.md) for the decision, guarantees, and limitations.
+## Member surfaces
 
-For external records, use the declaration-local `~keys` type:
+| Surface                  | Purpose                                                |
+| ------------------------ | ------------------------------------------------------ |
+| `.enum`                  | Branded application members; use this by default.      |
+| `.values`                | Branded iteration.                                     |
+| `.rawEnum`, `.rawValues` | Canonical unbranded values for integration boundaries. |
+| `.cases`                 | Raw tags for native discriminated-union narrowing.     |
+| `~type`, `~keys`         | Declaration-local TypeScript utilities.                |
 
-```ts
-const labels = {
-  ADMIN: "Administrator",
-  USER: "Member",
-  GUEST: "Guest",
-} as const satisfies Record<(typeof roles)["~keys"], string>;
+Extract `.enum`, `.rawEnum`, and `.cases` before referencing their members.
+Although those three views share one frozen runtime object, their static types
+carry different contracts. [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/) explains every escape hatch and its intended scope.
 
-type RoleKeys = (typeof roles)["~keys"];
-type Role = (typeof roles)["~type"];
-```
-
-`.rawEnum` exposes canonical unbranded members for integrations that cannot use enumwaii's branded values. `.cases` is reserved for native discriminated-union tags and carries declaration provenance used by the type-aware lint rules. Use `.enum` for ordinary application values.
-
-The exact distinction—including why the three objects are referentially identical at runtime—is documented in [Member surfaces](docs/member-surfaces.md).
-
-## Linting
-
-The lint rules are a separate package, following TanStack's split between runtime libraries and ESLint plugins. This keeps the runtime package lean.
+## ESLint
 
 ```sh
-pnpm add enumwaii
-pnpm add -D eslint-plugin-enumwaii
+npm install --save-dev eslint eslint-plugin-enumwaii
 ```
-
-For ESLint flat config, start with syntax-only rules or the type-aware set:
 
 ```js
 import enumwaii from "eslint-plugin-enumwaii";
 
-export default [
-  ...enumwaii.configs["flat/recommended"],
-  // Requires typescript-eslint parserOptions.projectService/project:
-  ...enumwaii.configs["flat/recommended-type-checked"],
-];
+export default [...enumwaii.configs["flat/recommended"]];
 ```
 
-Oxlint can load the same package as a JavaScript plugin. Its JS plugin support is currently alpha; `enforce-enum-casing` is syntax-only, while the remaining rules require TypeScript parser services and should be run through ESLint for now.
+The syntax-only preset enforces `CONSTANT_CASE`. The type-aware preset adds
+member extraction, provenance-sensitive comparisons and composition, `.cases`
+boundaries, and discriminated-union guidance. It requires TypeScript parser
+services. See the complete [ESLint setup](https://catofjupit3r.github.io/enumwaii/docs/eslint-plugin/).
 
-```jsonc
-{
-  "jsPlugins": ["eslint-plugin-enumwaii"],
-  "rules": { "enumwaii/enforce-enum-casing": "error" },
-}
-```
+## Documentation and examples
 
-See [Linting boundaries](docs/linting.md) for what lint can enforce, what branding enforces, and why neither replaces the other.
+- [Getting started](https://catofjupit3r.github.io/enumwaii/docs/getting-started/)
+- [Core API guide](https://catofjupit3r.github.io/enumwaii/docs/core-api/)
+- [Generated API reference](https://catofjupit3r.github.io/enumwaii/docs/api/)
+- [Design decisions and limitations](https://catofjupit3r.github.io/enumwaii/docs/)
+- [Runnable example applications](examples/README.md)
 
-## Examples
-
-The [runnable examples](examples/README.md) include presentable Next.js,
-TanStack Start + Solid, Vue, Hono + Drizzle/PGlite, Elysia, oRPC, Effect, and
-NestJS + Mongoose applications. Each is an independent workspace package with
-its own commands, tests, type contracts, and documented edge cases.
+The examples cover Next.js, TanStack Start with Solid, Vue, Hono with Drizzle
+and PGlite, Elysia, oRPC, Effect, and NestJS with Mongoose. They include forms,
+TanStack Table, URL and persistence hydration, SQL and MongoDB metadata,
+request/response validation, and visible failure paths.
 
 ## Packages
 
-- `enumwaii`: small runtime, official Standard Schema types, and optional Zod and Valibot adapters.
-- `eslint-plugin-enumwaii`: syntax and type-aware enforcement rules.
+| Package                                                     | Purpose                                                                         |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [`enumwaii`](packages/enumwaii)                             | Runtime declarations, Standard Schema, adapters, types, and derivation helpers. |
+| [`eslint-plugin-enumwaii`](packages/eslint-plugin-enumwaii) | Syntax-only and type-aware authoring rules.                                     |
 
-## Development and releases
+## Contributing
 
-This repository uses pnpm, tsdown, Vitest, publint, Are The Types Wrong, and Changesets. Run `pnpm check` before a release. Add a changeset with `pnpm changeset`; the release workflow opens a version PR and publishes merged versions to npm with provenance.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, tests, documentation, and
+Changesets. Usage questions belong in the support flow described by
+[SUPPORT.md](SUPPORT.md). Please report vulnerabilities privately according to
+[SECURITY.md](SECURITY.md).
 
 ## License
 
-MIT
+[MIT](LICENSE) © CatOfJupit3r

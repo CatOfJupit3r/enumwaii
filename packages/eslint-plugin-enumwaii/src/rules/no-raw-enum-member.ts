@@ -4,7 +4,8 @@ import { SignatureKind } from "typescript";
 import type { Type } from "typescript";
 
 const createRule = ESLintUtils.RuleCreator(
-  (ruleName) => `https://github.com/CatOfJupit3r/enumwaii#${ruleName}`,
+  (ruleName) =>
+    `https://catofjupit3r.github.io/enumwaii/docs/eslint-plugin/#${ruleName}`,
 );
 
 function isRawStringNode(node: TSESTree.Node): boolean {

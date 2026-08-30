@@ -2,7 +2,8 @@ import { AST_NODE_TYPES, ESLintUtils } from "@typescript-eslint/utils";
 import type { TSESTree } from "@typescript-eslint/utils";
 
 const createRule = ESLintUtils.RuleCreator(
-  (ruleName) => `https://github.com/CatOfJupit3r/enumwaii#${ruleName}`,
+  (ruleName) =>
+    `https://catofjupit3r.github.io/enumwaii/docs/eslint-plugin/#${ruleName}`,
 );
 
 const INTERNAL_MEMBER_PATTERN = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/u;
@@ -22,15 +23,16 @@ const INTERNAL_MEMBER_PATTERN = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/u;
  * `CONSTANT_CASE`; non-literal elements and declarations whose first argument
  * is not an array are outside this rule's scope.
  *
- * @example Incorrect: the declaration contains an internal member that is not
- * `CONSTANT_CASE`.
+ * @example Incorrect member casing
+ * The declaration contains an internal member that is not `CONSTANT_CASE`.
  * ```ts
  * import { em } from "enumwaii";
  * const status = em(["READY", "in-progress"]);
  * ```
  *
- * @example Correct: internal names use `CONSTANT_CASE`; an intentional wire
- * name can opt out at its declaration site.
+ * @example Correct internal names and an intentional wire value
+ * Internal names use `CONSTANT_CASE`; an intentional wire name can opt out at
+ * its declaration site.
  * ```ts
  * import { em } from "enumwaii";
  * const status = em(["READY", "IN_PROGRESS"]);

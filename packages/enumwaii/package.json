@@ -18,10 +18,14 @@
     "url": "git+https://github.com/CatOfJupit3r/enumwaii.git",
     "directory": "packages/enumwaii"
   },
-  "homepage": "https://github.com/CatOfJupit3r/enumwaii#readme",
+  "homepage": "https://catofjupit3r.github.io/enumwaii/",
   "bugs": "https://github.com/CatOfJupit3r/enumwaii/issues",
   "type": "module",
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "files": [
     "dist",
     "README.md",

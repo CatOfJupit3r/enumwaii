@@ -11,7 +11,8 @@ import {
 import type { EntityName, Node, Type } from "typescript";
 
 const createRule = ESLintUtils.RuleCreator(
-  (ruleName) => `https://github.com/CatOfJupit3r/enumwaii#${ruleName}`,
+  (ruleName) =>
+    `https://catofjupit3r.github.io/enumwaii/docs/eslint-plugin/#${ruleName}`,
 );
 
 const COMPARISON_OPERATORS = new Set(["==", "===", "!=", "!=="]);

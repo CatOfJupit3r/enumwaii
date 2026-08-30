@@ -16,10 +16,14 @@
     "url": "git+https://github.com/CatOfJupit3r/enumwaii.git",
     "directory": "packages/eslint-plugin-enumwaii"
   },
-  "homepage": "https://github.com/CatOfJupit3r/enumwaii#linting",
+  "homepage": "https://catofjupit3r.github.io/enumwaii/docs/eslint-plugin/",
   "bugs": "https://github.com/CatOfJupit3r/enumwaii/issues",
   "type": "module",
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "files": [
     "dist",
     "README.md"

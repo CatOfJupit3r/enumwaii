@@ -1,0 +1,51 @@
+name: Feature request
+description: Propose a concrete API, rule, integration, or documentation improvement.
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Core API
+        - Runtime validation or Standard Schema
+        - Zod or Valibot adapter
+        - ESLint or Oxlint
+        - Documentation
+        - Example application
+        - Build, release, or repository tooling
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the real use case or failure mode, not only the desired method name.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API or behavior
+      description: Include a small usage example when possible.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Explain existing APIs or workarounds and why they are insufficient.
+  - type: textarea
+    id: guarantees
+    attributes:
+      label: Effect on enumwaii guarantees
+      description: Note any impact on branding, provenance, inference, runtime compatibility, or bundle behavior.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and documentation.
+          required: true
+        - label: I can help test or document this change if it is accepted.

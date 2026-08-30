@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://catofjupit3r.github.io/enumwaii/
+    about: Read the guides, generated API reference, and integration examples.
+  - name: Security report
+    url: https://github.com/CatOfJupit3r/enumwaii/security/advisories/new
+    about: Report suspected vulnerabilities privately.

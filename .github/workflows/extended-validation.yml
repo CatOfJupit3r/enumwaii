@@ -12,49 +12,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  queue:
-    name: Queue PR status
-    permissions:
-      statuses: write
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - name: Mark extended validation pending
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          STATUS_CONTEXT: enumwaii/extended-validation
-        run: >-
-          gh api --method POST
-          "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}"
-          -f state=pending
-          -f context="${STATUS_CONTEXT}"
-          -f description="Awaiting maintainer-approved extended validation"
-          -f target_url="${RUN_URL}"
-
   check:
+    name: Extended validation
     # Configure this environment with required reviewers. The job then remains
     # pending on each PR until a maintainer explicitly approves the run.
     environment: extended-validation
-    needs: queue
     permissions:
       contents: read
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v6.1.0
+      - uses: actions/checkout@v7.0.1
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - uses: pnpm/action-setup@v6.0.8
+          # Checkout v7 blocks fork code in privileged trigger workflows unless
+          # the repository explicitly opts in. This job is protected by the
+          # maintainer-reviewed environment, checks out an immutable SHA, has no
+          # secrets or persisted credentials, and only receives read access.
+          allow-unsafe-pr-checkout: true
+      - uses: pnpm/action-setup@v6.0.10
         with:
           version: 11.18.0
-      - uses: actions/setup-node@v6.4.0
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: 22.18.0
-      - uses: oven-sh/setup-bun@v2.0.1
+      - uses: oven-sh/setup-bun@v2.2.0
         with:
           bun-version: 1.4.0
       - uses: denoland/setup-deno@v2.0.5
@@ -70,8 +54,8 @@ jobs:
 
   report:
     name: Report PR status
-    if: always() && needs.queue.result == 'success'
-    needs: [queue, check]
+    if: always()
+    needs: check
     permissions:
       statuses: write
     runs-on: ubuntu-24.04

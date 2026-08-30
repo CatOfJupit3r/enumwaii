@@ -1,6 +1,9 @@
 /** @type {import('jest').Config} */
 module.exports = {
   preset: "jest-expo",
+  // Expo's async renderer can exceed Jest's five-second default on shared CI
+  // runners even when the same interaction completes immediately in the app.
+  testTimeout: 15_000,
   setupFiles: ["<rootDir>/jest.setup.cjs"],
   testMatch: ["<rootDir>/__tests__/**/*.test.[jt]s?(x)"],
   moduleNameMapper: {

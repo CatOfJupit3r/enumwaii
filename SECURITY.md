@@ -71,11 +71,14 @@ The workflow files define the boundaries, while these GitHub settings enforce
 the human approval points:
 
 1. Create an `extended-validation` environment with a maintainer as a required
-   reviewer and no secrets. Require both `CI / check` and
+   reviewer and no secrets. Require both `Core validation` and
    `enumwaii/extended-validation` in the branch ruleset. The base-branch-owned
-   workflow posts that status directly on the pull request head, then installs
-   and executes that pull request's examples, docs, Bun, Deno, and Workers only
-   after a maintainer approves the protected job.
+   extended workflow installs and executes the pull request's examples, docs,
+   Bun, Deno, and Workers only after a maintainer approves the protected job.
+   Its isolated report job writes the final status directly to the pull request
+   head because `pull_request_target` native checks belong to the default-branch
+   commit. Until approval, GitHub displays the missing required context as
+   expected and blocks merging without spending a runner on a placeholder job.
 2. Create an `npm-release` environment with required reviewers and restrict its
    deployment branches to protected `main`. Keep `NPM_TOKEN` as an environment
    secret until npm trusted publishing is configured, then remove the

@@ -1,3 +1,4 @@
 dist
 node_modules
 pnpm-lock.yaml
+examples/tanstack-start-solid/src/routeTree.gen.ts

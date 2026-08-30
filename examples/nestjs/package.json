@@ -1,0 +1,35 @@
+{
+  "name": "@enumwaii/example-nestjs-mongoose",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "test": "vitest run",
+    "test:types": "tsc -p tsconfig.json --noEmit",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down"
+  },
+  "dependencies": {
+    "@nestjs/common": "^12.0.0",
+    "@nestjs/core": "^12.0.0",
+    "@nestjs/mongoose": "^12.0.0",
+    "@nestjs/platform-express": "^12.0.0",
+    "enumwaii": "workspace:*",
+    "mongoose": "^9.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^12.0.0",
+    "@nestjs/testing": "^12.0.0",
+    "@swc/cli": "^0.8.0",
+    "@swc/core": "^1.15.18",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.3.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.0.18"
+  }
+}

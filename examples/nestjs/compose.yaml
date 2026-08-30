@@ -1,0 +1,19 @@
+name: enumwaii-nestjs-mongoose
+
+services:
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - enumwaii-nest-mongo:/data/db
+    healthcheck:
+      test:
+        ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  enumwaii-nest-mongo:

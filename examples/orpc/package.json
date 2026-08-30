@@ -1,0 +1,29 @@
+{
+  "name": "@enumwaii/example-orpc",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsdown",
+    "start": "node dist/server.mjs",
+    "test": "vitest run",
+    "test:types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.1",
+    "@orpc/contract": "^1.15.0",
+    "@orpc/openapi": "^1.15.0",
+    "@orpc/server": "^1.15.0",
+    "enumwaii": "workspace:*",
+    "hono": "^4.13.5",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsdown": "^0.22.14",
+    "tsx": "^4.20.6",
+    "typescript": "^6.0.3",
+    "vitest": "^4.0.18"
+  }
+}

@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A live oRPC, Hono, Zod, and enumwaii job-transition console."
+    />
+    <title>enumwaii · oRPC jobs console</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" type="module"></script>
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="enumwaii oRPC console home">
+        <span class="brand-mark" aria-hidden="true">e</span>
+        <span>enumwaii</span>
+        <span class="brand-divider">/</span>
+        <span class="brand-subtitle">oRPC console</span>
+      </a>
+      <div class="service-state" id="service-state">
+        <span class="state-dot" aria-hidden="true"></span>
+        <span id="service-label">Connecting</span>
+        <code id="service-origin">127.0.0.1:3000</code>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow">
+          <span>LIVE SERVICE</span> Contract truth, visible
+        </div>
+        <h1>Move jobs with<br /><em>confidence.</em></h1>
+        <p class="hero-copy">
+          A real contract-first HTTP service where enum membership, object
+          shape, middleware, business rules, and optimistic concurrency each
+          fail at the boundary that owns them.
+        </p>
+        <div class="hero-meta" aria-label="Service technologies">
+          <span>oRPC 1.15</span><span>Hono</span><span>Zod 4</span
+          ><span>enumwaii</span>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="jobs-panel" aria-labelledby="jobs-title">
+          <div class="section-heading">
+            <div>
+              <p class="kicker">Process-local state</p>
+              <h2 id="jobs-title">Jobs</h2>
+            </div>
+            <button class="icon-button" id="refresh-jobs" type="button">
+              Refresh
+            </button>
+          </div>
+          <div class="jobs-list" id="jobs-list" aria-live="polite">
+            <div class="job-skeleton"></div>
+            <div class="job-skeleton"></div>
+            <div class="job-skeleton"></div>
+          </div>
+          <button class="reset-button" id="reset-jobs" type="button">
+            <span aria-hidden="true">↺</span> Reset seeded jobs
+          </button>
+        </aside>
+
+        <section class="lab" aria-labelledby="lab-title">
+          <div class="section-heading lab-heading">
+            <div>
+              <p class="kicker">Boundary laboratory</p>
+              <h2 id="lab-title">Run a scenario</h2>
+            </div>
+            <p>Every action crosses the live <code>/api</code> handler.</p>
+          </div>
+
+          <div class="scenario-group">
+            <p class="group-label">Schema boundary</p>
+            <div class="scenario-grid scenario-grid-three">
+              <button class="scenario-card" data-scenario="valid" type="button">
+                <span class="scenario-index">01</span>
+                <span class="scenario-title">Valid scalar</span>
+                <span class="scenario-copy">Echo <code>RUNNING</code></span>
+                <span class="scenario-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button
+                class="scenario-card"
+                data-scenario="unknown"
+                type="button"
+              >
+                <span class="scenario-index">02</span>
+                <span class="scenario-title">Unknown member</span>
+                <span class="scenario-copy">Try <code>PAUSED</code></span>
+                <span class="scenario-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button
+                class="scenario-card"
+                data-scenario="wrong-type"
+                type="button"
+              >
+                <span class="scenario-index">03</span>
+                <span class="scenario-title">Wrong type</span>
+                <span class="scenario-copy">Send number <code>42</code></span>
+                <span class="scenario-arrow" aria-hidden="true">↗</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="scenario-group">
+            <p class="group-label">Domain boundary</p>
+            <div class="scenario-grid">
+              <button
+                class="scenario-card accent"
+                data-scenario="legal"
+                type="button"
+              >
+                <span class="scenario-index">04</span>
+                <span class="scenario-title">Legal transition</span>
+                <span class="scenario-copy">Includes middleware audit</span>
+                <span class="scenario-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button
+                class="scenario-card"
+                data-scenario="illegal"
+                type="button"
+              >
+                <span class="scenario-index">05</span>
+                <span class="scenario-title">Illegal transition</span>
+                <span class="scenario-copy">Valid status, invalid edge</span>
+                <span class="scenario-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button
+                class="scenario-card"
+                data-scenario="version"
+                type="button"
+              >
+                <span class="scenario-index">06</span>
+                <span class="scenario-title">Version conflict</span>
+                <span class="scenario-copy">Submit a stale claim</span>
+                <span class="scenario-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button
+                class="scenario-card"
+                data-scenario="missing"
+                type="button"
+              >
+                <span class="scenario-index">07</span>
+                <span class="scenario-title">Missing job</span>
+                <span class="scenario-copy">Typed <code>NOT_FOUND</code></span>
+                <span class="scenario-arrow" aria-hidden="true">↗</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="scenario-group">
+            <p class="group-label">Pipeline boundary</p>
+            <div class="scenario-grid scenario-grid-two">
+              <button
+                class="scenario-card"
+                data-scenario="middleware"
+                type="button"
+              >
+                <span class="scenario-index">08</span>
+                <span class="scenario-title">Middleware guard</span>
+                <span class="scenario-copy">Omit the actor header</span>
+                <span class="scenario-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button
+                class="scenario-card"
+                data-scenario="output"
+                type="button"
+              >
+                <span class="scenario-index">09</span>
+                <span class="scenario-title">Output validation</span>
+                <span class="scenario-copy">Corrupt after the handler</span>
+                <span class="scenario-arrow" aria-hidden="true">↗</span>
+              </button>
+            </div>
+          </div>
+
+          <form class="composer" id="transition-form">
+            <div class="composer-heading">
+              <div>
+                <p class="group-label">Compose</p>
+                <h3>Custom transition</h3>
+              </div>
+              <span class="method-pill">POST</span>
+            </div>
+            <div class="form-grid">
+              <label>
+                Job
+                <select id="job-input" name="job"></select>
+              </label>
+              <label>
+                Target
+                <select id="status-input" name="status">
+                  <option>QUEUED</option>
+                  <option>RUNNING</option>
+                  <option>SUCCEEDED</option>
+                  <option>FAILED</option>
+                  <option>CANCELLED</option>
+                </select>
+              </label>
+              <label>
+                Expected version
+                <input
+                  id="version-input"
+                  name="version"
+                  type="number"
+                  min="0"
+                  value="0"
+                />
+              </label>
+              <button class="send-button" type="submit">
+                Send transition <span>→</span>
+              </button>
+            </div>
+          </form>
+        </section>
+      </section>
+
+      <section class="response-panel" aria-labelledby="response-title">
+        <div class="response-bar">
+          <div>
+            <p class="kicker">Transport inspector</p>
+            <h2 id="response-title">Latest exchange</h2>
+          </div>
+          <div class="response-facts">
+            <span id="response-method">GET</span>
+            <code id="response-path">/api/v1/jobs</code>
+            <span class="response-status idle" id="response-status">READY</span>
+            <span id="response-time">— ms</span>
+          </div>
+        </div>
+        <div class="exchange-grid">
+          <div class="exchange-block">
+            <p>Request</p>
+            <pre id="request-output">Select a scenario to send a request.</pre>
+          </div>
+          <div class="exchange-block response-block">
+            <p>Response</p>
+            <pre id="response-output">
+The decoded HTTP response will appear here.</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Contract-first from socket to state.</span>
+      <code>OpenAPIHandler · Standard Schema · deriveTo</code>
+    </footer>
+  </body>
+</html>

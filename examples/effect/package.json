@@ -1,0 +1,24 @@
+{
+  "name": "@enumwaii/example-effect",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "build": "tsdown",
+    "start": "node dist/cli.mjs",
+    "test": "vitest run",
+    "test:types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "effect": "^3.22.1",
+    "enumwaii": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsdown": "^0.22.14",
+    "tsx": "^4.20.6",
+    "typescript": "^6.0.3",
+    "vitest": "^4.0.18"
+  }
+}

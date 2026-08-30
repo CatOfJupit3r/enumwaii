@@ -17,6 +17,18 @@ function get(path: string) {
 }
 
 describe("Elysia theme plugin", () => {
+  it("serves the responsive playground without starting a listener", async () => {
+    const response = await get("/");
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe(
+      "text/html; charset=utf-8",
+    );
+    expect(html).toContain("Theme Boundary Console");
+    expect(html).toContain("/v1/themes/selection");
+  });
+
   it("validates a direct scalar Standard Schema body and uses derived metadata", async () => {
     const response = await jsonThemeRequest("DARK");
 

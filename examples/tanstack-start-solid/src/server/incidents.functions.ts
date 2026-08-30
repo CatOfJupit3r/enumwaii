@@ -2,10 +2,12 @@ import { createServerFn } from "@tanstack/solid-start";
 
 import { createIncidentStateInspection } from "~/domain/incident-inspection";
 import {
+  createIncidentInputSchema,
   incidentStateSchema,
   transitionIncidentInputSchema,
 } from "~/domain/incidents";
 import {
+  createStoredIncident,
   listStoredIncidents,
   transitionStoredIncident,
 } from "./incidents.server";
@@ -27,3 +29,7 @@ export const inspectIncidentState = createServerFn({ method: "GET" })
 export const transitionIncident = createServerFn({ method: "POST" })
   .validator(transitionIncidentInputSchema)
   .handler(({ data }) => transitionStoredIncident(data));
+
+export const createIncident = createServerFn({ method: "POST" })
+  .validator(createIncidentInputSchema)
+  .handler(({ data }) => createStoredIncident(data));

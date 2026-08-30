@@ -1,6 +1,7 @@
 import {
   INITIAL_INCIDENTS,
   transitionIncidentState,
+  type CreateIncidentInput,
   type IncidentRecord,
   type TransitionIncidentInput,
 } from "~/domain/incidents";
@@ -35,6 +36,22 @@ export class IncidentStore {
     return this.incidents.map(copyIncident);
   }
 
+  public create(input: CreateIncidentInput): IncidentRecord {
+    const created: IncidentRecord = {
+      id: this.nextIncidentId(),
+      service: input.service,
+      title: input.title,
+      owner: input.owner,
+      openedAt: "just now",
+      impact: input.impact,
+      state: input.state,
+      version: 0,
+    };
+    this.incidents = [created, ...this.incidents];
+
+    return copyIncident(created);
+  }
+
   public transition(input: TransitionIncidentInput): IncidentRecord {
     const currentIndex = this.incidents.findIndex(
       (incident) => incident.id === input.incidentId,
@@ -62,12 +79,30 @@ export class IncidentStore {
 
     return copyIncident(updated);
   }
+
+  private nextIncidentId(): string {
+    const highestNumber = this.incidents.reduce((highest, incident) => {
+      const match = /^INC-(\d+)$/.exec(incident.id);
+      if (match === null) return highest;
+
+      const number = Number(match[1]);
+      return Number.isSafeInteger(number) ? Math.max(highest, number) : highest;
+    }, 0);
+
+    return `INC-${String(highestNumber + 1).padStart(4, "0")}`;
+  }
 }
 
 const incidentStore = new IncidentStore();
 
 export function listStoredIncidents(): readonly IncidentRecord[] {
   return incidentStore.list();
+}
+
+export function createStoredIncident(
+  input: CreateIncidentInput,
+): IncidentRecord {
+  return incidentStore.create(input);
 }
 
 export function transitionStoredIncident(

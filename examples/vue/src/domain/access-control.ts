@@ -8,6 +8,12 @@ export const ACCESS_LEVELS = accessLevelEnum.enum;
 export const ACCESS_LEVEL_VALUES = accessLevelEnum.values;
 export type AccessLevel = InferEnumwaii<typeof accessLevelEnum>;
 
+export interface AccessInvitation {
+  readonly email: string;
+  readonly level: AccessLevel;
+  readonly note: string;
+}
+
 export interface AccessLevelMetadata {
   readonly label: string;
   readonly eyebrow: string;

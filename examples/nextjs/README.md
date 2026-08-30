@@ -11,12 +11,16 @@ boundary lab that makes enum parsing policy visible.
   domain values.
 - The status tabs use Next.js `Link` navigation. Try
   `/?status=IN_PROGRESS`, `/?status=BLOCKED`, or `/?status=COMPLETE`.
+- The selected queue is rendered by a TanStack Table v9 data-grid. Search the
+  visible tasks by ID, title, account, owner, status, or note, and activate a
+  column heading to sort it. The toolbar reports visible versus total tasks and
+  offers a clear-search action.
 - A missing status applies the nil-only `QUEUED` default. An invalid value such
   as `/?status=PAUSED` takes the visibly labeled fallback path instead.
-- The boundary lab is the only Client Component. Its reducer uses extracted
-  `.cases` solely as native discriminants for real async UI events. Each
-  scenario calls a typed Server Action with valid, missing, malformed, or
-  wrong-type input.
+- The table and boundary lab are the only Client Components. The lab reducer
+  uses extracted `.cases` solely as native discriminants for real async UI
+  events. Each scenario calls a typed Server Action with valid, missing,
+  malformed, or wrong-type input.
 - `POST /api/inspect` is a Route Handler for JSON consumers. It parses the
   request body as unknown and returns default-only and recovery-policy results
   side by side.
@@ -39,6 +43,12 @@ same condition.
 - `lib/operations.ts` owns the status declaration, its one extracted `.enum`
   view, branded domain records, exhaustive `derive` metadata, URL resolution,
   and domain selectors.
+- `components/operations-table.tsx` owns the client-side table interaction.
+  The server passes it only the already validated, status-filtered
+  `OperationTask[]`; TanStack handles search and sorting in the browser. The
+  status column still receives each task's branded `TaskStatus` and resolves
+  its label and colors through `statusMetadata`, so external query strings
+  never masquerade as domain values.
 - `lib/boundary.ts` parses unknown server input without coercion or handwritten
   enum wrappers.
 - `lib/lab-events.ts` extracts `.cases` once for the boundary lab reducer and

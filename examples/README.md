@@ -7,9 +7,9 @@ README. Run one application at a time from the repository root after
 
 | Example                                          | What it shows                                                                                                                                                 | Run it                                                     |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [Next.js](./nextjs)                              | App Router, Server Components, Server Actions, Route Handlers, React reducer cases, nil defaults, and explicit fallbacks                                      | `pnpm --filter @enumwaii/example-nextjs dev`               |
-| [TanStack Start + Solid](./tanstack-start-solid) | SSR loaders, typed search, server functions, Standard Schema, Zod object input, mutations, and an honest branded-value RPC bridge                             | `pnpm --filter @enumwaii/example-tanstack-start-solid dev` |
-| [Vue](./vue)                                     | Composition API state, typed props/events, URL and localStorage hydration, `deriveTo`, and an interactive policy lab                                          | `pnpm --filter @enumwaii/example-vue dev`                  |
+| [Next.js](./nextjs)                              | App Router, Server Components, Server Actions, Route Handlers, TanStack Table v9, React reducer cases, nil defaults, and explicit fallbacks                   | `pnpm --filter @enumwaii/example-nextjs dev`               |
+| [TanStack Start + Solid](./tanstack-start-solid) | SSR loaders, typed search, TanStack Form, server functions, Standard Schema, Zod object input, mutations, and an honest branded-value RPC bridge              | `pnpm --filter @enumwaii/example-tanstack-start-solid dev` |
+| [Vue](./vue)                                     | Composition API state, a native validated form, typed props/events, URL and localStorage hydration, `deriveTo`, and an interactive policy lab                 | `pnpm --filter @enumwaii/example-vue dev`                  |
 | [Hono + Drizzle + PGlite](./hono)                | A persistent order console, direct Standard Schema middleware, PostgreSQL enum metadata/defaults, strict row hydration, transitions, and optimistic conflicts | `pnpm --filter @enumwaii/example-hono-drizzle dev`         |
 | [Elysia](./elysia)                               | Native request/response validation, scalar versus object boundaries, lifecycle errors, content-type behavior, and a live HTTP console                         | `pnpm --filter @enumwaii/example-elysia dev`               |
 | [oRPC](./orpc)                                   | Native contracts and procedures, Zod object schemas, direct enumwaii scalar input/output, context, typed errors, and real HTTP calls                          | `pnpm --filter @enumwaii/example-orpc dev`                 |
@@ -30,3 +30,17 @@ showing its happy path. Its local README explains which controls exercise raw
 integration values, nominal domain values, missing-input defaults, malformed
 fallbacks, strict rejection, foreign ownership, persistence hydration, or
 transport serialization.
+
+## Everyday application work
+
+The showcases deliberately cover the ordinary seams where enum-like values tend
+to lose their ownership—not only framework setup:
+
+| Concern                               | Runnable example                                                                                                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Form state, errors, submit, and reset | TanStack Form drives incident intake in [TanStack Start + Solid](./tanstack-start-solid); [Vue](./vue) shows the contrasting dependency-free native form approach. |
+| Searchable and sortable data grids    | [Next.js](./nextjs) renders its branded operations queue through TanStack Table v9 with semantic markup and an empty state.                                        |
+| URL and persistence hydration         | Next.js and TanStack Start parse search params; Vue rehydrates from both URL state and localStorage.                                                               |
+| Loading, success, failure, and retry  | The frontend examples expose pending mutations, validation failures, empty results, live announcements, and conflict-safe recovery paths.                          |
+| Database defaults and row hydration   | [Hono](./hono) uses Drizzle + PGlite; [NestJS](./nestjs) uses Mongoose, with strict parsing when persistence returns to the domain.                                |
+| HTTP forms, JSON, and typed contracts | Hono, Elysia, oRPC, NestJS, and Next.js cover form data, request/response schemas, route handlers, errors, and serialized enum values.                             |

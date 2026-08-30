@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BoundaryLab } from "../components/boundary-lab";
+import { OperationsTable } from "../components/operations-table";
 import {
   OPERATION_TASKS,
   TASK_STATUS,
@@ -9,7 +10,6 @@ import {
   resolveDashboardStatus,
   statusMetadata,
   tasksForStatus,
-  type OperationTask,
   type TaskStatus,
 } from "../lib/operations";
 
@@ -36,40 +36,6 @@ const timeline = [
     detail: "Two verified batches are ready for pickup.",
   },
 ] as const;
-
-function TaskCard({ task }: { readonly task: OperationTask }) {
-  const metadata = statusMetadata(task.status);
-
-  return (
-    <li className="task-card">
-      <div className="task-main">
-        <div className="task-overline">
-          <span>{task.id}</span>
-          <span>·</span>
-          <span>{task.account}</span>
-        </div>
-        <h3>{task.title}</h3>
-        <p>{task.note}</p>
-      </div>
-      <div className="task-meta">
-        <span
-          className="status-badge"
-          style={{ backgroundColor: metadata.surface, color: metadata.accent }}
-        >
-          {metadata.shortLabel}
-        </span>
-        <div>
-          <small>Owner</small>
-          <strong>{task.owner}</strong>
-        </div>
-        <div>
-          <small>Window</small>
-          <strong>{task.window}</strong>
-        </div>
-      </div>
-    </li>
-  );
-}
 
 function StatusTab({
   selected,
@@ -196,11 +162,7 @@ export default async function DashboardPage({
               <p className="boundary-notice">{resolution.notice}</p>
             )}
 
-            <ul className="task-list">
-              {visibleTasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
-              ))}
-            </ul>
+            <OperationsTable tasks={visibleTasks} />
           </section>
 
           <aside className="pulse-panel">

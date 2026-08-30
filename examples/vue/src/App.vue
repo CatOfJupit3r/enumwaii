@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import AccessLevelCard from "./components/AccessLevelCard.vue";
+import AccessRequestForm from "./components/AccessRequestForm.vue";
 import BoundaryPlayground from "./components/BoundaryPlayground.vue";
 import { useAccessLevelPersistence } from "./composables/useAccessLevelPersistence";
 import {
@@ -13,6 +14,7 @@ import {
   PERMISSION_VALUES,
   policyLabel,
   permissionsFor,
+  type AccessInvitation,
   type AccessLevel,
   type AccessPolicy,
 } from "./domain/access-control";
@@ -36,6 +38,7 @@ const permissionRows = computed(() =>
     granted: canAccess(currentLevel.value, permission),
   })),
 );
+const recentInvitations = ref<readonly AccessInvitation[]>([]);
 
 const rawInputLabel = computed(() => formatUnknown(rawPayload.value));
 const persistenceStateLabel = computed(() =>
@@ -50,6 +53,13 @@ function selectLevel(level: AccessLevel): void {
 
 function applyBoundaryLevel(level: AccessLevel): void {
   persistence.setFromExternal(level);
+}
+
+function recordInvitation(invitation: AccessInvitation): void {
+  recentInvitations.value = [invitation, ...recentInvitations.value].slice(
+    0,
+    3,
+  );
 }
 
 function formatUnknown(input: unknown): string {
@@ -79,6 +89,9 @@ function sourceLabel(): string {
       <div class="topbar__right">
         <span class="runtime-chip"
           ><span class="runtime-chip__dot" /> Vue 3.5 + TypeScript</span
+        >
+        <a class="topbar__link" href="#invite"
+          >Invite flow <span aria-hidden="true">↘</span></a
         >
         <a class="topbar__link" href="#boundary"
           >Boundary lab <span aria-hidden="true">↗</span></a
@@ -242,6 +255,66 @@ function sourceLabel(): string {
             Permissions are derived from the access enum, so new members cannot
             silently skip policy metadata.
           </div>
+        </div>
+      </section>
+
+      <section
+        id="invite"
+        class="section-block invitation-section anchor-target"
+        aria-labelledby="invitation-heading"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">03 · Native form boundary</p>
+            <h2 id="invitation-heading">Provision access at the boundary</h2>
+          </div>
+          <p>Vue refs in; a parsed <code>AccessLevel</code> event out.</p>
+        </div>
+
+        <div class="invitation-grid">
+          <AccessRequestForm @created="recordInvitation" />
+
+          <aside class="invitation-ledger panel" aria-live="polite">
+            <div class="invitation-ledger__heading">
+              <div>
+                <span>Local activity</span>
+                <h3>Invitation queue</h3>
+              </div>
+              <strong>{{ recentInvitations.length }}</strong>
+            </div>
+
+            <p v-if="recentInvitations.length === 0" class="invitation-empty">
+              Submitted invitations appear here with the branded access level
+              that crossed the component event.
+            </p>
+            <ol v-else class="invitation-list">
+              <li
+                v-for="(invitation, index) in recentInvitations"
+                :key="`${invitation.email}-${index}`"
+              >
+                <span
+                  class="invitation-avatar"
+                  :class="`avatar--${describeAccessLevel(invitation.level).accent}`"
+                >
+                  {{ invitation.email.slice(0, 1).toUpperCase() }}
+                </span>
+                <div>
+                  <strong>{{ invitation.email }}</strong>
+                  <small>
+                    {{ describeAccessLevel(invitation.level).label }} access
+                    <template v-if="invitation.note">
+                      · {{ invitation.note }}
+                    </template>
+                  </small>
+                </div>
+                <code>{{ invitation.level }}</code>
+              </li>
+            </ol>
+
+            <p class="invitation-ledger__note">
+              This list is intentionally local UI state. Refresh to clear it.
+            </p>
+          </aside>
         </div>
       </section>
 

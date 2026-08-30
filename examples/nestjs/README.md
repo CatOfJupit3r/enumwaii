@@ -18,9 +18,14 @@ The Compose service exposes MongoDB on `127.0.0.1:27017`; the application uses
 `mongodb://127.0.0.1:27017/enumwaii_nest_orders` by default. Override it with
 `MONGODB_URI`. Override the HTTP listener with `PORT` or `HOST`.
 
-The production path uses Nest 12's supported SWC builder. Its checked-in
-`.swcrc` emits decorator metadata and rewrites local ESM specifiers to `.js`
-while keeping authored TypeScript imports extensionless:
+Both `dev` and `build` compile directly with SWC before running Node. The
+checked-in `.swcrc` emits decorator metadata and rewrites local ESM specifiers
+to `.js` while keeping authored TypeScript imports extensionless. Calling SWC
+directly also keeps this example independent of the Nest CLI:
+
+`@nestjs/common` is intentionally pinned to `12.0.0`: the published `12.0.1`
+artifact omits runtime `.js` files that its ESM interface barrels export. Nest
+core, platform, and testing stay on `12.0.1`, whose peer ranges accept `12.0.0`.
 
 ```sh
 pnpm --filter @enumwaii/example-nestjs-mongoose build

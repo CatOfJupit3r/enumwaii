@@ -1,4 +1,8 @@
-import type { AccessLevel, Permission } from "./domain/access-control";
+import type {
+  AccessInvitation,
+  AccessLevel,
+  Permission,
+} from "./domain/access-control";
 import {
   ACCESS_LEVELS,
   ACCESS_LEVEL_VALUES,
@@ -26,9 +30,15 @@ const validCardProps = {
   permissions: [],
   selected: false,
 } satisfies InstanceType<typeof AccessLevelCard>["$props"];
+const validInvitation = {
+  email: "alex@studio.dev",
+  level: ACCESS_LEVELS.EDITOR,
+  note: "Launch review",
+} satisfies AccessInvitation;
 void ACCESS_LEVEL_VALUES;
 void PERMISSIONS;
 void validCardProps;
+void validInvitation;
 
 // @ts-expect-error Raw strings cannot enter a branded domain API.
 acceptAccessLevel(rawString);
@@ -39,4 +49,11 @@ const invalidCardProps = {
   // @ts-expect-error Component props carry the branded AccessLevel contract.
   level: rawString,
 } satisfies InstanceType<typeof AccessLevelCard>["$props"];
+const invalidInvitation = {
+  email: "alex@studio.dev",
+  // @ts-expect-error Native form strings must be parsed before domain events.
+  level: rawString,
+  note: "Launch review",
+} satisfies AccessInvitation;
 void invalidCardProps;
+void invalidInvitation;

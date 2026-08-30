@@ -30,6 +30,13 @@ function. The mutation uses an optimistic version, validates its object input
 with Zod plus `zodSchema` from `enumwaii/zod`, and rejects illegal lifecycle
 moves before updating the in-memory example store.
 
+The inline **Open an incident** panel uses TanStack Form's Solid `createForm`,
+`Field`, and `Subscribe` APIs for required-field errors, submit state, reset,
+and an aria-live result. Its state select intentionally holds an untrusted DOM
+string; the enumwaii declaration is attached as the field's Standard Schema
+validator, then the value is parsed at submit before the validated POST
+mutation creates a branded version-zero record in the process-local store.
+
 ### `/validation` — boundary lab
 
 The lab sends a scalar candidate to `inspectIncidentState`. Its
@@ -56,6 +63,11 @@ validate on entry to the server, serialize honest wire data, and validate again
 when the client needs domain ownership. Strict serialization remains enabled;
 there is no cast, validator wrapper, or branded output hidden behind
 `strict: false`.
+
+The incident-creation mutation follows the same boundary discipline: the form
+parses its raw state before calling `createIncident`, while the server function
+also validates the complete object with Zod and enumwaii's `zodSchema` adapter
+before `IncidentStore.create` appends the snapshot.
 
 ## Project shape
 

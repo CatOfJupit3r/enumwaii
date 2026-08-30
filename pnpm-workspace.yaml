@@ -5,3 +5,7 @@ packages:
 allowBuilds:
   "@swc/core": true
   esbuild: true
+
+# 6.4.1 omits dist/types.js even though its entry point exports that file.
+overrides:
+  "@solid-primitives/utils": 6.4.0

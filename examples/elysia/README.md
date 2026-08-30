@@ -9,6 +9,9 @@ Console: a responsive, interactive playground backed by the real API. It runs
 Elysia 1.4 on Node through the official `@elysia/node` adapter. Set `PORT` to
 change the default port of `3000`.
 
+TypeBox is intentionally pinned to `0.34.51`: the published `0.34.52` artifact
+omits `anyschema.mjs` even though its ESM barrel imports that runtime module.
+
 ## UI tour
 
 The console turns each enum boundary into a small request lab:

@@ -11,6 +11,30 @@ import {
 } from "./incidents.server";
 
 describe("incident store seam", () => {
+  it("creates a version-zero record with an owned state", () => {
+    const store = new IncidentStore([]);
+
+    const created = store.create({
+      service: "Search API",
+      title: "Elevated query latency",
+      owner: "Ravi Patel",
+      impact: "p95 latency at 1.4 seconds",
+      state: INCIDENT_STATE.TRIAGE,
+    });
+
+    expect(created).toMatchObject({
+      id: "INC-0001",
+      service: "Search API",
+      title: "Elevated query latency",
+      owner: "Ravi Patel",
+      impact: "p95 latency at 1.4 seconds",
+      state: INCIDENT_STATE.TRIAGE,
+      version: 0,
+    });
+    expect(created.openedAt).toBe("just now");
+    expect(store.list()[0]).toEqual(created);
+  });
+
   it("applies an owned transition and increments the version", () => {
     const store = new IncidentStore();
 
@@ -60,5 +84,23 @@ describe("incident store seam", () => {
 
     expect(store.list()).not.toBe(store.list());
     expect(store.list()[0]).not.toBe(store.list()[0]);
+
+    const created = store.create({
+      service: "Search API",
+      title: "Elevated query latency",
+      owner: "Ravi Patel",
+      impact: "p95 latency at 1.4 seconds",
+      state: INCIDENT_STATE.TRIAGE,
+    });
+    const snapshot = store
+      .list()
+      .find((incident) => incident.id === created.id);
+
+    expect(snapshot).toEqual(created);
+    expect(snapshot).not.toBe(created);
+    Object.assign(created, { title: "Mutated response" });
+    expect(
+      store.list().find((incident) => incident.id === created.id)?.title,
+    ).toBe("Elevated query latency");
   });
 });

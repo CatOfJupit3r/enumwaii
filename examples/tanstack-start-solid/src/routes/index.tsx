@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/solid-router";
 import { For, createMemo, createSignal, useTransition } from "solid-js";
 
 import { IncidentCard } from "~/components/incident-card";
+import { IncidentIntakeForm } from "~/components/incident-intake-form";
 import { StateTrack } from "~/components/state-track";
 import { controlRoomSearchSchema } from "~/domain/control-room-search";
 import {
@@ -77,6 +78,10 @@ function ControlRoomPage() {
         setNotice({ tone: "error", message: errorMessage(error) });
       }
     });
+  }
+
+  function addIncident(incident: IncidentRecord): void {
+    setIncidents((current) => [incident, ...current]);
   }
 
   return (
@@ -167,6 +172,8 @@ function ControlRoomPage() {
               </a>
             </div>
           </div>
+
+          <IncidentIntakeForm onCreated={addIncident} />
 
           <div class="focus-caption">
             <span class="focus-caption__beam" aria-hidden="true" />

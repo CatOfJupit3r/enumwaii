@@ -132,6 +132,16 @@ export type TransitionIncidentInput = z.output<
   typeof transitionIncidentInputSchema
 >;
 
+export const createIncidentInputSchema = z.object({
+  service: z.string().trim().min(1),
+  title: z.string().trim().min(1),
+  owner: z.string().trim().min(1),
+  impact: z.string().trim().min(1),
+  state: zodSchema(incidentStates),
+});
+
+export type CreateIncidentInput = z.output<typeof createIncidentInputSchema>;
+
 export class IllegalIncidentTransitionError extends Error {
   public constructor(
     public readonly from: IncidentState,

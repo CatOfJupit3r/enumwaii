@@ -4,6 +4,7 @@ import {
   INCIDENT_STATE,
   IllegalIncidentTransitionError,
   canTransitionIncident,
+  createIncidentInputSchema,
   describeIncidentState,
   getAllowedIncidentTransitions,
   incidentStateSchema,
@@ -77,6 +78,27 @@ describe("incident state domain", () => {
         incidentId: "INC-2417",
         to: "PAUSED",
         expectedVersion: 3,
+      }),
+    ).toThrow();
+  });
+
+  it("validates incident creation and rejects an unknown state", () => {
+    const parsed = createIncidentInputSchema.parse({
+      service: "Checkout API",
+      title: "Elevated payment retries",
+      owner: "Mira Chen",
+      impact: "4.8% of checkout attempts",
+      state: "TRIAGE",
+    });
+
+    expect(parsed.state).toBe(INCIDENT_STATE.TRIAGE);
+    expect(() =>
+      createIncidentInputSchema.parse({
+        service: "Checkout API",
+        title: "Elevated payment retries",
+        owner: "Mira Chen",
+        impact: "4.8% of checkout attempts",
+        state: "PAUSED",
       }),
     ).toThrow();
   });

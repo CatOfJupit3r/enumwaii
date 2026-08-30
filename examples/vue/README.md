@@ -3,7 +3,8 @@
 This is a runnable Vue 3.5 + Vite application showing enumwaii inside a
 normal frontend boundary. It is an access-control console rather than a test
 fixture: choose a role, inspect its derived permissions, and feed persistence
-payloads through the boundary lab.
+payloads through the boundary lab. A real native Vue invitation form shows the
+same ownership boundary in ordinary product work without adding a form library.
 
 ## Run it
 
@@ -32,6 +33,10 @@ pnpm --filter @enumwaii/example-vue test:types
 - **Derived policy** uses `derive` for access metadata and `deriveTo` for an
   exhaustive access-level → permission mapping. The permission list is real
   UI state, not a static illustration.
+- **Invite a teammate** uses normal Vue refs, native form controls, inline
+  validation, a typed component event, reset behavior, an ARIA live result, and
+  a recent-submission queue. The `<select>` remains a plain DOM string until
+  strict parsing succeeds; only the branded result leaves the form.
 - **Boundary lab** lets you inspect valid (`"EDITOR"`), missing (`null`),
   malformed (`"ARCHIVED"`), wrong-shaped (`{ level: "EDITOR" }`), and custom
   external values. Click a policy card to make it active, then apply only an
@@ -62,13 +67,16 @@ objects, numbers, or unknown strings.
 - `src/composables/useAccessLevelPersistence.ts` owns reactive refs, `watch`
   synchronization, URL/localStorage reads, and the last boundary outcome.
 - `src/components/AccessLevelCard.vue` demonstrates typed props/events.
+- `src/components/AccessRequestForm.vue` demonstrates the dependency-free form
+  approach: raw draft state in, a strictly parsed `AccessInvitation` event out.
 - `src/components/BoundaryPlayground.vue` keeps unknown fixtures outside state
   until the selected enumwaii policy accepts them.
 - `src/domain/access-control.test.ts`,
   `src/composables/useAccessLevelPersistence.test.ts`, and
-  `src/components/BoundaryPlayground.test.ts` cover domain, persistence, and
-  DOM interactions. `src/type-contract.test-d.ts` proves raw strings cannot
-  enter the domain or component prop contracts.
+  `src/components/AccessRequestForm.test.ts`, and
+  `src/components/BoundaryPlayground.test.ts` cover domain, persistence, forms,
+  and DOM interactions. `src/type-contract.test-d.ts` proves raw strings cannot
+  enter the domain, invitation, or component prop contracts.
 
 The test suite uses Vitest's normal `jsdom` environment only for the browser
 composable and SFC interaction tests; the application itself is the primary

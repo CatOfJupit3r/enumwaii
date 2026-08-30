@@ -1,0 +1,34 @@
+import { describe, expect, it } from "vitest";
+
+import { INCIDENT_STATE } from "./incidents";
+import {
+  controlRoomSearchSchema,
+  resolveControlRoomFocus,
+} from "./control-room-search";
+
+describe("control-room search boundary", () => {
+  it("defaults a missing focus and records why", () => {
+    expect(controlRoomSearchSchema.parse({})).toEqual({
+      focus: INCIDENT_STATE.MITIGATING,
+      resolution: "default",
+      received: null,
+    });
+    expect(resolveControlRoomFocus(null).resolution).toBe("default");
+  });
+
+  it("preserves valid external members as branded output", () => {
+    expect(controlRoomSearchSchema.parse({ focus: "MONITORING" })).toEqual({
+      focus: INCIDENT_STATE.MONITORING,
+      resolution: "requested",
+      received: "MONITORING",
+    });
+  });
+
+  it("labels malformed recovery instead of treating it as a default", () => {
+    expect(controlRoomSearchSchema.parse({ focus: "PAUSED" })).toEqual({
+      focus: INCIDENT_STATE.TRIAGE,
+      resolution: "fallback",
+      received: "PAUSED",
+    });
+  });
+});

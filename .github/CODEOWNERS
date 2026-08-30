@@ -1,0 +1,6 @@
+/.github/ @CatOfJupit3r
+/.changeset/ @CatOfJupit3r
+**/package.json @CatOfJupit3r
+/pnpm-lock.yaml @CatOfJupit3r
+/pnpm-workspace.yaml @CatOfJupit3r
+/scripts/check-dependency-pins.mjs @CatOfJupit3r

@@ -1,0 +1,101 @@
+name: Extended validation
+
+on:
+  # Keep the workflow definition on the trusted base branch. The approved job
+  # still checks out and executes the pull request's exact head commit.
+  pull_request_target:
+
+permissions: {}
+
+concurrency:
+  group: extended-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  queue:
+    name: Queue PR status
+    permissions:
+      statuses: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Mark extended validation pending
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          STATUS_CONTEXT: enumwaii/extended-validation
+        run: >-
+          gh api --method POST
+          "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}"
+          -f state=pending
+          -f context="${STATUS_CONTEXT}"
+          -f description="Awaiting maintainer-approved extended validation"
+          -f target_url="${RUN_URL}"
+
+  check:
+    # Configure this environment with required reviewers. The job then remains
+    # pending on each PR until a maintainer explicitly approves the run.
+    environment: extended-validation
+    needs: queue
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6.1.0
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6.0.8
+        with:
+          version: 11.18.0
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 22.18.0
+      - uses: oven-sh/setup-bun@v2.0.1
+        with:
+          bun-version: 1.4.0
+      - uses: denoland/setup-deno@v2.0.5
+        with:
+          deno-version: v2.9.6
+      - name: Validate dependency pins
+        run: node scripts/check-dependency-pins.mjs
+      - run: pnpm install --frozen-lockfile
+      - name: Check packages, examples, and documentation
+        run: pnpm check
+      - name: Check Bun, Deno, and Cloudflare Workers
+        run: pnpm test:runtimes
+
+  report:
+    name: Report PR status
+    if: always() && needs.queue.result == 'success'
+    needs: [queue, check]
+    permissions:
+      statuses: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Report extended validation result
+        env:
+          CHECK_RESULT: ${{ needs.check.result }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          STATUS_CONTEXT: enumwaii/extended-validation
+        run: |
+          if [ "$CHECK_RESULT" = "success" ]; then
+            STATE="success"
+            DESCRIPTION="Extended validation passed"
+          else
+            STATE="failure"
+            DESCRIPTION="Extended validation failed"
+          fi
+
+          gh api --method POST \
+            "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" \
+            -f state="$STATE" \
+            -f context="$STATUS_CONTEXT" \
+            -f description="$DESCRIPTION" \
+            -f target_url="$RUN_URL"

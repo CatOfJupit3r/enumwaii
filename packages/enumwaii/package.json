@@ -103,13 +103,13 @@
     }
   },
   "devDependencies": {
-    "@tanstack/intent": "^0.3.6",
-    "@types/react": "^19.2.18",
-    "react": "^19.2.8",
-    "valibot": "^1.4.2",
-    "zod": "^4.4.3"
+    "@tanstack/intent": "0.3.6",
+    "@types/react": "19.2.18",
+    "react": "19.2.8",
+    "valibot": "1.4.2",
+    "zod": "4.4.3"
   },
   "dependencies": {
-    "@standard-schema/spec": "^1.1.0"
+    "@standard-schema/spec": "1.1.0"
   }
 }

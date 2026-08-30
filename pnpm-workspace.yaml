@@ -3,10 +3,19 @@ packages:
   - examples/*
   - packages/*
 
+savePrefix: ""
+minimumReleaseAge: 1440
+minimumReleaseAgeStrict: true
+# Add only reviewed, exact selectors (for example, package@1.2.3) when an
+# emergency update must bypass the 24-hour quarantine.
+minimumReleaseAgeExclude: []
+blockExoticSubdeps: true
+strictDepBuilds: true
+
 allowBuilds:
-  "@swc/core": true
-  esbuild: true
-  workerd: true
+  "@swc/core@1.16.1": true
+  "esbuild@0.18.20 || 0.25.12 || 0.28.1 || 0.28.2": true
+  "workerd@1.20260828.1": true
 
 # 6.4.1 omits dist/types.js even though its entry point exports that file.
 overrides:

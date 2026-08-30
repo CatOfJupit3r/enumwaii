@@ -24,22 +24,22 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@electric-sql/pglite": "^0.5.7",
-    "@hono/node-server": "^2.1.1",
-    "@hono/standard-validator": "^0.4.0",
-    "drizzle-orm": "^0.45.2",
+    "@electric-sql/pglite": "0.5.8",
+    "@hono/node-server": "2.1.1",
+    "@hono/standard-validator": "0.4.0",
+    "drizzle-orm": "0.45.2",
     "enumwaii": "workspace:*",
-    "hono": "^4.13.5"
+    "hono": "4.13.5"
   },
   "devDependencies": {
-    "@cloudflare/vitest-plugin": "^1.1.0",
-    "@types/bun": "^1.4.0",
-    "@types/node": "^24.3.0",
-    "drizzle-kit": "^0.31.10",
-    "tsdown": "^0.22.14",
-    "tsx": "^4.20.6",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.0",
-    "wrangler": "^4.127.1"
+    "@cloudflare/vitest-plugin": "1.1.2",
+    "@types/bun": "1.4.0",
+    "@types/node": "24.13.3",
+    "drizzle-kit": "0.31.10",
+    "tsdown": "0.22.14",
+    "tsx": "4.23.12",
+    "typescript": "6.0.3",
+    "vitest": "4.1.11",
+    "wrangler": "4.127.1"
   }
 }

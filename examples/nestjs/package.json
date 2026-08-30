@@ -18,17 +18,17 @@
     "@nestjs/mongoose": "12.0.0",
     "@nestjs/platform-express": "12.0.1",
     "enumwaii": "workspace:*",
-    "mongoose": "^9.0.0",
-    "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "mongoose": "9.9.4",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
   },
   "devDependencies": {
     "@nestjs/testing": "12.0.1",
-    "@swc/cli": "^0.8.0",
-    "@swc/core": "^1.15.18",
-    "@types/express": "^5.0.3",
-    "@types/node": "^24.3.0",
-    "typescript": "^6.0.3",
-    "vitest": "^4.0.18"
+    "@swc/cli": "0.8.1",
+    "@swc/core": "1.16.1",
+    "@types/express": "5.0.6",
+    "@types/node": "24.13.3",
+    "typescript": "6.0.3",
+    "vitest": "4.1.11"
   }
 }

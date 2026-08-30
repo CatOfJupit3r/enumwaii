@@ -2,7 +2,7 @@ import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import App from "./App.vue";
-import { ACCESS_LEVELS } from "./domain/access-control";
+import { ACCESS_LEVELS, ACCESS_POLICY } from "./domain/access-control";
 
 describe("access console invitation flow", () => {
   beforeEach(() => {
@@ -26,6 +26,18 @@ describe("access console invitation flow", () => {
       "operator@studio.dev",
     );
     expect(wrapper.get(".invitation-list").text()).toContain("Viewer access");
+
+    wrapper.unmount();
+  });
+
+  it("parses the native policy select before updating branded state", async () => {
+    const wrapper = mount(App);
+
+    await wrapper
+      .get<HTMLSelectElement>(".policy-select select")
+      .setValue(ACCESS_POLICY.FALLBACK);
+
+    expect(wrapper.get(".session-card__level strong").text()).toBe("Guest");
 
     wrapper.unmount();
   });

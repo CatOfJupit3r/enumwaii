@@ -27,6 +27,9 @@ expectTypeOf<InferEnumwaiiCase<typeof roles>>().toEqualTypeOf<
 expectTypeOf(roles).toExtend<StandardSchemaV1<unknown, Role>>();
 expectTypeOf<(typeof roles)["~type"]>().toEqualTypeOf<Role>();
 expectTypeOf<(typeof roles)["~keys"]>().toEqualTypeOf<"ADMIN" | "USER">();
+expectTypeOf<(typeof roles)["~safeParseResult"]>().toEqualTypeOf<
+  ReturnType<typeof roles.safeParse>
+>();
 
 const labels = {
   ADMIN: "Administrator",
@@ -46,6 +49,40 @@ const derivedLabels = roles.derive(
 expectTypeOf(derivedLabels.get(ROLE.ADMIN)).toEqualTypeOf<
   "Administrator" | "Member"
 >();
+
+interface RoleMetadata {
+  readonly label: string;
+  readonly rank: number;
+}
+
+const derivedMetadata = roles.derive<RoleMetadata>()(
+  [ROLE.ADMIN, { label: "Administrator", rank: 2 }],
+  [ROLE.USER, { label: "Member", rank: 1 }],
+);
+expectTypeOf(derivedMetadata.get(ROLE.ADMIN)).toEqualTypeOf<RoleMetadata>();
+roles.derive<RoleMetadata>()(
+  // @ts-expect-error contextually typed output must contain every required field
+  [ROLE.ADMIN, { label: "Administrator" }],
+  [ROLE.USER, { label: "Member", rank: 1 }],
+);
+roles.derive<RoleMetadata>()(
+  // @ts-expect-error contextually typed output rejects unknown fields
+  [ROLE.ADMIN, { label: "Administrator", rank: 2, hidden: true }],
+  [ROLE.USER, { label: "Member", rank: 1 }],
+);
+// @ts-expect-error contextually typed mappings must contain every enum member
+roles.derive<RoleMetadata>()([ROLE.ADMIN, { label: "Administrator", rank: 2 }]);
+roles.derive<RoleMetadata>()(
+  // @ts-expect-error contextually typed mappings require owned source members
+  ["ADMIN", { label: "Administrator", rank: 2 }],
+  [ROLE.USER, { label: "Member", rank: 1 }],
+);
+roles.derive<RoleMetadata>()(
+  // @ts-expect-error contextually typed mappings reject duplicate members
+  [ROLE.ADMIN, { label: "Administrator", rank: 2 }],
+  [ROLE.ADMIN, { label: "Administrator again", rank: 2 }],
+  [ROLE.USER, { label: "Member", rank: 1 }],
+);
 // @ts-expect-error derived mappings must contain every enum member
 roles.derive([ROLE.ADMIN, "Administrator"]);
 // @ts-expect-error derived mappings require owned source members
@@ -55,6 +92,11 @@ const other = em(["ADMIN"]);
 const OTHER = other.enum;
 // @ts-expect-error members from declarations with different sets are distinct
 roles.derive([OTHER.ADMIN, "Administrator"], [ROLE.USER, "Member"]);
+roles.derive<RoleMetadata>()(
+  // @ts-expect-error contextually typed mappings reject foreign source members
+  [OTHER.ADMIN, { label: "Administrator", rank: 2 }],
+  [ROLE.USER, { label: "Member", rank: 1 }],
+);
 roles.derive(
   // @ts-expect-error derived mappings cannot contain duplicate members
   [ROLE.ADMIN, "First"],

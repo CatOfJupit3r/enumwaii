@@ -22,30 +22,6 @@ export const controlRoomSearchSchema = z
 
 export type ControlRoomSearch = z.output<typeof controlRoomSearchSchema>;
 
-function describeReceivedValue(input: unknown): string {
-  if (typeof input === "string") return input;
-
-  try {
-    const encoded = JSON.stringify(input);
-    if (encoded !== undefined) return encoded;
-  } catch {
-    return Object.prototype.toString.call(input);
-  }
-
-  if (
-    typeof input === "number" ||
-    typeof input === "boolean" ||
-    typeof input === "bigint"
-  ) {
-    return input.toString();
-  }
-  if (typeof input === "symbol") return input.description ?? "Symbol()";
-  if (typeof input === "function") {
-    return `[function ${input.name || "anonymous"}]`;
-  }
-  return Object.prototype.toString.call(input);
-}
-
 export function resolveControlRoomFocus(input: unknown): ControlRoomFocus {
   if (input === null || input === undefined) {
     return {
@@ -62,7 +38,7 @@ export function resolveControlRoomFocus(input: unknown): ControlRoomFocus {
     return {
       focus: parsed.value,
       resolution: "requested",
-      received: describeReceivedValue(input),
+      received: parsed.value,
     };
   }
 
@@ -71,6 +47,6 @@ export function resolveControlRoomFocus(input: unknown): ControlRoomFocus {
       fallback: INCIDENT_STATE.TRIAGE,
     }),
     resolution: "fallback",
-    received: describeReceivedValue(input),
+    received: parsed.error.receivedText,
   };
 }

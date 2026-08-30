@@ -6,8 +6,11 @@ import AccessRequestForm from "./components/AccessRequestForm.vue";
 import BoundaryPlayground from "./components/BoundaryPlayground.vue";
 import { useAccessLevelPersistence } from "./composables/useAccessLevelPersistence";
 import {
+  ACCESS_POLICY,
+  ACCESS_POLICY_VALUES,
   ACCESS_LEVEL_VALUES,
   ACCESS_LEVELS,
+  accessPolicySchema,
   canAccess,
   describeAccessLevel,
   describePermission,
@@ -16,19 +19,18 @@ import {
   permissionsFor,
   type AccessInvitation,
   type AccessLevel,
-  type AccessPolicy,
+  parseAccessLevel,
 } from "./domain/access-control";
 
 const persistence = useAccessLevelPersistence({
   initial: ACCESS_LEVELS.VIEWER,
-  policy: "nil-default",
+  policy: ACCESS_POLICY.NIL_DEFAULT,
 });
 const currentLevel = persistence.level;
 const selectedPolicy = persistence.policy;
 const rawPayload = persistence.rawInput;
 const serializedLevel = persistence.serializedLevel;
 
-const policies: readonly AccessPolicy[] = ["strict", "nil-default", "fallback"];
 const levelMetadata = computed(() => describeAccessLevel(currentLevel.value));
 const activePermissions = computed(() => permissionsFor(currentLevel.value));
 const permissionRows = computed(() =>
@@ -40,7 +42,12 @@ const permissionRows = computed(() =>
 );
 const recentInvitations = ref<readonly AccessInvitation[]>([]);
 
-const rawInputLabel = computed(() => formatUnknown(rawPayload.value));
+const rawInputLabel = computed(() => {
+  const result = parseAccessLevel(rawPayload.value, ACCESS_POLICY.STRICT);
+  return result.success
+    ? JSON.stringify(result.value)
+    : result.error.receivedText;
+});
 const persistenceStateLabel = computed(() =>
   persistence.outcome.value === "accepted"
     ? "Boundary accepted"
@@ -55,18 +62,16 @@ function applyBoundaryLevel(level: AccessLevel): void {
   persistence.setFromExternal(level);
 }
 
+function selectPolicy(event: Event): void {
+  if (!(event.currentTarget instanceof HTMLSelectElement)) return;
+  selectedPolicy.value = accessPolicySchema.parse(event.currentTarget.value);
+}
+
 function recordInvitation(invitation: AccessInvitation): void {
   recentInvitations.value = [invitation, ...recentInvitations.value].slice(
     0,
     3,
   );
-}
-
-function formatUnknown(input: unknown): string {
-  if (input === undefined) return "undefined";
-  if (input === null) return "null";
-  if (typeof input === "string") return `"${input}"`;
-  return "object";
 }
 
 function sourceLabel(): string {
@@ -136,8 +141,12 @@ function sourceLabel(): string {
           </div>
           <label class="policy-select">
             <span>Boundary policy</span>
-            <select v-model="selectedPolicy">
-              <option v-for="policy in policies" :key="policy" :value="policy">
+            <select :value="selectedPolicy" @change="selectPolicy">
+              <option
+                v-for="policy in ACCESS_POLICY_VALUES"
+                :key="policy"
+                :value="policy"
+              >
                 {{ policyLabel(policy) }}
               </option>
             </select>

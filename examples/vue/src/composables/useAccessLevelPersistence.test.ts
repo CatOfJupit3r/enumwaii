@@ -1,7 +1,7 @@
 import { nextTick } from "vue";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { ACCESS_LEVELS } from "../domain/access-control";
+import { ACCESS_LEVELS, ACCESS_POLICY } from "../domain/access-control";
 import { useAccessLevelPersistence } from "./useAccessLevelPersistence";
 
 beforeEach(() => {
@@ -11,7 +11,9 @@ beforeEach(() => {
 
 describe("useAccessLevelPersistence", () => {
   it("starts with the explicit nil default when storage is missing", () => {
-    const state = useAccessLevelPersistence({ policy: "nil-default" });
+    const state = useAccessLevelPersistence({
+      policy: ACCESS_POLICY.NIL_DEFAULT,
+    });
 
     expect(state.level.value).toBe(ACCESS_LEVELS.VIEWER);
     expect(state.source.value).toBe("default");
@@ -20,7 +22,7 @@ describe("useAccessLevelPersistence", () => {
 
   it("does not admit malformed URL input under strict policy", () => {
     window.history.replaceState({}, "", "/?level=ARCHIVED");
-    const state = useAccessLevelPersistence({ policy: "strict" });
+    const state = useAccessLevelPersistence({ policy: ACCESS_POLICY.STRICT });
 
     expect(state.level.value).toBe(ACCESS_LEVELS.VIEWER);
     expect(state.source.value).toBe("url");
@@ -29,7 +31,7 @@ describe("useAccessLevelPersistence", () => {
   });
 
   it("accepts a valid external value and syncs it to both persistence channels", async () => {
-    const state = useAccessLevelPersistence({ policy: "strict" });
+    const state = useAccessLevelPersistence({ policy: ACCESS_POLICY.STRICT });
 
     const result = state.setFromExternal(ACCESS_LEVELS.EDITOR);
     await nextTick();
@@ -45,7 +47,7 @@ describe("useAccessLevelPersistence", () => {
   });
 
   it("keeps a wrong-shaped object out of state even when it looks close", () => {
-    const state = useAccessLevelPersistence({ policy: "strict" });
+    const state = useAccessLevelPersistence({ policy: ACCESS_POLICY.STRICT });
 
     const result = state.setFromExternal({ level: "EDITOR" });
 

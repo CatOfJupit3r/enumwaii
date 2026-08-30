@@ -54,42 +54,22 @@ function acceptedDecision(
   };
 }
 
-function inputDescription(input: unknown): BoundaryReport["input"] {
+function inputDescription(
+  input: unknown,
+  result: (typeof taskStatusSchema)["~safeParseResult"],
+): BoundaryReport["input"] {
   if (input === undefined || input === null) {
     return { kind: "missing", display: input === null ? "null" : "undefined" };
   }
 
-  if (typeof input === "string") {
-    return { kind: "string", display: `"${input}"` };
+  if (result.success) {
+    return { kind: "string", display: result.value };
   }
 
   return {
-    kind: "wrong type",
-    display: formatUnknown(input),
+    kind: typeof input === "string" ? "string" : "wrong type",
+    display: result.error.receivedText,
   };
-}
-
-function formatUnknown(input: unknown): string {
-  try {
-    const encoded = JSON.stringify(input);
-    if (encoded !== undefined) return encoded;
-  } catch {
-    return Object.prototype.toString.call(input);
-  }
-
-  if (typeof input === "string") return input;
-  if (
-    typeof input === "number" ||
-    typeof input === "boolean" ||
-    typeof input === "bigint"
-  ) {
-    return input.toString();
-  }
-  if (typeof input === "symbol") return input.description ?? "Symbol()";
-  if (typeof input === "function") {
-    return `[function ${input.name || "anonymous"}]`;
-  }
-  return Object.prototype.toString.call(input);
 }
 
 function decisionSource(input: unknown): AcceptedBoundaryDecision["source"] {
@@ -118,7 +98,7 @@ export function inspectStatusBoundary(input: unknown): BoundaryReport {
     : "fallback";
 
   return {
-    input: inputDescription(input),
+    input: inputDescription(input, defaultOnlyResult),
     defaultOnly,
     recovery: acceptedDecision(recoveredStatus, recoverySource),
   };

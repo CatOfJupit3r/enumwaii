@@ -1,6 +1,7 @@
 import { computed, ref, watch, type ComputedRef, type Ref } from "vue";
 
 import {
+  ACCESS_POLICY,
   ACCESS_LEVELS,
   type AccessLevel,
   type AccessLevelParseResult,
@@ -74,7 +75,7 @@ export function useAccessLevelPersistence(
   options: AccessLevelPersistenceOptions = {},
 ): AccessLevelPersistence {
   const level = ref<AccessLevel>(options.initial ?? ACCESS_LEVELS.VIEWER);
-  const policy = ref<AccessPolicy>(options.policy ?? "nil-default");
+  const policy = ref<AccessPolicy>(options.policy ?? ACCESS_POLICY.NIL_DEFAULT);
   const rawInput = ref<unknown>(undefined);
   const source = ref<PersistenceSource>("default");
   const outcome = ref<PersistenceOutcome>("accepted");

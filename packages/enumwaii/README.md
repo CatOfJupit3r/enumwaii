@@ -65,6 +65,17 @@ labels.get(ROLE.USER);
 Duplicates are removed in first-seen order. `deriveTo` can additionally require
 one or many outputs from another enumwaii declaration.
 
+For object-shaped outputs, provide the shared type once instead of repeating
+`satisfies` on every entry:
+
+```ts
+const metadata = roles.derive<RoleMetadata>()(
+  [ROLE.ADMIN, { label: "Administrator", rank: 3 }],
+  [ROLE.USER, { label: "Member", rank: 2 }],
+  [ROLE.GUEST, { label: "Guest", rank: 1 }],
+);
+```
+
 ## Optional entry points
 
 ```ts
@@ -81,7 +92,7 @@ integration.
 - `.enum` and `.values` are branded application surfaces.
 - `.rawEnum` and `.rawValues` are unbranded integration escapes.
 - `.cases` exists for native discriminated-union narrowing.
-- `~type` and `~keys` expose declaration-local TypeScript utilities.
+- `~type`, `~keys`, and `~safeParseResult` expose declaration-local TypeScript utilities.
 
 Extract member views before referencing their members. The separate
 [`eslint-plugin-enumwaii`](https://www.npmjs.com/package/eslint-plugin-enumwaii)

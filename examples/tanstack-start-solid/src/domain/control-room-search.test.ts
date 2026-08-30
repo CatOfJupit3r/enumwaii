@@ -28,7 +28,15 @@ describe("control-room search boundary", () => {
     expect(controlRoomSearchSchema.parse({ focus: "PAUSED" })).toEqual({
       focus: INCIDENT_STATE.TRIAGE,
       resolution: "fallback",
-      received: "PAUSED",
+      received: '"PAUSED"',
+    });
+  });
+
+  it("uses enumwaii's safe received text for unusual boundary values", () => {
+    expect(resolveControlRoomFocus(Symbol("focus"))).toEqual({
+      focus: INCIDENT_STATE.TRIAGE,
+      resolution: "fallback",
+      received: "Symbol(focus)",
     });
   });
 });

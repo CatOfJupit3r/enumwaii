@@ -31,6 +31,7 @@ describe("em", () => {
     source[0] = "changed";
     expect(anonymous.rawValues).toEqual(["one", "two"]);
     expect("name" in anonymous).toBe(false);
+    expect("~safeParseResult" in anonymous).toBe(false);
   });
 
   it("deduplicates declarations and rejects empty declarations", () => {
@@ -69,6 +70,35 @@ describe("deserialization", () => {
     expect(failure.success).toBe(false);
     if (!failure.success)
       expect(failure.error).toBeInstanceOf(EnumwaiiParseError);
+  });
+
+  it("reports arbitrary rejected inputs without throwing", () => {
+    const circular: { self?: unknown } = {};
+    circular.self = circular;
+    const revocable = Proxy.revocable({}, {});
+    revocable.revoke();
+
+    const cases: readonly (readonly [unknown, string])[] = [
+      [1n, "1n"],
+      [Number.NaN, "NaN"],
+      [Number.POSITIVE_INFINITY, "Infinity"],
+      [Symbol("role"), "Symbol(role)"],
+      [function invalidRole() {}, "[function]"],
+      [circular, "[object]"],
+      [revocable.proxy, "[object]"],
+    ];
+
+    for (const [input, receivedText] of cases) {
+      const result = roles.safeParse(input);
+      expect(result.success).toBe(false);
+      if (result.success) continue;
+      expect(result.error.received).toBe(input);
+      expect(result.error.receivedText).toBe(receivedText);
+      expect(result.error.message).toBe(`Cannot parse ${receivedText}`);
+      expect(roles["~standard"].validate(input)).toEqual({
+        issues: [{ message: `Cannot parse ${receivedText}` }],
+      });
+    }
   });
 
   it("implements Standard Schema v1 without an adapter", () => {
@@ -160,6 +190,22 @@ describe("composition and exhaustive derivation", () => {
         [ROLE.GUEST, "Guest"],
       ),
     ).toThrow(EnumwaiiError);
+  });
+
+  it("builds contextually typed lookup maps", () => {
+    interface RoleMetadata {
+      readonly label: string;
+      readonly rank: number;
+    }
+
+    const metadata = roles.derive<RoleMetadata>()(
+      [ROLE.ADMIN, { label: "Administrator", rank: 3 }],
+      [ROLE.USER, { label: "Member", rank: 2 }],
+      [ROLE.GUEST, { label: "Guest", rank: 1 }],
+    );
+
+    expect(metadata.get(ROLE.USER)).toEqual({ label: "Member", rank: 2 });
+    expect(Object.isFrozen(metadata.record)).toBe(true);
   });
 
   it("derives values with optional helper functions", () => {

@@ -20,7 +20,7 @@ describe("BoundaryPlayground", () => {
     expect(wrongShape).toBeDefined();
     await wrongShape?.trigger("click");
 
-    expect(wrapper.text()).toContain('{ level: "EDITOR" }');
+    expect(wrapper.text()).toContain('{"level":"EDITOR"}');
     expect(
       wrapper.find(".policy-card--active .result-pill--accepted").exists(),
     ).toBe(false);

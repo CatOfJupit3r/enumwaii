@@ -22,6 +22,19 @@ if (result.success) {
 - `safeParse` returns a discriminated success or failure result.
 - `is` is a type guard for control-flow validation.
 
+The failure keeps the exact rejected input in `error.received` and provides a
+non-throwing diagnostic in `error.receivedText`. The diagnostic is safe for
+values JSON cannot represent, including `bigint`, circular structures, and
+hostile proxies:
+
+```ts
+const result = roles.safeParse(input);
+if (!result.success) {
+  audit(result.error.received);
+  show(result.error.receivedText);
+}
+```
+
 Runtime validation checks string membership. It cannot determine which declaration originally produced an equal string.
 
 ## Defaults and fallbacks

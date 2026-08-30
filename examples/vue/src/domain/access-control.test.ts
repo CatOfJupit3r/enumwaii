@@ -1,34 +1,62 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ACCESS_POLICY,
+  ACCESS_POLICY_VALUES,
   ACCESS_LEVELS,
   canAccess,
   parseAccessLevel,
   permissionsFor,
   PERMISSIONS,
+  policyDescription,
+  policyLabel,
 } from "./access-control";
 
 describe("access-control boundary", () => {
   it("returns the canonical branded member for a valid payload", () => {
-    const result = parseAccessLevel("EDITOR", "strict");
+    const result = parseAccessLevel("EDITOR", ACCESS_POLICY.STRICT);
 
     expect(result).toEqual({ success: true, value: ACCESS_LEVELS.EDITOR });
   });
 
   it("keeps a nil-only default distinct from malformed input", () => {
-    const missing = parseAccessLevel(undefined, "nil-default");
-    const malformed = parseAccessLevel("ARCHIVED", "nil-default");
+    const missing = parseAccessLevel(undefined, ACCESS_POLICY.NIL_DEFAULT);
+    const malformed = parseAccessLevel("ARCHIVED", ACCESS_POLICY.NIL_DEFAULT);
 
     expect(missing).toEqual({ success: true, value: ACCESS_LEVELS.VIEWER });
     expect(malformed.success).toBe(false);
   });
 
   it("uses fallback for malformed and wrong-shaped input", () => {
-    const malformed = parseAccessLevel("ARCHIVED", "fallback");
-    const wrongShape = parseAccessLevel({ level: "EDITOR" }, "fallback");
+    const malformed = parseAccessLevel("ARCHIVED", ACCESS_POLICY.FALLBACK);
+    const wrongShape = parseAccessLevel(
+      { level: "EDITOR" },
+      ACCESS_POLICY.FALLBACK,
+    );
 
     expect(malformed).toEqual({ success: true, value: ACCESS_LEVELS.GUEST });
     expect(wrongShape).toEqual({ success: true, value: ACCESS_LEVELS.GUEST });
+  });
+
+  it("derives exhaustive policy metadata and behavior from owned members", () => {
+    expect(ACCESS_POLICY_VALUES).toEqual([
+      ACCESS_POLICY.STRICT,
+      ACCESS_POLICY.NIL_DEFAULT,
+      ACCESS_POLICY.FALLBACK,
+    ]);
+    expect(policyLabel(ACCESS_POLICY.STRICT)).toBe("Strict rejection");
+    expect(policyDescription(ACCESS_POLICY.NIL_DEFAULT)).toContain(
+      "null and undefined",
+    );
+
+    const malformed = parseAccessLevel(
+      { level: "EDITOR" },
+      ACCESS_POLICY.STRICT,
+    );
+    expect(malformed.success).toBe(false);
+    if (!malformed.success) {
+      expect(malformed.error.receivedText).toBe('{"level":"EDITOR"}');
+    }
   });
 
   it("derives real permissions exhaustively from the access level", () => {

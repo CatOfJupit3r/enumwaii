@@ -15,48 +15,49 @@ export interface DispatchStagePresentation {
   readonly surface: string;
 }
 
-const dispatchStagePresentation = dispatchStages.derive(
-  [
-    DISPATCH_STAGE.UNASSIGNED,
-    {
-      label: "Unassigned",
-      eyebrow: "Needs an owner",
-      description: "Reported work waiting for a field operator.",
-      accent: "#8a5a12",
-      surface: "#fff3d7",
-    } satisfies DispatchStagePresentation,
-  ],
-  [
-    DISPATCH_STAGE.DISPATCHED,
-    {
-      label: "Dispatched",
-      eyebrow: "Operator en route",
-      description: "Accepted work with an active response window.",
-      accent: "#275ea8",
-      surface: "#e5efff",
-    } satisfies DispatchStagePresentation,
-  ],
-  [
-    DISPATCH_STAGE.ON_SITE,
-    {
-      label: "On site",
-      eyebrow: "Work in progress",
-      description: "The operator has arrived and is recording findings.",
-      accent: "#236c57",
-      surface: "#def5ec",
-    } satisfies DispatchStagePresentation,
-  ],
-  [
-    DISPATCH_STAGE.RESOLVED,
-    {
-      label: "Resolved",
-      eyebrow: "Ready for review",
-      description: "The field response is complete and synchronized.",
-      accent: "#6b4fa1",
-      surface: "#efe8fb",
-    } satisfies DispatchStagePresentation,
-  ],
-);
+const dispatchStagePresentation =
+  dispatchStages.derive<DispatchStagePresentation>()(
+    [
+      DISPATCH_STAGE.UNASSIGNED,
+      {
+        label: "Unassigned",
+        eyebrow: "Needs an owner",
+        description: "Reported work waiting for a field operator.",
+        accent: "#8a5a12",
+        surface: "#fff3d7",
+      },
+    ],
+    [
+      DISPATCH_STAGE.DISPATCHED,
+      {
+        label: "Dispatched",
+        eyebrow: "Operator en route",
+        description: "Accepted work with an active response window.",
+        accent: "#275ea8",
+        surface: "#e5efff",
+      },
+    ],
+    [
+      DISPATCH_STAGE.ON_SITE,
+      {
+        label: "On site",
+        eyebrow: "Work in progress",
+        description: "The operator has arrived and is recording findings.",
+        accent: "#236c57",
+        surface: "#def5ec",
+      },
+    ],
+    [
+      DISPATCH_STAGE.RESOLVED,
+      {
+        label: "Resolved",
+        eyebrow: "Ready for review",
+        description: "The field response is complete and synchronized.",
+        accent: "#6b4fa1",
+        surface: "#efe8fb",
+      },
+    ],
+  );
 
 const allowedStageTransitions = dispatchStages.deriveTo(
   dispatchStages,
@@ -78,32 +79,33 @@ export interface ReportPriorityPresentation {
   readonly accent: string;
 }
 
-const reportPriorityPresentation = reportPriorities.derive(
-  [
-    REPORT_PRIORITY.ROUTINE,
-    {
-      label: "Routine",
-      description: "Can be handled in the normal field queue.",
-      accent: "#506575",
-    } satisfies ReportPriorityPresentation,
-  ],
-  [
-    REPORT_PRIORITY.IMPORTANT,
-    {
-      label: "Important",
-      description: "Needs an operator during the current shift.",
-      accent: "#b45f16",
-    } satisfies ReportPriorityPresentation,
-  ],
-  [
-    REPORT_PRIORITY.URGENT,
-    {
-      label: "Urgent",
-      description: "Escalate immediately and keep dispatch informed.",
-      accent: "#b33145",
-    } satisfies ReportPriorityPresentation,
-  ],
-);
+const reportPriorityPresentation =
+  reportPriorities.derive<ReportPriorityPresentation>()(
+    [
+      REPORT_PRIORITY.ROUTINE,
+      {
+        label: "Routine",
+        description: "Can be handled in the normal field queue.",
+        accent: "#506575",
+      },
+    ],
+    [
+      REPORT_PRIORITY.IMPORTANT,
+      {
+        label: "Important",
+        description: "Needs an operator during the current shift.",
+        accent: "#b45f16",
+      },
+    ],
+    [
+      REPORT_PRIORITY.URGENT,
+      {
+        label: "Urgent",
+        description: "Escalate immediately and keep dispatch informed.",
+        accent: "#b33145",
+      },
+    ],
+  );
 
 export interface DispatchIncident {
   readonly id: string;
@@ -219,33 +221,25 @@ function acceptedStageDecision(
   };
 }
 
-function displayWrongType(input: unknown): string {
-  try {
-    return JSON.stringify(input) ?? `<${typeof input}>`;
-  } catch {
-    return "<unserializable object>";
-  }
-}
-
-function describeBoundaryInput(input: unknown): StageBoundaryReport["input"] {
+function describeBoundaryInput(
+  input: unknown,
+  result: (typeof dispatchStages)["~safeParseResult"],
+): StageBoundaryReport["input"] {
   if (input === null || input === undefined) {
     return { kind: "missing", display: input === null ? "null" : "undefined" };
   }
 
-  if (typeof input === "string") {
-    return { kind: "string", display: `"${input}"` };
-  }
-
-  if (Array.isArray(input)) {
-    return {
-      kind: "repeated query",
-      display: JSON.stringify(input),
-    };
+  if (result.success) {
+    return { kind: "string", display: result.value };
   }
 
   return {
-    kind: "wrong type",
-    display: displayWrongType(input),
+    kind: Array.isArray(input)
+      ? "repeated query"
+      : typeof input === "string"
+        ? "string"
+        : "wrong type",
+    display: result.error.receivedText,
   };
 }
 
@@ -285,7 +279,7 @@ export function inspectStageBoundary(input: unknown): StageBoundaryReport {
   const source = input === null || input === undefined ? "default" : "request";
 
   return {
-    input: describeBoundaryInput(input),
+    input: describeBoundaryInput(input, defaultOnlyResult),
     defaultOnly: defaultOnlyResult.success
       ? acceptedStageDecision(defaultOnlyResult.value, source)
       : {

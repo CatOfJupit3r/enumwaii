@@ -47,19 +47,26 @@ describe("dispatch domain", () => {
   test("rejects repeated Router query values instead of taking the first", () => {
     const report = inspectStageBoundary(["DISPATCHED", "ON_SITE"]);
 
-    expect(report.input.kind).toBe("repeated query");
+    expect(report.input).toEqual({
+      kind: "repeated query",
+      display: '["DISPATCHED","ON_SITE"]',
+    });
     expect(report.defaultOnly.accepted).toBe(false);
     expect(report.recovery.source).toBe("fallback");
   });
 
   test("describes non-string boundary values without Object coercion", () => {
+    expect(inspectStageBoundary("ON_SITE").input).toEqual({
+      kind: "string",
+      display: DISPATCH_STAGE.ON_SITE,
+    });
     expect(inspectStageBoundary({ stage: "ON_SITE" }).input).toEqual({
       kind: "wrong type",
       display: '{"stage":"ON_SITE"}',
     });
     expect(inspectStageBoundary(Symbol("stage")).input).toEqual({
       kind: "wrong type",
-      display: "<symbol>",
+      display: "Symbol(stage)",
     });
   });
 

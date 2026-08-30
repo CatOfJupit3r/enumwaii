@@ -7,6 +7,8 @@ const accessLevelEnum = em(["OWNER", "EDITOR", "VIEWER", "GUEST"]);
 export const ACCESS_LEVELS = accessLevelEnum.enum;
 export const ACCESS_LEVEL_VALUES = accessLevelEnum.values;
 export type AccessLevel = InferEnumwaii<typeof accessLevelEnum>;
+export type AccessLevelParseResult =
+  (typeof accessLevelEnum)["~safeParseResult"];
 
 export interface AccessInvitation {
   readonly email: string;
@@ -127,11 +129,55 @@ const permissionsByAccessLevel = accessLevelEnum.deriveTo(
   [ACCESS_LEVELS.GUEST, [PERMISSIONS.READ]],
 );
 
-export type AccessPolicy = "strict" | "nil-default" | "fallback";
+const accessPolicies = em(["STRICT", "NIL_DEFAULT", "FALLBACK"]);
+export const ACCESS_POLICY = accessPolicies.enum;
+export const ACCESS_POLICY_VALUES = accessPolicies.values;
+export const accessPolicySchema = accessPolicies;
+export type AccessPolicy = InferEnumwaii<typeof accessPolicies>;
 
-export type AccessLevelParseResult = ReturnType<
-  typeof accessLevelEnum.safeParse
->;
+interface AccessPolicyDefinition {
+  readonly label: string;
+  readonly description: string;
+  parse(input: unknown): AccessLevelParseResult;
+}
+
+const accessPolicyDefinitions = accessPolicies.derive<AccessPolicyDefinition>()(
+  [
+    ACCESS_POLICY.STRICT,
+    {
+      label: "Strict rejection",
+      description: "Unknown values never enter state.",
+      parse(input: unknown): AccessLevelParseResult {
+        return accessLevelEnum.safeParse(input);
+      },
+    },
+  ],
+  [
+    ACCESS_POLICY.NIL_DEFAULT,
+    {
+      label: "Nil-only default",
+      description:
+        "Only null and undefined become Viewer; malformed values reject.",
+      parse(input: unknown): AccessLevelParseResult {
+        return accessLevelEnum.safeParse(input, {
+          default: ACCESS_LEVELS.VIEWER,
+        });
+      },
+    },
+  ],
+  [
+    ACCESS_POLICY.FALLBACK,
+    {
+      label: "Invalid-input fallback",
+      description: "Any malformed value becomes the explicit Guest fallback.",
+      parse(input: unknown): AccessLevelParseResult {
+        return accessLevelEnum.safeParse(input, {
+          fallback: ACCESS_LEVELS.GUEST,
+        });
+      },
+    },
+  ],
+);
 
 function isPermissionList(
   input: Permission | readonly Permission[],
@@ -160,25 +206,15 @@ export function parseAccessLevel(
   input: unknown,
   policy: AccessPolicy,
 ): AccessLevelParseResult {
-  if (policy === "strict") return accessLevelEnum.safeParse(input);
-  if (policy === "nil-default") {
-    return accessLevelEnum.safeParse(input, { default: ACCESS_LEVELS.VIEWER });
-  }
-  return accessLevelEnum.safeParse(input, { fallback: ACCESS_LEVELS.GUEST });
+  return accessPolicyDefinitions.get(policy).parse(input);
 }
 
 export function policyLabel(policy: AccessPolicy): string {
-  if (policy === "strict") return "Strict rejection";
-  if (policy === "nil-default") return "Nil-only default";
-  return "Invalid-input fallback";
+  return accessPolicyDefinitions.get(policy).label;
 }
 
 export function policyDescription(policy: AccessPolicy): string {
-  if (policy === "strict") return "Unknown values never enter state.";
-  if (policy === "nil-default") {
-    return "Only null and undefined become Viewer; malformed values reject.";
-  }
-  return "Any malformed value becomes the explicit Guest fallback.";
+  return accessPolicyDefinitions.get(policy).description;
 }
 
 export function acceptAccessLevel(level: AccessLevel): AccessLevel {

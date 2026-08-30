@@ -2,6 +2,7 @@
 import { ref } from "vue";
 
 import {
+  ACCESS_POLICY,
   ACCESS_LEVEL_VALUES,
   describeAccessLevel,
   parseAccessLevel,
@@ -38,7 +39,7 @@ function submitInvitation(): void {
   successMessage.value = "";
 
   const emailError = validateEmail();
-  const levelResult = parseAccessLevel(rawLevel.value, "strict");
+  const levelResult = parseAccessLevel(rawLevel.value, ACCESS_POLICY.STRICT);
   const levelError = levelResult.success
     ? undefined
     : "Choose one of the owned access levels.";

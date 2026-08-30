@@ -21,16 +21,17 @@ order, including values introduced by `extend` or `em.combine`.
 
 ## Surface map
 
-| Surface     | Use it for                                                                      |
-| ----------- | ------------------------------------------------------------------------------- |
-| `enum`      | Named, branded application members. This is the default.                        |
-| `values`    | Iterating branded members.                                                      |
-| `rawEnum`   | Named unbranded values for an integration that rejects branded types.           |
-| `rawValues` | An unbranded tuple for schema, database, or provider metadata.                  |
-| `cases`     | Native discriminated-union tags when TypeScript cannot narrow a branded string. |
-| `~type`     | The branded member union, available only to TypeScript.                         |
-| `~keys`     | The raw key union for `Record` and `satisfies`, available only to TypeScript.   |
-| `~standard` | The Standard Schema v1 contract.                                                |
+| Surface            | Use it for                                                                      |
+| ------------------ | ------------------------------------------------------------------------------- |
+| `enum`             | Named, branded application members. This is the default.                        |
+| `values`           | Iterating branded members.                                                      |
+| `rawEnum`          | Named unbranded values for an integration that rejects branded types.           |
+| `rawValues`        | An unbranded tuple for schema, database, or provider metadata.                  |
+| `cases`            | Native discriminated-union tags when TypeScript cannot narrow a branded string. |
+| `~type`            | The branded member union, available only to TypeScript.                         |
+| `~keys`            | The raw key union for `Record` and `satisfies`, available only to TypeScript.   |
+| `~safeParseResult` | This declaration's discriminated parse result, available only to TypeScript.    |
+| `~standard`        | The Standard Schema v1 contract.                                                |
 
 `.enum`, `.rawEnum`, and `.cases` are referentially the same frozen object at
 runtime, but their static types serve different jobs. Extract each view before
@@ -79,7 +80,8 @@ labels.record.READY;
 ```
 
 Tuple entries preserve source-member provenance in a way object keys cannot.
-Use callback derivation for uniform transforms, and `deriveTo` when every output
+Use `states.derive<Metadata>()(...)` to contextually type every entry once,
+callback derivation for uniform transforms, and `deriveTo` when every output
 must belong to another declaration.
 
 ## Type utilities
@@ -89,6 +91,7 @@ Prefer declaration-local utilities when the declaration is already in scope:
 ```ts
 type State = (typeof states)["~type"];
 type StateKey = (typeof states)["~keys"];
+type StateParseResult = (typeof states)["~safeParseResult"];
 
 const labels = {
   DRAFT: "Draft",

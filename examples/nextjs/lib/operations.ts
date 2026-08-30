@@ -13,7 +13,7 @@ export interface TaskStatusMetadata {
   readonly surface: string;
 }
 
-export const TASK_STATUS_METADATA = taskStatuses.derive(
+export const TASK_STATUS_METADATA = taskStatuses.derive<TaskStatusMetadata>()(
   [
     TASK_STATUS.QUEUED,
     {
@@ -22,7 +22,7 @@ export const TASK_STATUS_METADATA = taskStatuses.derive(
       description: "Scoped work waiting for an available operator.",
       accent: "#416c5a",
       surface: "#e7f1eb",
-    } satisfies TaskStatusMetadata,
+    },
   ],
   [
     TASK_STATUS.IN_PROGRESS,
@@ -32,7 +32,7 @@ export const TASK_STATUS_METADATA = taskStatuses.derive(
       description: "Work with an owner and an active delivery window.",
       accent: "#c05d38",
       surface: "#fae9df",
-    } satisfies TaskStatusMetadata,
+    },
   ],
   [
     TASK_STATUS.BLOCKED,
@@ -42,7 +42,7 @@ export const TASK_STATUS_METADATA = taskStatuses.derive(
       description: "Work paused on a dependency or decision.",
       accent: "#9f3f49",
       surface: "#f8e6e8",
-    } satisfies TaskStatusMetadata,
+    },
   ],
   [
     TASK_STATUS.COMPLETE,
@@ -52,7 +52,7 @@ export const TASK_STATUS_METADATA = taskStatuses.derive(
       description: "Verified work delivered during this operating window.",
       accent: "#506586",
       surface: "#e7ebf2",
-    } satisfies TaskStatusMetadata,
+    },
   ],
 );
 

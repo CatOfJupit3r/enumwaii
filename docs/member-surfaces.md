@@ -111,15 +111,17 @@ The distinction between the surfaces exists entirely in TypeScript. Runtime code
 
 ## Type-only properties
 
-Two declaration-local properties exist only for TypeScript and are not emitted as runtime fields:
+Three declaration-local properties exist only for TypeScript and are not emitted as runtime fields:
 
 ```ts
 type Role = (typeof roles)["~type"];
 type RoleKey = (typeof roles)["~keys"];
+type RoleParseResult = (typeof roles)["~safeParseResult"];
 ```
 
 - `~type` is the branded member union.
 - `~keys` is the raw member union, useful for external records with `satisfies`.
+- `~safeParseResult` is the exact discriminated result returned by this declaration's `safeParse` method.
 
 ```ts
 const labels = {

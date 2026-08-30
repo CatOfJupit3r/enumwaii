@@ -36,6 +36,7 @@ export { EnumwaiiParseError } from "./errors/enumwaii-parse-error";
 export type {
   EnumwaiiBrand,
   EnumwaiiCases,
+  EnumwaiiDeriveBuilder,
   EnumwaiiDeriveEntry,
   EnumwaiiDerived,
   EnumwaiiDeriveToEntry,

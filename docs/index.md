@@ -18,7 +18,7 @@ guides explain the parts that are intentionally stricter or less conventional.
 | `.parse`, `.safeParse`, `.is`             | Validate untrusted values at a boundary              | [Runtime boundaries and integrations](./runtime-boundaries.md)               |
 | `.pick`, `.omit`, `.extend`, `em.combine` | Compose related declarations                         | [Branding and identity](./branding-and-identity.md#composition-and-identity) |
 | `.derive`, `.deriveTo`                    | Build exhaustive lookups while preserving provenance | [Derivation](./derivation.md)                                                |
-| `~type`, `~keys`                          | Declaration-local TypeScript utilities               | [Member surfaces](./member-surfaces.md#type-only-properties)                 |
+| `~type`, `~keys`, `~safeParseResult`      | Declaration-local TypeScript utilities               | [Member surfaces](./member-surfaces.md#type-only-properties)                 |
 | `eslint-plugin-enumwaii`                  | Enforce conventions TypeScript cannot express        | [Linting boundaries](./linting.md)                                           |
 
 ## Design decisions

@@ -5,6 +5,7 @@ import { EnumwaiiParseError } from "./errors/enumwaii-parse-error";
 import { createStandardSchemaProps } from "./internal/create-standard-schema";
 import type {
   EnumwaiiCases,
+  EnumwaiiDeriveBuilder,
   EnumwaiiDeriveEntry,
   EnumwaiiDerived,
   EnumwaiiDeriveToEntry,
@@ -150,8 +151,8 @@ export class Enumwaii<
    * `{ value }`; an invalid value returns protocol issues containing the parse
    * message. This path validates membership only and does not apply parse
    * recovery options such as `default` or `fallback`. Issue construction uses
-   * the same JSON-based diagnostic as {@link parse}, so a `bigint` or circular
-   * input can propagate a `JSON.stringify` error instead of returning issues.
+   * the same non-throwing diagnostic representation as {@link parse}, including
+   * for `bigint`, circular structures, and hostile proxies.
    *
    * @example
    * ```ts
@@ -202,6 +203,25 @@ export class Enumwaii<
    * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/member-surfaces.md#type-only-properties
    */
   declare public readonly "~type": EnumwaiiValue<TRaw, TIdentity>;
+
+  /**
+   * Declaration-only result type returned by this enum's {@link safeParse}.
+   *
+   * `~safeParseResult` is erased and absent at runtime. Use it when a function
+   * or component needs to name this exact declaration's parse result without
+   * reconstructing its raw and identity parameters or using `ReturnType`.
+   *
+   * @example
+   * ```ts
+   * type RoleParseResult = (typeof roles)["~safeParseResult"];
+   * ```
+   *
+   * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/member-surfaces.md#type-only-properties
+   */
+  declare public readonly "~safeParseResult": EnumwaiiSafeParseResult<
+    TRaw,
+    TIdentity
+  >;
 
   private readonly memberSet: ReadonlySet<string>;
 
@@ -273,13 +293,12 @@ export class Enumwaii<
   /**
    * Validates an unknown value and returns an owned branded member.
    *
-   * Invalid values throw {@link EnumwaiiParseError} when their diagnostic can
-   * be JSON-stringified. `default` is considered only for `null` or
-   * `undefined`; `fallback` handles any otherwise-invalid input, and `default`
-   * wins when both apply to a nil input. TypeScript requires both recovery
-   * values to be members of this declaration; they are trusted and are not
-   * revalidated at runtime. An input that `JSON.stringify` cannot process can
-   * instead propagate that serializer error while creating the diagnostic.
+   * Invalid values throw {@link EnumwaiiParseError}. `default` is considered
+   * only for `null` or `undefined`; `fallback` handles any otherwise-invalid
+   * input, and `default` wins when both apply to a nil input. TypeScript
+   * requires both recovery values to be members of this declaration; they are
+   * trusted and are not revalidated at runtime. Error construction is safe for
+   * arbitrary inputs and retains the exact rejected value.
    *
    * @param input Value to validate.
    * @param options Optional nil default and invalid-input fallback.
@@ -311,19 +330,16 @@ export class Enumwaii<
    *
    * The recovery rules match {@link parse}: `default` applies only to
    * `null`/`undefined`, `fallback` applies to all other invalid inputs, and
-   * `default` wins when both apply. Without recovery, a normally
-   * JSON-stringifiable invalid input produces an {@link EnumwaiiParseError}; an
-   * input that `JSON.stringify` cannot process can instead propagate that
-   * serializer error. Recovery values are trusted after TypeScript checks and
-   * are not revalidated at runtime. Success contains the branded member.
+   * `default` wins when both apply. Without recovery, every invalid input
+   * produces an {@link EnumwaiiParseError}; diagnostic construction is safe for
+   * arbitrary values and retains the exact rejected input. Recovery values are
+   * trusted after TypeScript checks and are not revalidated at runtime. Success
+   * contains the branded member.
    *
    * @param input Value to validate.
    * @param options Optional nil default and invalid-input fallback.
    * @returns A discriminated result whose `success` flag narrows `value` or
    * `error`.
-   * @throws An error from `JSON.stringify` if an invalid input's diagnostic
-   * cannot be serialized, such as a `bigint` or circular structure.
-   *
    * @example
    * ```ts
    * const result = roles.safeParse(payload.role);
@@ -496,6 +512,29 @@ export class Enumwaii<
   ): EnumwaiiDerived<TRaw, TIdentity, TValue>;
 
   /**
+   * Creates a contextually typed exhaustive entry builder.
+   *
+   * Choose this overload when derived outputs should conform to a named type.
+   * Supplying the output type once checks every object literal without a
+   * repeated `satisfies`, while the returned builder retains the same source
+   * provenance, exhaustiveness, and duplicate checks as entry-based
+   * derivation.
+   *
+   * @returns A function that accepts one typed tuple for every source member.
+   *
+   * @example
+   * ```ts
+   * const labels = roles.derive<RoleMetadata>()(
+   *   [ROLE.ADMIN, { label: "Administrator" }],
+   *   [ROLE.USER, { label: "Member" }],
+   * );
+   * ```
+   *
+   * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/derivation.md#contextually-typed-entries
+   */
+  public derive<TValue>(): EnumwaiiDeriveBuilder<TRaw, TIdentity, TValue>;
+
+  /**
    * Derives an exhaustive lookup from branded `[member, output]` tuples.
    *
    * Choose this overload when each source member needs an explicit output or
@@ -535,7 +574,18 @@ export class Enumwaii<
 
   public derive<TValue>(
     ...input: readonly unknown[]
-  ): EnumwaiiDerived<TRaw, TIdentity, TValue> {
+  ):
+    | EnumwaiiDerived<TRaw, TIdentity, TValue>
+    | EnumwaiiDeriveBuilder<TRaw, TIdentity, TValue> {
+    if (input.length === 0) {
+      return ((
+        ...entries: readonly EnumwaiiDeriveEntry<TRaw, TIdentity, TValue>[]
+      ) =>
+        this.buildDerived(
+          this.createDerivedMapping(entries),
+        )) as EnumwaiiDeriveBuilder<TRaw, TIdentity, TValue>;
+    }
+
     const first = input[0];
     if (typeof first === "function") {
       const build = first as (value: EnumwaiiValue<TRaw, TIdentity>) => TValue;

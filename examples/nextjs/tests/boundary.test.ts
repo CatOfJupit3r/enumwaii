@@ -22,6 +22,7 @@ describe("status boundary policies", () => {
   it("rejects malformed input under default-only and recovers with fallback", () => {
     const report = inspectStatusBoundary("PAUSED");
 
+    expect(report.input).toEqual({ kind: "string", display: '"PAUSED"' });
     expect(report.defaultOnly).toMatchObject({
       accepted: false,
       source: "rejected",
@@ -33,11 +34,25 @@ describe("status boundary policies", () => {
     });
   });
 
+  it("uses the parsed member to describe a valid boundary value", () => {
+    expect(inspectStatusBoundary("BLOCKED").input).toEqual({
+      kind: "string",
+      display: TASK_STATUS.BLOCKED,
+    });
+  });
+
   it("treats a number as invalid rather than coercing it", () => {
     const report = inspectStatusBoundary(42);
 
     expect(report.input).toEqual({ kind: "wrong type", display: "42" });
     expect(report.defaultOnly.accepted).toBe(false);
     expect(report.recovery.source).toBe("fallback");
+  });
+
+  it("uses enumwaii's safe received text for unusual boundary values", () => {
+    expect(inspectStatusBoundary(Symbol("status")).input).toEqual({
+      kind: "wrong type",
+      display: "Symbol(status)",
+    });
   });
 });

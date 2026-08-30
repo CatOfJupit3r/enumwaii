@@ -123,6 +123,16 @@ labels.get(ROLE.ADMIN);
 Duplicates are removed in first-seen order. Tuple derivation is deliberate:
 object keys erase branded provenance in TypeScript.
 
+Give object-shaped outputs one contextual type without repeating `satisfies`:
+
+```ts
+const metadata = roles.derive<RoleMetadata>()(
+  [ROLE.ADMIN, { label: "Administrator", rank: 3 }],
+  [ROLE.USER, { label: "Member", rank: 2 }],
+  [ROLE.GUEST, { label: "Guest", rank: 1 }],
+);
+```
+
 For uniform transforms, optional helpers live outside the main entry point:
 
 ```ts
@@ -133,13 +143,13 @@ const wireRoles = roles.derive(lowercase);
 
 ## Member surfaces
 
-| Surface                  | Purpose                                                |
-| ------------------------ | ------------------------------------------------------ |
-| `.enum`                  | Branded application members; use this by default.      |
-| `.values`                | Branded iteration.                                     |
-| `.rawEnum`, `.rawValues` | Canonical unbranded values for integration boundaries. |
-| `.cases`                 | Raw tags for native discriminated-union narrowing.     |
-| `~type`, `~keys`         | Declaration-local TypeScript utilities.                |
+| Surface                              | Purpose                                                |
+| ------------------------------------ | ------------------------------------------------------ |
+| `.enum`                              | Branded application members; use this by default.      |
+| `.values`                            | Branded iteration.                                     |
+| `.rawEnum`, `.rawValues`             | Canonical unbranded values for integration boundaries. |
+| `.cases`                             | Raw tags for native discriminated-union narrowing.     |
+| `~type`, `~keys`, `~safeParseResult` | Declaration-local TypeScript utilities.                |
 
 Extract `.enum`, `.rawEnum`, and `.cases` before referencing their members.
 Although those three views share one frozen runtime object, their static types

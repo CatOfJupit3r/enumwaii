@@ -2,6 +2,8 @@
 import { computed, ref } from "vue";
 
 import {
+  ACCESS_POLICY,
+  ACCESS_POLICY_VALUES,
   describeAccessLevel,
   parseAccessLevel,
   policyDescription,
@@ -30,10 +32,9 @@ const presets: Readonly<Record<Exclude<PresetId, "custom">, Preset>> = {
   },
 };
 
-const policies: readonly AccessPolicy[] = ["strict", "nil-default", "fallback"];
 const selectedPreset = ref<PresetId>("valid");
 const customInput = ref("EDITOR");
-const activePolicy = ref<AccessPolicy>("nil-default");
+const activePolicy = ref<AccessPolicy>(ACCESS_POLICY.NIL_DEFAULT);
 
 const props = defineProps<{
   readonly activeLevel: AccessLevel;
@@ -48,10 +49,15 @@ const rawInput = computed<unknown>(() => {
   return presets[selectedPreset.value].raw;
 });
 
-const rawLabel = computed(() => formatUnknown(rawInput.value));
+const rawLabel = computed(() => {
+  const result = parseAccessLevel(rawInput.value, ACCESS_POLICY.STRICT);
+  return result.success
+    ? JSON.stringify(result.value)
+    : result.error.receivedText;
+});
 
 const results = computed(() =>
-  policies.map((policy) => ({
+  ACCESS_POLICY_VALUES.map((policy) => ({
     policy,
     result: parseAccessLevel(rawInput.value, policy),
   })),
@@ -60,13 +66,6 @@ const results = computed(() =>
 const activeResult = computed(() =>
   parseAccessLevel(rawInput.value, activePolicy.value),
 );
-
-function formatUnknown(input: unknown): string {
-  if (input === undefined) return "undefined";
-  if (input === null) return "null";
-  if (typeof input === "string") return `"${input}"`;
-  return '{ level: "EDITOR" }';
-}
 
 function resultTitle(result: AccessLevelParseResult): string {
   return result.success ? describeAccessLevel(result.value).label : "Rejected";

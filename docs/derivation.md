@@ -23,6 +23,30 @@ labels.record.ADMIN; // same runtime lookup through a raw-keyed record
 
 TypeScript rejects missing entries, duplicate source members, raw source strings, and members from incompatible declarations.
 
+## Contextually typed entries
+
+When derived objects should all implement an existing application type, pass
+that type once and call the returned entry builder:
+
+```ts
+interface RoleMetadata {
+  readonly label: string;
+  readonly rank: number;
+}
+
+const metadata = roles.derive<RoleMetadata>()(
+  [ROLE.ADMIN, { label: "Administrator", rank: 3 }],
+  [ROLE.USER, { label: "Member", rank: 2 }],
+  [ROLE.GUEST, { label: "Guest", rank: 1 }],
+);
+```
+
+Every output is contextually checked as `RoleMetadata`, so object literals do
+not need a repeated `satisfies RoleMetadata`. The extra call preserves exact
+tuple inference: missing, duplicate, raw, and foreign source members are still
+rejected. `metadata.get(...)` returns `RoleMetadata` rather than a union of the
+individual object literal shapes.
+
 ## Why tuples instead of an object?
 
 The more familiar syntax would be:
@@ -89,7 +113,9 @@ Derived results expose two views:
 - `.get(member)` accepts a branded source member and is the default application API.
 - `.record` is a frozen raw-keyed record for integrations and APIs that need object-shaped data.
 
-`.get` currently returns the union of all derived value types. TypeScript does not correlate a particular source argument with a single tuple result in this API.
+For inferred entry derivation, `.get` returns the union of all derived value
+types. A contextually typed `derive<TValue>()(...)` builder returns `TValue`.
+Neither form correlates a particular source argument with one tuple result.
 
 At runtime, `.get` is a direct property lookup. It assumes the branded input promised by its TypeScript signature. Plain JavaScript or an unsafe cast can pass an invalid key and receive `undefined`; enumwaii deliberately does not add a proxy or lookup guard because those mechanisms increase integration friction and cannot recover true string provenance anyway.
 

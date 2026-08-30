@@ -20,6 +20,17 @@ describe("operations table", () => {
     expect(markup).toContain("Search operations queue");
     expect(markup).toContain("Search ID, account, owner, or note");
     expect(markup).toContain("Sort by ID");
+    for (const label of [
+      "ID",
+      "Work item",
+      "Account",
+      "Status",
+      "Owner",
+      "Window",
+      "Signal note",
+    ]) {
+      expect(markup).toContain(`data-label="${label}"`);
+    }
     expect(markup).toContain("Queued");
     expect(markup).toContain('style="background-color:#e7f1eb;color:#416c5a"');
     expect(markup).toContain("Active");

@@ -30,9 +30,9 @@ function validateStandardSchema<TRaw extends string, TIdentity extends string>(
  * Validation is deliberately strict: it delegates only to `is`, returning a
  * value for a member or protocol issues for an invalid input. Parse recovery
  * options such as defaults and fallbacks are not part of Standard Schema
- * validation. Building an issue uses the same JSON-based diagnostic as
- * `Enumwaii.parse`, so values such as `bigint` or circular structures can
- * propagate a `JSON.stringify` error instead of returning protocol issues.
+ * validation. Building an issue uses the same non-throwing diagnostic as
+ * `Enumwaii.parse`, including for values such as `bigint`, circular
+ * structures, and hostile proxies.
  *
  * @param enumeration Membership implementation to bind as the validator's
  * receiver.

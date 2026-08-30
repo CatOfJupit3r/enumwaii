@@ -14,6 +14,7 @@ import {
   useTable,
   type SortingState,
 } from "@tanstack/react-table";
+import { em } from "enumwaii";
 
 import { statusMetadata, type OperationTask } from "../lib/operations";
 
@@ -23,9 +24,28 @@ const operationTableFeatures = tableFeatures({
   rowSortingFeature,
   filteredRowModel: createFilteredRowModel(),
   sortedRowModel: createSortedRowModel(),
-  filterFns: { includesString: filterFn_includesString },
-  sortFns: { alphanumeric: sortFn_alphanumeric },
 });
+
+const operationColumns = em([
+  "ID",
+  "TITLE",
+  "ACCOUNT",
+  "STATUS",
+  "OWNER",
+  "WINDOW",
+  "NOTE",
+]);
+const OPERATION_COLUMN = operationColumns.enum;
+
+const operationColumnLabels = operationColumns.derive<string>()(
+  [OPERATION_COLUMN.ID, "ID"],
+  [OPERATION_COLUMN.TITLE, "Work item"],
+  [OPERATION_COLUMN.ACCOUNT, "Account"],
+  [OPERATION_COLUMN.STATUS, "Status"],
+  [OPERATION_COLUMN.OWNER, "Owner"],
+  [OPERATION_COLUMN.WINDOW, "Window"],
+  [OPERATION_COLUMN.NOTE, "Signal note"],
+);
 
 const operationColumnHelper = createColumnHelper<
   typeof operationTableFeatures,
@@ -34,20 +54,24 @@ const operationColumnHelper = createColumnHelper<
 
 const operationTableColumns = operationColumnHelper.columns([
   operationColumnHelper.accessor("id", {
-    header: "ID",
-    sortFn: "alphanumeric",
+    id: OPERATION_COLUMN.ID,
+    header: operationColumnLabels.get(OPERATION_COLUMN.ID),
+    sortFn: sortFn_alphanumeric,
   }),
   operationColumnHelper.accessor("title", {
-    header: "Work item",
-    sortFn: "alphanumeric",
+    id: OPERATION_COLUMN.TITLE,
+    header: operationColumnLabels.get(OPERATION_COLUMN.TITLE),
+    sortFn: sortFn_alphanumeric,
   }),
   operationColumnHelper.accessor("account", {
-    header: "Account",
-    sortFn: "alphanumeric",
+    id: OPERATION_COLUMN.ACCOUNT,
+    header: operationColumnLabels.get(OPERATION_COLUMN.ACCOUNT),
+    sortFn: sortFn_alphanumeric,
   }),
   operationColumnHelper.accessor("status", {
-    header: "Status",
-    sortFn: "alphanumeric",
+    id: OPERATION_COLUMN.STATUS,
+    header: operationColumnLabels.get(OPERATION_COLUMN.STATUS),
+    sortFn: sortFn_alphanumeric,
     cell: ({ getValue }) => {
       const metadata = statusMetadata(getValue());
 
@@ -62,35 +86,31 @@ const operationTableColumns = operationColumnHelper.columns([
     },
   }),
   operationColumnHelper.accessor("owner", {
-    header: "Owner",
-    sortFn: "alphanumeric",
+    id: OPERATION_COLUMN.OWNER,
+    header: operationColumnLabels.get(OPERATION_COLUMN.OWNER),
+    sortFn: sortFn_alphanumeric,
   }),
   operationColumnHelper.accessor("window", {
-    header: "Window",
-    sortFn: "alphanumeric",
+    id: OPERATION_COLUMN.WINDOW,
+    header: operationColumnLabels.get(OPERATION_COLUMN.WINDOW),
+    sortFn: sortFn_alphanumeric,
   }),
   operationColumnHelper.accessor("note", {
-    header: "Signal note",
+    id: OPERATION_COLUMN.NOTE,
+    header: operationColumnLabels.get(OPERATION_COLUMN.NOTE),
     enableSorting: false,
   }),
 ]);
-
-const operationColumnLabels: Readonly<Record<string, string>> = {
-  account: "Account",
-  id: "ID",
-  note: "Signal note",
-  owner: "Owner",
-  status: "Status",
-  title: "Work item",
-  window: "Window",
-};
 
 interface OperationsTableProps {
   readonly tasks: readonly OperationTask[];
 }
 
 function columnHeaderLabel(columnId: string): string {
-  return operationColumnLabels[columnId] ?? columnId;
+  const parsedColumn = operationColumns.safeParse(columnId);
+  return parsedColumn.success
+    ? operationColumnLabels.get(parsedColumn.value)
+    : columnId;
 }
 
 function sortAnnouncement(
@@ -116,7 +136,7 @@ export function OperationsTable({ tasks }: OperationsTableProps) {
       features: operationTableFeatures,
       columns: operationTableColumns,
       data: tasks,
-      globalFilterFn: "includesString",
+      globalFilterFn: filterFn_includesString,
       state: { globalFilter, sorting },
       onGlobalFilterChange: setGlobalFilter,
       onSortingChange: setSorting,

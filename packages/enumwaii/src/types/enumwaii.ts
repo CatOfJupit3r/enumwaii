@@ -257,10 +257,10 @@ export interface EnumwaiiParseOptions<TValue extends string> {
  * Discriminated result returned by `Enumwaii.safeParse`.
  *
  * Check `success` before reading `value` or `error`; TypeScript then narrows to
- * the corresponding branch. A JSON-stringifiable failure is an
- * {@link EnumwaiiParseError}, while recovery options turn an otherwise-invalid
- * input into a success. Creating the diagnostic can itself throw when
- * `JSON.stringify` rejects the input, such as a `bigint` or circular object.
+ * the corresponding branch. A failure is an {@link EnumwaiiParseError}, while
+ * recovery options turn an otherwise-invalid input into a success. Diagnostic
+ * construction is safe for arbitrary inputs, including `bigint`, circular
+ * objects, and proxies that reject inspection.
  *
  * @example
  * ```ts
@@ -318,6 +318,54 @@ export interface EnumwaiiDerived<
   readonly get: (value: EnumwaiiValue<TRaw, TIdentity>) => TValue;
   /** Shallowly frozen raw-keyed lookup for integrations and object-shaped consumers. */
   readonly record: Readonly<Record<TRaw, TValue>>;
+}
+
+/**
+ * Contextually typed entry builder returned by `Enumwaii.derive<TValue>()`.
+ *
+ * Use this builder when every derived output should conform to an existing
+ * application type. Each tuple's output is checked against `TValue` without a
+ * repeated `satisfies` expression, while exact source-member inference keeps
+ * the usual missing-member and duplicate-member validation.
+ *
+ * @example
+ * ```ts
+ * interface RoleMetadata { readonly label: string; readonly rank: number }
+ * const metadata = roles.derive<RoleMetadata>()(
+ *   [ROLE.ADMIN, { label: "Administrator", rank: 2 }],
+ *   [ROLE.USER, { label: "Member", rank: 1 }],
+ * );
+ * ```
+ *
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/derivation.md#contextually-typed-entries
+ */
+export interface EnumwaiiDeriveBuilder<
+  TRaw extends string,
+  TIdentity extends string,
+  TValue,
+> {
+  /**
+   * Builds an exhaustive lookup from contextually typed member/output tuples.
+   *
+   * @param entries One typed tuple for every source member, in any order.
+   * @returns A derived lookup whose `get` result is `TValue`.
+   */
+  <
+    const TKeys extends readonly [
+      EnumwaiiValue<TRaw, TIdentity>,
+      ...EnumwaiiValue<TRaw, TIdentity>[],
+    ],
+  >(
+    ...entries: {
+      readonly [TIndex in keyof TKeys]: readonly [TKeys[TIndex], TValue];
+    } & EnumwaiiValidateDeriveEntries<
+      TRaw,
+      TIdentity,
+      {
+        readonly [TIndex in keyof TKeys]: readonly [TKeys[TIndex], TValue];
+      }
+    >
+  ): EnumwaiiDerived<TRaw, TIdentity, TValue>;
 }
 
 /**

@@ -23,7 +23,7 @@ export interface OrderStatusPresentation {
   readonly terminal: boolean;
 }
 
-const statusPresentation = orderStatuses.derive(
+const statusPresentation = orderStatuses.derive<OrderStatusPresentation>()(
   [
     ORDER_STATUS.PENDING,
     {
@@ -31,7 +31,7 @@ const statusPresentation = orderStatuses.derive(
       description: "Awaiting payment confirmation",
       tone: "amber",
       terminal: false,
-    } satisfies OrderStatusPresentation,
+    },
   ],
   [
     ORDER_STATUS.PAID,
@@ -40,7 +40,7 @@ const statusPresentation = orderStatuses.derive(
       description: "Cleared for warehouse dispatch",
       tone: "blue",
       terminal: false,
-    } satisfies OrderStatusPresentation,
+    },
   ],
   [
     ORDER_STATUS.SHIPPED,
@@ -49,7 +49,7 @@ const statusPresentation = orderStatuses.derive(
       description: "Handed to the delivery partner",
       tone: "green",
       terminal: true,
-    } satisfies OrderStatusPresentation,
+    },
   ],
   [
     ORDER_STATUS.CANCELLED,
@@ -58,7 +58,7 @@ const statusPresentation = orderStatuses.derive(
       description: "Closed without fulfillment",
       tone: "slate",
       terminal: true,
-    } satisfies OrderStatusPresentation,
+    },
   ],
 );
 

@@ -1,5 +1,12 @@
 node_modules
+.pnpm-store
 dist
 coverage
+.next
+.output
+.tanstack
+.vite
+*.tsbuildinfo
+examples/**/.data
 *.tgz
 .DS_Store

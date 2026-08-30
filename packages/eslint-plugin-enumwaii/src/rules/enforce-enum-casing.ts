@@ -7,6 +7,40 @@ const createRule = ESLintUtils.RuleCreator(
 
 const INTERNAL_MEMBER_PATTERN = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/u;
 
+/**
+ * Require `CONSTANT_CASE` string members in direct enumwaii declarations.
+ *
+ * This syntax-only rule checks the first array argument of a direct `em([...])`
+ * call or `new Enumwaii([...])` expression. It does not need TypeScript parser
+ * services, so it can run in a parser-only or syntax-only configuration. The
+ * convention keeps internal member names predictable while leaving the runtime
+ * API free to represent external wire formats. Disable this rule locally for a
+ * deliberate lowercase, kebab-case, or otherwise fixed external name.
+ *
+ * The rule has no options and currently provides no autofix. It reports the
+ * `invalidInternalMember` message ID for each string literal that is not
+ * `CONSTANT_CASE`; non-literal elements and declarations whose first argument
+ * is not an array are outside this rule's scope.
+ *
+ * @example Incorrect: the declaration contains an internal member that is not
+ * `CONSTANT_CASE`.
+ * ```ts
+ * import { em } from "enumwaii";
+ * const status = em(["READY", "in-progress"]);
+ * ```
+ *
+ * @example Correct: internal names use `CONSTANT_CASE`; an intentional wire
+ * name can opt out at its declaration site.
+ * ```ts
+ * import { em } from "enumwaii";
+ * const status = em(["READY", "IN_PROGRESS"]);
+ * // eslint-disable-next-line enumwaii/enforce-enum-casing -- external wire value
+ * const wireStatus = em(["in-progress"]);
+ * ```
+ *
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/linting.md
+ * @see https://eslint.org/docs/latest/extend/custom-rules
+ */
 export const enforceEnumCasingRule = createRule({
   name: "enforce-enum-casing",
   meta: {

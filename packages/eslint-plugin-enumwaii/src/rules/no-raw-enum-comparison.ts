@@ -99,6 +99,69 @@ function getStaticPropertyName(
   return undefined;
 }
 
+/**
+ * Require owned enumwaii members instead of raw strings in comparisons and
+ * cases-backed discriminated unions.
+ *
+ * This type-aware rule requires TypeScript parser services. It reports raw
+ * string or no-expression template literals when they are compared with a
+ * branded enumwaii value, used as a `switch` case for an enumwaii value, or
+ * supplied as a discriminant value in a cases-backed union (including an
+ * assignment to such a discriminant). Use the owning `.enum` member for
+ * application values and the extracted `.cases` member for native union
+ * discriminants. Unrelated strings and ordinary unions without enumwaii
+ * provenance are not reported.
+ *
+ * The rule has no options and currently provides no autofix. Its message IDs
+ * are `rawComparison`, `rawSwitchCase`, and `rawCaseValue`. A raw literal at a
+ * deliberate external boundary can be retained with a local disable, but raw
+ * literals should not replace owned members in enumwaii comparisons or union
+ * construction.
+ *
+ * @example Incorrect: a raw string is used for an enum comparison, a switch
+ * case, and a cases-backed union discriminant.
+ * ```ts
+ * import { em } from "enumwaii";
+ * const roles = em(["ADMIN", "USER"]);
+ * const ROLE_CASES = roles.cases;
+ * const role = roles.parse("ADMIN");
+ * const badComparison = role === "ADMIN";
+ * function describe(value: typeof role) {
+ *   switch (value) {
+ *     case "USER":
+ *       return "member";
+ *     default:
+ *       return "administrator";
+ *   }
+ * }
+ * type Event = { type: typeof ROLE_CASES.ADMIN };
+ * const badEvent: Event = { type: "ADMIN" };
+ * ```
+ *
+ * @example Correct: use extracted owned views for each surface.
+ * ```ts
+ * import { em } from "enumwaii";
+ * const roles = em(["ADMIN", "USER"]);
+ * const ROLE = roles.enum;
+ * const ROLE_CASES = roles.cases;
+ * const role = roles.parse("ADMIN");
+ * const goodComparison = role === ROLE.ADMIN;
+ * function describe(value: typeof role) {
+ *   switch (value) {
+ *     case ROLE.USER:
+ *       return "member";
+ *     default:
+ *       return "administrator";
+ *   }
+ * }
+ * type Event = { type: typeof ROLE_CASES.ADMIN };
+ * const goodEvent: Event = { type: ROLE_CASES.ADMIN };
+ * ```
+ *
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/linting.md
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/member-surfaces.md
+ * @see https://eslint.org/docs/latest/extend/custom-rules
+ */
 export const noRawEnumComparisonRule = createRule({
   name: "no-raw-enum-comparison",
   meta: {

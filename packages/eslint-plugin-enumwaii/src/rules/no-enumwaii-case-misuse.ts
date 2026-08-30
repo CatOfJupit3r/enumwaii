@@ -105,6 +105,56 @@ function isTypeIdentifierUsage(node: TSESTree.Identifier): boolean {
   }
 }
 
+/**
+ * Keep raw `.cases` members confined to discriminated-union authoring and
+ * narrowing.
+ *
+ * This type-aware rule requires TypeScript parser services. It permits cases
+ * in discriminant declarations and values, `z.literal(...)` declarations,
+ * equality comparisons, and `switch`/`if` narrowing. Extract a cases object
+ * once into the exported-container naming pattern: an uppercase binding whose
+ * name ends in `_CASES` (for example `ROLE_CASES`). The rule validates that
+ * naming pattern on the extraction; the export keyword itself is not inspected,
+ * so exporting the binding is the intended way to make the discriminants a
+ * shared public surface.
+ *
+ * Directly exposing the cases object, accessing a case with a computed raw key,
+ * or using a case member as a general application value is reported. Use the
+ * branded `.enum` member for ordinary values. The rule has no options and
+ * currently provides no autofix. Its message IDs are `caseObjectEscape`,
+ * `computedCaseMember`, and `caseValueEscape`. A narrowly justified boundary
+ * use may be locally disabled, but `.cases` should remain limited to native
+ * discriminated-union flows.
+ *
+ * @example Incorrect: the cases object is aliased incorrectly, a case uses a
+ * computed key, and a raw case is leaked as an ordinary value.
+ * ```ts
+ * import { em } from "enumwaii";
+ * const roles = em(["ADMIN", "USER"]);
+ * const ROLE_CASES = roles.cases;
+ * export const BAD_ALIAS = roles.cases;
+ * export const computed = ROLE_CASES["ADMIN"];
+ * export const leaked = ROLE_CASES.USER;
+ * ```
+ *
+ * @example Correct: the named cases container supplies a union discriminant
+ * and native control-flow narrowing, while ordinary values use `.enum`.
+ * ```ts
+ * import { em } from "enumwaii";
+ * const roles = em(["ADMIN", "USER"]);
+ * export const ROLE_CASES = roles.cases;
+ * const ROLE = roles.enum;
+ * type Event =
+ *   | { type: typeof ROLE_CASES.ADMIN; role: typeof ROLE.ADMIN }
+ *   | { type: typeof ROLE_CASES.USER; role: typeof ROLE.USER };
+ * declare const event: Event;
+ * if (event.type === ROLE_CASES.ADMIN) event.role;
+ * ```
+ *
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/linting.md
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/member-surfaces.md
+ * @see https://eslint.org/docs/latest/extend/custom-rules
+ */
 export const noEnumwaiiCaseMisuseRule = createRule({
   name: "no-enumwaii-case-misuse",
   meta: {

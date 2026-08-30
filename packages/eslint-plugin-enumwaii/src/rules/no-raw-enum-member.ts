@@ -24,6 +24,64 @@ function doesTypeCarryMarker(type: Type, markerName: string): boolean {
     .some((property) => String(property.escapedName).includes(markerName));
 }
 
+/**
+ * Require owned members and composition APIs for enumwaii subsets and maps.
+ *
+ * This type-aware rule requires TypeScript parser services. It rejects raw
+ * strings passed to `pick` or `omit`, raw target values in `deriveTo`, and
+ * reconstruction of an enumwaii declaration from another declaration's owned
+ * members or branded values. Use branded members from the owning extracted
+ * `.enum` view (including the target `.enum` view for `deriveTo`), and use
+ * enumwaii's `combine`, `pick`, `omit`, `extend`, or `deriveTo` APIs to preserve
+ * declaration provenance. The raw `.cases` view is reserved for discriminants,
+ * not these APIs. Ordinary `derive` maps remain available for their intended
+ * value transformation.
+ *
+ * The rule has no options and currently provides no autofix. Its message IDs
+ * are `rawSubsetMember`, `rawTargetMember`, `derivedConstructorMember`, and
+ * `derivedConstructorValues`. A raw external value that is intentionally
+ * required by an integration can be locally disabled, but raw members should
+ * not be used to bypass enum ownership in these APIs.
+ *
+ * @example Incorrect: raw members are used for a subset, a targeted mapping,
+ * and a reconstructed declaration.
+ * ```ts
+ * import { em } from "enumwaii";
+ * const roles = em(["ADMIN", "USER"]);
+ * const ROLE = roles.enum;
+ * const permissions = em(["READ", "WRITE"]);
+ * const PERMISSION = permissions.enum;
+ * roles.pick(["ADMIN"]);
+ * roles.deriveTo(
+ *   permissions,
+ *   [ROLE.ADMIN, ["READ", PERMISSION.WRITE]],
+ *   [ROLE.USER, PERMISSION.READ],
+ * );
+ * em([ROLE.ADMIN]);
+ * em(roles.rawValues);
+ * ```
+ *
+ * @example Correct: reference owned members and use composition methods.
+ * ```ts
+ * import { em } from "enumwaii";
+ * const roles = em(["ADMIN", "USER"]);
+ * const ROLE = roles.enum;
+ * const permissions = em(["READ", "WRITE"]);
+ * const PERMISSION = permissions.enum;
+ * roles.pick([ROLE.ADMIN]);
+ * roles.omit([ROLE.USER]);
+ * roles.deriveTo(
+ *   permissions,
+ *   [ROLE.ADMIN, [PERMISSION.READ, PERMISSION.WRITE]],
+ *   [ROLE.USER, PERMISSION.READ],
+ * );
+ * const combined = em.combine([roles, permissions]);
+ * ```
+ *
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/linting.md
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/member-surfaces.md
+ * @see https://eslint.org/docs/latest/extend/custom-rules
+ */
 export const noRawEnumMemberRule = createRule({
   name: "no-raw-enum-member",
   meta: {

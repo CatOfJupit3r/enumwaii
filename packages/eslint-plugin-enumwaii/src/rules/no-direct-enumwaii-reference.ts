@@ -48,6 +48,45 @@ function isExtractedMemberView(node: TSESTree.MemberExpression): boolean {
   );
 }
 
+/**
+ * Require extracting an enumwaii member view before referencing its members.
+ *
+ * This type-aware rule uses TypeScript parser services to identify enumwaii
+ * instances and reports direct access to `.enum`, `.rawEnum`, or `.cases`.
+ * Extract one of those views into a variable first, then reference members
+ * through that stable constant; a TypeScript `as`, `satisfies`, or non-null
+ * wrapper around the extraction is also recognized. The rule does not block
+ * ordinary instance APIs such as `parse`, `safeParse`, `is`, `derive`, or
+ * `values`, and it does not make direct access a runtime restriction.
+ *
+ * The rule requires parser services (use the type-checked preset), has no
+ * options, and currently provides no autofix. It reports the
+ * `directMemberView` message ID. A deliberately direct integration or one-off
+ * use can be retained with a local disable; normal application code should
+ * extract the view once as described in {@link https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/member-surfaces.md
+ * member-surfaces.md}.
+ *
+ * @example Incorrect: members are referenced through the enumwaii instance.
+ * ```ts
+ * import { em } from "enumwaii";
+ * const roles = em(["ADMIN", "USER"]);
+ * const admin = roles.enum.ADMIN;
+ * ```
+ *
+ * @example Correct: extract each view before using its members; other instance
+ * APIs remain available directly.
+ * ```ts
+ * import { em } from "enumwaii";
+ * const roles = em(["ADMIN", "USER"]);
+ * const ROLE = roles.enum;
+ * const admin = ROLE.ADMIN;
+ * const parsed = roles.parse("ADMIN");
+ * ```
+ *
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/linting.md
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/member-surfaces.md
+ * @see https://eslint.org/docs/latest/extend/custom-rules
+ */
 export const noDirectEnumwaiiReferenceRule = createRule({
   name: "no-direct-enumwaii-reference",
   meta: {

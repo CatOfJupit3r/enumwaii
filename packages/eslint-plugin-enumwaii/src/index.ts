@@ -7,47 +7,147 @@ import { noRawEnumComparisonRule } from "./rules/no-raw-enum-comparison";
 import { noRawEnumMemberRule } from "./rules/no-raw-enum-member";
 import { noUnionPropertyInRule } from "./rules/no-union-property-in";
 
+/**
+ * Rule implementations published by `eslint-plugin-enumwaii`, keyed by the
+ * names used after the `enumwaii/` configuration prefix.
+ *
+ * `enforce-enum-casing` is syntax-only and can run without TypeScript parser
+ * services. The other five rules inspect type and declaration provenance and
+ * therefore require a type-aware `typescript-eslint` parser configuration.
+ * Configure these implementations directly when composing a custom legacy or
+ * flat config, or use one of the presets exposed by {@link plugin}.
+ *
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/linting.md
+ * @see https://eslint.org/docs/latest/extend/custom-rules
+ */
 export const rules = {
+  /** Syntax-only rule requiring CONSTANT_CASE declaration members. */
   "enforce-enum-casing": enforceEnumCasingRule,
+  /** Type-aware rule requiring extracted `.enum`, `.rawEnum`, or `.cases` views. */
   "no-direct-enumwaii-reference": noDirectEnumwaiiReferenceRule,
+  /** Type-aware rule limiting raw `.cases` use to discriminated-union flows. */
   "no-enumwaii-case-misuse": noEnumwaiiCaseMisuseRule,
+  /** Type-aware rule replacing raw comparison and discriminant literals with owned members. */
   "no-raw-enum-comparison": noRawEnumComparisonRule,
+  /** Type-aware rule requiring owned members and composition APIs for derived declarations. */
   "no-raw-enum-member": noRawEnumMemberRule,
+  /** Type-aware rule steering object-union narrowing toward enumwaii cases discriminants. */
   "no-union-property-in": noUnionPropertyInRule,
 } as const;
 
+/** Legacy-compatible rule map for the syntax-only recommended configuration. */
 const syntaxRules = {
+  /** Enable the parser-independent CONSTANT_CASE convention. */
   "enumwaii/enforce-enum-casing": "error",
 } as const;
 
+/** Legacy-compatible rule map containing every recommended type-aware rule. */
 const typeCheckedRules = {
+  /** Enable the parser-independent CONSTANT_CASE convention in this preset too. */
   ...syntaxRules,
+  /** Require extracted member views before member references. */
   "enumwaii/no-direct-enumwaii-reference": "error",
+  /** Keep raw cases limited to discriminated-union declarations and narrowing. */
   "enumwaii/no-enumwaii-case-misuse": "error",
+  /** Replace raw enum and case literals in comparisons and union values. */
   "enumwaii/no-raw-enum-comparison": "error",
+  /** Require owned members and composition APIs for subset and derivation operations. */
   "enumwaii/no-raw-enum-member": "error",
+  /** Prefer enumwaii cases discriminants over structural `in` narrowing. */
   "enumwaii/no-union-property-in": "error",
 } as const;
 
+/**
+ * Public type of the enumwaii ESLint plugin.
+ *
+ * The plugin exposes the {@link rules} registry and four presets. The
+ * `recommended` and `recommended-type-checked` entries use ESLint's legacy
+ * `plugins`/`rules` shape. The `flat/recommended` and
+ * `flat/recommended-type-checked` entries are arrays for ESLint flat config;
+ * the latter two still differ by whether TypeScript parser services are
+ * available in the consumer's surrounding configuration.
+ *
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/linting.md
+ * @see https://eslint.org/docs/latest/use/configure/configuration-files
+ */
 export interface EnumwaiiPlugin extends Omit<ESLint.Plugin, "rules"> {
+  /** Rule implementations keyed by their `enumwaii/<name>` configuration names. */
   rules: typeof rules;
+  /** Legacy and flat preset configurations supplied by the plugin. */
   configs: {
+    /** Legacy preset that enables only the syntax-only casing rule. */
     recommended: ESLint.ConfigData;
+    /** Legacy preset that enables casing plus all parser-service rules. */
     "recommended-type-checked": ESLint.ConfigData;
+    /** Flat-config array for the syntax-only recommended rules. */
     "flat/recommended": Linter.Config[];
+    /** Flat-config array for the complete type-aware recommended rules. */
     "flat/recommended-type-checked": Linter.Config[];
   };
 }
 
+/**
+ * The default `eslint-plugin-enumwaii` plugin instance.
+ *
+ * Register this value under the `enumwaii` plugin key. Legacy ESLint users can
+ * programmatically spread `plugin.configs.recommended` or
+ * `plugin.configs["recommended-type-checked"]` into a legacy configuration
+ * object; flat-config users can spread the corresponding `flat/...` array. The
+ * syntax-only presets need no TypeScript project, while the type-checked
+ * presets require `typescript-eslint` parser services and a project-aware
+ * parser setup.
+ *
+ * @example Programmatically composed legacy configuration value for syntax-only checks.
+ * ```js
+ * import enumwaii from "eslint-plugin-enumwaii";
+ * const legacyConfig = { ...enumwaii.configs.recommended };
+ * ```
+ *
+ * @example ESLint flat configuration for type-aware checks.
+ * ```js
+ * import enumwaii from "eslint-plugin-enumwaii";
+ * import tsParser from "@typescript-eslint/parser";
+ * const [typeCheckedPreset] =
+ *   enumwaii.configs["flat/recommended-type-checked"];
+ * export default [
+ *   {
+ *     ...typeCheckedPreset,
+ *     files: ["**" + "/*.ts", "**" + "/*.tsx"],
+ *     languageOptions: {
+ *       parser: tsParser,
+ *       parserOptions: { projectService: true },
+ *     },
+ *   },
+ * ];
+ * ```
+ *
+ * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/linting.md
+ * @see https://eslint.org/docs/latest/use/configure/configuration-files
+ */
 const plugin = {
-  meta: { name: "eslint-plugin-enumwaii" },
+  /** Package metadata used by ESLint when identifying the plugin. */
+  meta: {
+    /** Canonical package name shown in ESLint diagnostics and tooling. */
+    name: "eslint-plugin-enumwaii",
+  },
+  /** Public rule registry exposed to legacy and flat ESLint configurations. */
   rules,
+  /** Legacy and flat recommended configurations. */
   configs: {
+    /**
+     * Legacy preset for the parser-independent CONSTANT_CASE convention.
+     * Type-aware parser services are not required by this configuration.
+     */
     recommended: { plugins: ["enumwaii"], rules: syntaxRules },
+    /**
+     * Legacy preset for all rules. Configure TypeScript parser services and a
+     * project-aware parser before enabling this type-checked variant.
+     */
     "recommended-type-checked": {
       plugins: ["enumwaii"],
       rules: typeCheckedRules,
     },
+    /** Flat-config preset for the parser-independent casing rule. */
     "flat/recommended": [
       {
         name: "enumwaii/recommended",
@@ -55,6 +155,7 @@ const plugin = {
         rules: syntaxRules,
       },
     ],
+    /** Flat-config preset for casing plus all parser-service rules. */
     "flat/recommended-type-checked": [
       {
         name: "enumwaii/recommended-type-checked",

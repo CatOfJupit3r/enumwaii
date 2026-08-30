@@ -164,6 +164,13 @@ Oxlint can load the same package as a JavaScript plugin. Its JS plugin support i
 
 See [Linting boundaries](docs/linting.md) for what lint can enforce, what branding enforces, and why neither replaces the other.
 
+## Examples
+
+The [runnable examples](examples/README.md) include presentable Next.js,
+TanStack Start + Solid, Vue, Hono + Drizzle/PGlite, Elysia, oRPC, Effect, and
+NestJS + Mongoose applications. Each is an independent workspace package with
+its own commands, tests, type contracts, and documented edge cases.
+
 ## Packages
 
 - `enumwaii`: small runtime, official Standard Schema types, and optional Zod and Valibot adapters.

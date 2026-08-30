@@ -1,13 +1,12 @@
-import { sValidator } from "@hono/standard-validator";
 import { Hono } from "hono";
 
 import type { OrderRepository } from "../db/order-repository";
 import {
   describeOrderStatus,
-  ORDER_STATUS,
   orderStatusSchema,
   type OrderStatus,
 } from "../domain/order-status";
+import { createStatusRoutes } from "./status";
 
 export class RequestInputError extends Error {
   public constructor(
@@ -122,47 +121,7 @@ export function createApiRoutes(repository: OrderRepository): Hono {
     return c.json({ order: presentOrder(order) });
   });
 
-  api.post(
-    "/status/inspect",
-    sValidator("json", orderStatusSchema, (result, c) => {
-      if (!result.success) {
-        return c.json(
-          {
-            error: "Invalid order status",
-            issues: result.error,
-          },
-          400,
-        );
-      }
-    }),
-    (c) => {
-      const status = c.req.valid("json");
-      return c.json({ status, ...describeOrderStatus(status) });
-    },
-  );
-
-  api.get("/status", (c) => {
-    const input = c.req.query("status");
-    const result = orderStatusSchema.safeParse(input, {
-      default: ORDER_STATUS.PENDING,
-    });
-    if (!result.success) {
-      return c.json(
-        {
-          error: "Invalid order status",
-          field: "status",
-          issues: [{ message: result.error.message }],
-        },
-        400,
-      );
-    }
-
-    return c.json({
-      status: result.value,
-      ...describeOrderStatus(result.value),
-      defaulted: input === undefined,
-    });
-  });
+  api.route("/", createStatusRoutes());
 
   return api;
 }

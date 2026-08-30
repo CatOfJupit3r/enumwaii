@@ -1,5 +1,3 @@
-import { randomUUID } from "node:crypto";
-
 import { and, desc, eq, sql } from "drizzle-orm";
 
 import {
@@ -121,7 +119,7 @@ export function hydrateOrder(input: unknown): Order {
 
 function prepareOrderInsert(input: NewOrder): OrderInsert {
   const insert: OrderInsert = {
-    id: input.id ?? randomUUID(),
+    id: input.id ?? globalThis.crypto.randomUUID(),
     memo: input.memo ?? null,
   };
   if (input.status !== undefined) {

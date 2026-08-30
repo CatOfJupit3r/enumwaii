@@ -93,8 +93,10 @@ before adopting a raw escape hatch.
 
 ## Compatibility
 
-Node.js 18 or newer. ESM and CommonJS entry points, declarations, and source
-maps are included. See [releases and compatibility](https://catofjupit3r.github.io/enumwaii/docs/release-and-compatibility/).
+Node.js 18 or newer is the npm engine. ESM and CommonJS entry points,
+declarations, and source maps are included. The ESM entry is also tested under
+Bun 1.4, Deno 2.9, and Cloudflare Workers without Node compatibility flags. See
+[releases and compatibility](https://catofjupit3r.github.io/enumwaii/docs/release-and-compatibility/).
 
 ## License
 

@@ -1,14 +1,17 @@
 node_modules
 .pnpm-store
 dist
+dist-cloudflare
 coverage
 .next
 .output
 .source
 .tanstack
 .vite
+.wrangler
 *.tsbuildinfo
 examples/**/.data
+examples/hono/worker-configuration.d.ts
 docs/api/enumwaii
 docs/api/eslint-plugin-enumwaii
 docs/out

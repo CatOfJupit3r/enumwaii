@@ -17,6 +17,10 @@ export type OrderDatabaseHandle = {
   close(): Promise<void>;
 };
 
+export type OpenOrderDatabaseOptions = {
+  readonly migrationsFolder?: string;
+};
+
 async function prepareDataDirectory(dataDir: string): Promise<string> {
   if (dataDir.includes("://")) return dataDir;
 
@@ -27,13 +31,12 @@ async function prepareDataDirectory(dataDir: string): Promise<string> {
 
 export async function openOrderDatabase(
   dataDir: string,
+  options: OpenOrderDatabaseOptions = {},
 ): Promise<OrderDatabaseHandle> {
   const client = await PGlite.create(await prepareDataDirectory(dataDir));
   const db = drizzle(client, { schema });
   await migrate(db, {
-    migrationsFolder: resolve(
-      process.env.DRIZZLE_MIGRATIONS_DIR ?? "./drizzle",
-    ),
+    migrationsFolder: resolve(options.migrationsFolder ?? "./drizzle"),
   });
 
   return {

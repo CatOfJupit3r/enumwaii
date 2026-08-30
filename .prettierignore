@@ -1,6 +1,8 @@
 dist
+dist-cloudflare
 node_modules
 pnpm-lock.yaml
 examples/tanstack-start-solid/src/routeTree.gen.ts
+examples/hono/worker-configuration.d.ts
 docs/api/enumwaii
 docs/api/eslint-plugin-enumwaii

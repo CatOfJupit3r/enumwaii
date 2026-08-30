@@ -1,0 +1,44 @@
+name: Runtime compatibility
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  runtime:
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runtime: bun
+            label: Bun 1.4
+          - runtime: deno
+            label: Deno 2.9
+          - runtime: cloudflare
+            label: Cloudflare workerd
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.18.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - if: matrix.runtime == 'bun'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - if: matrix.runtime == 'deno'
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.6
+          cache: true
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @enumwaii/example-hono-drizzle run test:${{ matrix.runtime }}

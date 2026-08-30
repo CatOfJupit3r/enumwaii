@@ -5,16 +5,16 @@ has its own package manifest, commands, tests, type contracts, and a focused
 README. Run one application at a time from the repository root after
 `pnpm install`.
 
-| Example                                          | What it shows                                                                                                                                                 | Run it                                                     |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [Next.js](./nextjs)                              | App Router, Server Components, Server Actions, Route Handlers, TanStack Table v9, React reducer cases, nil defaults, and explicit fallbacks                   | `pnpm --filter @enumwaii/example-nextjs dev`               |
-| [TanStack Start + Solid](./tanstack-start-solid) | SSR loaders, typed search, TanStack Form, server functions, Standard Schema, Zod object input, mutations, and an honest branded-value RPC bridge              | `pnpm --filter @enumwaii/example-tanstack-start-solid dev` |
-| [Vue](./vue)                                     | Composition API state, a native validated form, typed props/events, URL and localStorage hydration, `deriveTo`, and an interactive policy lab                 | `pnpm --filter @enumwaii/example-vue dev`                  |
-| [Hono + Drizzle + PGlite](./hono)                | A persistent order console, direct Standard Schema middleware, PostgreSQL enum metadata/defaults, strict row hydration, transitions, and optimistic conflicts | `pnpm --filter @enumwaii/example-hono-drizzle dev`         |
-| [Elysia](./elysia)                               | Native request/response validation, scalar versus object boundaries, lifecycle errors, content-type behavior, and a live HTTP console                         | `pnpm --filter @enumwaii/example-elysia dev`               |
-| [oRPC](./orpc)                                   | Native contracts and procedures, Zod object schemas, direct enumwaii scalar input/output, context, typed errors, and real HTTP calls                          | `pnpm --filter @enumwaii/example-orpc dev`                 |
-| [Effect](./effect)                               | A runnable operator CLI with Context, Layer, Ref, tagged failures, exhaustive workflow derivation, and external input decoding                                | `pnpm --filter @enumwaii/example-effect dev`               |
-| [NestJS + Mongoose](./nestjs)                    | Decorated modules/controllers/pipes, injected models, Mongo enum/default configuration, strict document hydration, and versioned writes                       | `pnpm --filter @enumwaii/example-nestjs-mongoose dev`      |
+| Example                                          | What it shows                                                                                                                                                             | Run it                                                     |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [Next.js](./nextjs)                              | App Router, Server Components, Server Actions, Route Handlers, TanStack Table v9, React reducer cases, nil defaults, and explicit fallbacks                               | `pnpm --filter @enumwaii/example-nextjs dev`               |
+| [TanStack Start + Solid](./tanstack-start-solid) | SSR loaders, typed search, TanStack Form, server functions, Standard Schema, Zod object input, mutations, and an honest branded-value RPC bridge                          | `pnpm --filter @enumwaii/example-tanstack-start-solid dev` |
+| [Vue](./vue)                                     | Composition API state, a native validated form, typed props/events, URL and localStorage hydration, `deriveTo`, and an interactive policy lab                             | `pnpm --filter @enumwaii/example-vue dev`                  |
+| [Hono + Drizzle + PGlite](./hono)                | Persistent orders with Standard Schema, PostgreSQL enum metadata/defaults, strict hydration, transitions, and conflicts on Node/Bun/Deno; shared status routes in workerd | `pnpm --filter @enumwaii/example-hono-drizzle dev`         |
+| [Elysia](./elysia)                               | Native request/response validation, scalar versus object boundaries, lifecycle errors, content-type behavior, and a live HTTP console                                     | `pnpm --filter @enumwaii/example-elysia dev`               |
+| [oRPC](./orpc)                                   | Native contracts and procedures, Zod object schemas, direct enumwaii scalar input/output, context, typed errors, and real HTTP calls                                      | `pnpm --filter @enumwaii/example-orpc dev`                 |
+| [Effect](./effect)                               | A runnable operator CLI with Context, Layer, Ref, tagged failures, exhaustive workflow derivation, and external input decoding                                            | `pnpm --filter @enumwaii/example-effect dev`               |
+| [NestJS + Mongoose](./nestjs)                    | Decorated modules/controllers/pipes, injected models, Mongo enum/default configuration, strict document hydration, and versioned writes                                   | `pnpm --filter @enumwaii/example-nestjs-mongoose dev`      |
 
 The database examples live with the server architecture that uses them. Hono
 runs against embedded PGlite with no external service. NestJS uses MongoDB;
@@ -30,6 +30,13 @@ showing its happy path. Its local README explains which controls exercise raw
 integration values, nominal domain values, missing-input defaults, malformed
 fallbacks, strict rejection, foreign ownership, persistence hydration, or
 transport serialization.
+
+The [Hono showcase](./hono) also owns the runtime compatibility suite. Node,
+Bun, and Deno run the complete PGlite + Drizzle application. Cloudflare workerd
+runs the same database-free status routes with both Node compatibility modes
+disabled. Bun, Deno, and workerd execute one shared HTTP contract, so their
+results remain directly comparable. Run locally installed hosts with
+`pnpm test:runtimes`; CI installs and checks the pinned versions independently.
 
 ## Everyday application work
 

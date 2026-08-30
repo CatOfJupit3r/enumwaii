@@ -9,16 +9,16 @@ and a README explaining its boundary and failure cases.
 
 Run commands from a cloned repository after `pnpm install`.
 
-| Application                                                                                                | Highlights                                                                                                             | Command                                                    |
-| ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [Next.js](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/nextjs)                              | App Router, Server Components, Server Actions, route handlers, TanStack Table, reducer cases, defaults, and fallbacks. | `pnpm --filter @enumwaii/example-nextjs dev`               |
-| [TanStack Start + Solid](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/tanstack-start-solid) | SSR loaders, typed search, TanStack Form, server functions, Standard Schema, Zod objects, and RPC branding boundaries. | `pnpm --filter @enumwaii/example-tanstack-start-solid dev` |
-| [Vue](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/vue)                                     | Composition API, native forms, typed events, URL/localStorage hydration, and `deriveTo`.                               | `pnpm --filter @enumwaii/example-vue dev`                  |
-| [Hono + Drizzle + PGlite](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/hono)                | Standard Schema middleware, PostgreSQL enum metadata, row hydration, transitions, and optimistic conflicts.            | `pnpm --filter @enumwaii/example-hono-drizzle dev`         |
-| [Elysia](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/elysia)                               | Native request/response validation, scalar and object boundaries, lifecycle errors, and content-type behavior.         | `pnpm --filter @enumwaii/example-elysia dev`               |
-| [oRPC](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/orpc)                                   | Native contracts and procedures, direct scalar schemas, Zod objects, typed errors, and real HTTP calls.                | `pnpm --filter @enumwaii/example-orpc dev`                 |
-| [Effect](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/effect)                               | Context, Layer, Ref, tagged failures, exhaustive workflow derivation, and external input decoding.                     | `pnpm --filter @enumwaii/example-effect dev`               |
-| [NestJS + Mongoose](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/nestjs)                    | Modules, controllers, pipes, injected models, Mongo enum/default metadata, document hydration, and versioned writes.   | `pnpm --filter @enumwaii/example-nestjs-mongoose dev`      |
+| Application                                                                                                | Highlights                                                                                                                                                           | Command                                                    |
+| ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [Next.js](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/nextjs)                              | App Router, Server Components, Server Actions, route handlers, TanStack Table, reducer cases, defaults, and fallbacks.                                               | `pnpm --filter @enumwaii/example-nextjs dev`               |
+| [TanStack Start + Solid](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/tanstack-start-solid) | SSR loaders, typed search, TanStack Form, server functions, Standard Schema, Zod objects, and RPC branding boundaries.                                               | `pnpm --filter @enumwaii/example-tanstack-start-solid dev` |
+| [Vue](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/vue)                                     | Composition API, native forms, typed events, URL/localStorage hydration, and `deriveTo`.                                                                             | `pnpm --filter @enumwaii/example-vue dev`                  |
+| [Hono + Drizzle + PGlite](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/hono)                | Standard Schema, PostgreSQL metadata, strict hydration, transitions, and conflicts on Node/Bun/Deno; shared status boundaries in workerd without Node compatibility. | `pnpm --filter @enumwaii/example-hono-drizzle dev`         |
+| [Elysia](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/elysia)                               | Native request/response validation, scalar and object boundaries, lifecycle errors, and content-type behavior.                                                       | `pnpm --filter @enumwaii/example-elysia dev`               |
+| [oRPC](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/orpc)                                   | Native contracts and procedures, direct scalar schemas, Zod objects, typed errors, and real HTTP calls.                                                              | `pnpm --filter @enumwaii/example-orpc dev`                 |
+| [Effect](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/effect)                               | Context, Layer, Ref, tagged failures, exhaustive workflow derivation, and external input decoding.                                                                   | `pnpm --filter @enumwaii/example-effect dev`               |
+| [NestJS + Mongoose](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/nestjs)                    | Modules, controllers, pipes, injected models, Mongo enum/default metadata, document hydration, and versioned writes.                                                 | `pnpm --filter @enumwaii/example-nestjs-mongoose dev`      |
 
 ## Everyday development seams
 
@@ -27,10 +27,14 @@ Run commands from a cloned repository after `pnpm install`.
 - TanStack Table drives a searchable and sortable operations grid in Next.js.
 - Next.js, TanStack Start, and Vue all parse URL or persistence state rather
   than asserting it.
-- Hono uses Drizzle with embedded PGlite; NestJS uses Mongoose with a checked-in
-  MongoDB Compose service.
+- Hono uses Drizzle with embedded PGlite on Node, Bun, and Deno; its shared
+  database-free status routes also run in Cloudflare workerd with Node
+  compatibility disabled. NestJS uses Mongoose with a checked-in MongoDB
+  Compose service.
 - Server examples cover JSON, form data, route parameters, request/response
   schemas, error mapping, and serialized branded strings.
+- The Hono runtime suite keeps one status-boundary contract constant across
+  native Bun and Deno servers and Cloudflare workerd.
 
 Every application exposes invalid and ambiguous inputs instead of demonstrating
 only its happy path.

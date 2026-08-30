@@ -10,6 +10,7 @@ if (!Number.isInteger(port) || port < 1 || port > 65_535) {
 
 const database = await openOrderDatabase(
   process.env.PGLITE_DATA_DIR ?? "./.data/orders",
+  { migrationsFolder: process.env.DRIZZLE_MIGRATIONS_DIR },
 );
 await database.repository.seed();
 

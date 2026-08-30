@@ -1,0 +1,5 @@
+{
+  "workspace": ["./packages/enumwaii", "./examples/hono"],
+  "nodeModulesDir": "manual",
+  "lock": false
+}

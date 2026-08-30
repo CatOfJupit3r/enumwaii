@@ -39,11 +39,17 @@ pnpm format
 pnpm --filter enumwaii test
 pnpm --filter eslint-plugin-enumwaii test
 pnpm --filter enumwaii-docs dev
+pnpm test:runtimes
 ```
 
 `pnpm check` is the release gate. It checks formatting and lint, runtime and type
 tests, package skills, builds, emitted JSDoc, publint, and package type
 resolution. Run it before requesting review.
+
+`pnpm test:runtimes` is the opt-in cross-runtime gate and additionally requires
+Bun 1.4 and Deno 2.9. Cloudflare's local `workerd` binary is installed with the
+workspace dependencies. CI installs the pinned Bun and Deno versions for this
+suite, so they are not prerequisites for ordinary Node-focused work.
 
 ## Repository map
 

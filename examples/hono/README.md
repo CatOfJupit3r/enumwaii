@@ -1,16 +1,42 @@
 # Orderline: Hono + Drizzle + enumwaii
 
-This is an independently runnable Node application, not a test fixture. It uses
-Hono 4 and the official Node adapter, Hono JSX for a responsive operations
-dashboard, Drizzle for every application query, and PGlite for a real
-Postgres-compatible database that persists locally without Docker.
+This is an independently runnable application, not a test fixture. Its complete
+order console runs on Node, Bun, and Deno with the host's native Hono server,
+Hono JSX for a responsive operations dashboard, Drizzle for every application
+query, and PGlite for a real Postgres-compatible database without Docker.
 
-## Run the dashboard
+Cloudflare workerd runs the same database-free order-status routes. That keeps
+the Worker bundle focused on enumwaii, Standard Schema, and Hono's Web Standards
+surface instead of presenting an isolate-local PGlite database as durable
+Cloudflare persistence.
+
+## Runtime matrix
+
+| Host                 | Native boundary            | What runs                                                                | Development command                                           |
+| -------------------- | -------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| Node.js              | `@hono/node-server`        | Complete dashboard, API, Drizzle repository, migrations, and PGlite.     | `pnpm --filter @enumwaii/example-hono-drizzle dev`            |
+| Bun                  | `Bun.serve`                | Complete dashboard and the same Drizzle + PGlite database application.   | `pnpm --filter @enumwaii/example-hono-drizzle dev:bun`        |
+| Deno                 | `Deno.serve`               | Complete dashboard and the same Drizzle + PGlite database application.   | `pnpm --filter @enumwaii/example-hono-drizzle dev:deno`       |
+| Cloudflare `workerd` | Hono Worker default export | Shared status catalog, parsing, and Standard Schema routes without a DB. | `pnpm --filter @enumwaii/example-hono-drizzle dev:cloudflare` |
+
+The Wrangler configuration explicitly enables `no_nodejs_compat` and
+`no_nodejs_compat_v2`. The Cloudflare development server and compatibility test
+therefore prove that the portable route slice does not acquire Node polyfills
+accidentally.
+
+## Run the complete dashboard
 
 From the repository root:
 
 ```sh
+# Node.js
 pnpm --filter @enumwaii/example-hono-drizzle dev
+
+# Bun
+pnpm --filter @enumwaii/example-hono-drizzle dev:bun
+
+# Deno
+pnpm --filter @enumwaii/example-hono-drizzle dev:deno
 ```
 
 Open <http://localhost:3000>. The dashboard lists persisted orders and exposes:
@@ -22,8 +48,29 @@ Open <http://localhost:3000>. The dashboard lists persisted orders and exposes:
   query default, and malformed query;
 - live JSON responses from the same API that curl or fetch callers use.
 
-PGlite stores its files in `.data/orders` by default. Override that location
-with `PGLITE_DATA_DIR`, or set `PORT` to change the HTTP port.
+PGlite stores Node data in `.data/orders`, Bun data in `.data/orders-bun`, and
+Deno data in `.data/orders-deno` by default. Override the active host's location
+with `PGLITE_DATA_DIR`, or set `PORT` to change its HTTP port.
+
+## Run the Cloudflare boundary worker
+
+```sh
+pnpm --filter @enumwaii/example-hono-drizzle dev:cloudflare
+```
+
+Wrangler serves the Worker locally, normally at <http://localhost:8787>. It does
+not require a Cloudflare account. The Worker exposes `GET /api/statuses`,
+`GET /api/status`, and `POST /api/status/inspect`, which are the exact routes
+mounted by the complete database application.
+
+PGlite's `worker` entry point is a client for running Postgres in a browser Web
+Worker; it is not a Cloudflare Worker deployment target. PGlite's documented
+[filesystems](https://pglite.dev/docs/filesystems) also do not provide durable
+Cloudflare storage, while a Worker isolate has a
+[128 MB memory limit](https://developers.cloudflare.com/workers/platform/limits/#memory).
+Keeping persistence out of this Worker makes the compatibility claim honest. A
+production Cloudflare variant would put data in D1 or external PostgreSQL via
+Hyperdrive while retaining these portable enum boundary routes.
 
 ## API tour
 
@@ -100,13 +147,32 @@ pnpm --filter @enumwaii/example-hono-drizzle start
 pnpm --filter @enumwaii/example-hono-drizzle test
 pnpm --filter @enumwaii/example-hono-drizzle test:types
 
+# Execute the shared HTTP contract in each native runtime
+pnpm --filter @enumwaii/example-hono-drizzle test:bun
+pnpm --filter @enumwaii/example-hono-drizzle test:deno
+pnpm --filter @enumwaii/example-hono-drizzle test:cloudflare
+pnpm --filter @enumwaii/example-hono-drizzle test:runtimes
+
+# Root shortcut for the same cross-runtime suite
+pnpm test:runtimes
+
 # Apply the checked-in migration, inspect schema drift, or open Drizzle Studio
 pnpm --filter @enumwaii/example-hono-drizzle db:migrate
 pnpm --filter @enumwaii/example-hono-drizzle db:push
 pnpm --filter @enumwaii/example-hono-drizzle db:studio
 ```
 
-Tests construct the app through `createApp`, use `app.request`, and connect to
-an isolated in-memory PGlite database. They cover persistence, PostgreSQL enum
-metadata/defaults, scalar boundary failures, transition conflicts, stale
-versions, and strict historical-row rejection.
+The Node-focused tests construct the app through `createApp`, use `app.request`,
+and connect to an isolated in-memory PGlite database. They cover persistence,
+PostgreSQL enum metadata/defaults, scalar boundary failures, transition
+conflicts, stale versions, and strict historical-row rejection.
+
+The opt-in runtime suites execute one shared HTTP contract through real Bun and
+Deno servers and inside Cloudflare workerd. Bun and Deno additionally exercise
+the complete PGlite + Drizzle application. The Cloudflare suite generates
+configuration-matched runtime types and runs a production Wrangler dry-run while
+both Node compatibility modes remain disabled. The generated
+`worker-configuration.d.ts` is intentionally ignored; Cloudflare documents
+[generation during CI](https://developers.cloudflare.com/workers/languages/typescript/#generate-types-that-match-your-workers-configuration)
+as an alternative to committing more than 15,000 lines of derived runtime
+declarations.

@@ -3,6 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/enumwaii?logo=npm&color=cb3837)](https://www.npmjs.com/package/enumwaii)
 [![npm downloads](https://img.shields.io/npm/dm/enumwaii?logo=npm)](https://www.npmjs.com/package/enumwaii)
 [![CI](https://github.com/CatOfJupit3r/enumwaii/actions/workflows/ci.yml/badge.svg)](https://github.com/CatOfJupit3r/enumwaii/actions/workflows/ci.yml)
+[![runtime compatibility](https://github.com/CatOfJupit3r/enumwaii/actions/workflows/runtime-compatibility.yml/badge.svg)](https://github.com/CatOfJupit3r/enumwaii/actions/workflows/runtime-compatibility.yml)
 [![documentation](https://img.shields.io/badge/docs-GitHub%20Pages-c8f45d)](https://catofjupit3r.github.io/enumwaii/)
 [![license](https://img.shields.io/github/license/CatOfJupit3r/enumwaii)](LICENSE)
 
@@ -48,8 +49,10 @@ known limitations are documented in [Branding and identity](https://catofjupit3r
 npm install enumwaii
 ```
 
-Node.js 18 or newer is supported. The package publishes ESM and CommonJS entry
-points with declarations and source maps.
+Node.js 18 or newer is the npm engine. The package publishes ESM and CommonJS
+entry points with declarations and source maps. Its ESM entry is also tested
+under Bun 1.4, Deno 2.9, and Cloudflare Workers without Node compatibility
+flags.
 
 ## Parse at boundaries
 
@@ -167,10 +170,12 @@ services. See the complete [ESLint setup](https://catofjupit3r.github.io/enumwai
 - [Design decisions and limitations](https://catofjupit3r.github.io/enumwaii/docs/)
 - [Runnable example applications](examples/README.md)
 
-The examples cover Next.js, TanStack Start with Solid, Vue, Hono with Drizzle
-and PGlite, Elysia, oRPC, Effect, and NestJS with Mongoose. They include forms,
-TanStack Table, URL and persistence hydration, SQL and MongoDB metadata,
-request/response validation, and visible failure paths.
+The examples cover Next.js, TanStack Start with Solid, Vue, Hono across
+Node/Bun/Deno/Cloudflare workerd, Elysia, oRPC, Effect, and NestJS with Mongoose.
+The Hono showcase runs its complete Drizzle + PGlite application on Node, Bun,
+and Deno, while workerd executes its shared database-free boundary routes. The
+examples also include forms, TanStack Table, URL and persistence hydration, SQL
+and MongoDB metadata, request/response validation, and visible failure paths.
 
 ## Packages
 

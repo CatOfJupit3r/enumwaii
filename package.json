@@ -19,6 +19,7 @@
     "format:check": "prettier --check .",
     "lint": "oxlint --type-aware --deny-warnings .",
     "test": "pnpm --recursive --if-present run test",
+    "test:runtimes": "pnpm --filter @enumwaii/example-hono-drizzle test:runtimes",
     "test:types": "pnpm --recursive --if-present run test:types",
     "test:docs": "node scripts/check-api-jsdoc.mjs",
     "test:build": "pnpm --recursive --if-present run test:build",

@@ -6,6 +6,7 @@ packages:
 allowBuilds:
   "@swc/core": true
   esbuild: true
+  workerd: true
 
 # 6.4.1 omits dist/types.js even though its entry point exports that file.
 overrides:

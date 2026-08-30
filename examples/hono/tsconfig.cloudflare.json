@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ESNext"],
+    "types": ["@cloudflare/vitest-plugin/types", "vitest/globals"]
+  },
+  "include": [
+    "runtime/cloudflare.ts",
+    "runtime-tests/cloudflare.test.ts",
+    "runtime-tests/contract.ts",
+    "worker-configuration.d.ts"
+  ]
+}

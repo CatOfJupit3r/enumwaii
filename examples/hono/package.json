@@ -6,9 +6,19 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsdown",
+    "build:cloudflare": "wrangler deploy --dry-run --outdir dist-cloudflare",
+    "build:library": "pnpm --filter enumwaii build",
     "start": "node dist/server.mjs",
     "test": "vitest run",
     "test:types": "tsc --noEmit",
+    "dev:bun": "pnpm run build:library && bun --watch runtime/bun.ts",
+    "dev:deno": "pnpm run build:library && deno task --config deno.json dev",
+    "dev:cloudflare": "pnpm run build:library && pnpm run types:cloudflare && wrangler dev",
+    "types:cloudflare": "wrangler types --config wrangler.jsonc",
+    "test:bun": "pnpm run build:library && tsc --noEmit -p tsconfig.bun.json && bun test ./runtime-tests/bun.test.ts",
+    "test:deno": "pnpm run build:library && deno task --config deno.json test",
+    "test:cloudflare": "pnpm run build:library && pnpm run types:cloudflare && tsc --noEmit -p tsconfig.cloudflare.json && vitest run --config vitest.cloudflare.config.ts && pnpm run build:cloudflare",
+    "test:runtimes": "pnpm run test:bun && pnpm run test:deno && pnpm run test:cloudflare",
     "db:push": "drizzle-kit push",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
@@ -22,11 +32,14 @@
     "hono": "^4.13.5"
   },
   "devDependencies": {
+    "@cloudflare/vitest-plugin": "^1.1.0",
+    "@types/bun": "^1.4.0",
     "@types/node": "^24.3.0",
     "drizzle-kit": "^0.31.10",
     "tsdown": "^0.22.14",
     "tsx": "^4.20.6",
     "typescript": "^6.0.3",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.0",
+    "wrangler": "^4.127.1"
   }
 }

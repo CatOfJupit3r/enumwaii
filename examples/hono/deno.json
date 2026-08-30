@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.ns", "dom", "dom.iterable", "esnext"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "tasks": {
+    "dev": "deno run --sloppy-imports --allow-env --allow-net --allow-read --allow-write --watch runtime/deno.ts",
+    "start": "deno run --sloppy-imports --allow-env --allow-net --allow-read --allow-write runtime/deno.ts",
+    "test": "deno run --sloppy-imports --allow-env --allow-net=127.0.0.1 --allow-read runtime-tests/deno-runtime.ts"
+  }
+}

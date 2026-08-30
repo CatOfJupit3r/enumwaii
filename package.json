@@ -2,6 +2,11 @@
   "name": "enumwaii-workspace",
   "private": true,
   "type": "module",
+  "homepage": "https://catofjupit3r.github.io/enumwaii/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CatOfJupit3r/enumwaii.git"
+  },
   "packageManager": "pnpm@11.18.0",
   "engines": {
     "node": ">=22.18.0",
@@ -19,6 +24,9 @@
     "test:build": "pnpm --recursive --if-present run test:build",
     "test:skills": "pnpm --filter enumwaii exec intent validate skills --check",
     "skills:stale": "pnpm --filter enumwaii exec intent stale",
+    "docs:api": "pnpm --filter enumwaii-docs api:generate",
+    "docs:build": "pnpm --filter enumwaii-docs build",
+    "docs:dev": "pnpm --filter enumwaii-docs dev",
     "check": "pnpm format:check && pnpm lint && pnpm test && pnpm test:types && pnpm test:skills && pnpm build && pnpm test:docs && pnpm test:build",
     "changeset": "changeset",
     "changeset:version": "changeset version && pnpm install --lockfile-only",

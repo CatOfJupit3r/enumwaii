@@ -1,0 +1,47 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "enumwaii",
+  "entryPoints": [
+    "../packages/enumwaii/src/index.ts",
+    "../packages/enumwaii/src/adapters/zod.ts",
+    "../packages/enumwaii/src/adapters/valibot.ts",
+    "../packages/enumwaii/src/derive-with/index.ts"
+  ],
+  "entryPointStrategy": "resolve",
+  "tsconfig": "../packages/enumwaii/tsconfig.json",
+  "out": "api/enumwaii",
+  "plugin": [
+    "typedoc-plugin-markdown",
+    "typedoc-plugin-frontmatter",
+    "./typedoc-frontmatter.mjs"
+  ],
+  "router": "member",
+  "entryFileName": "index",
+  "readme": "none",
+  "hidePageTitle": true,
+  "indexFormat": "table",
+  "parametersFormat": "table",
+  "interfacePropertiesFormat": "table",
+  "classPropertiesFormat": "table",
+  "typeAliasPropertiesFormat": "table",
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "intentionallyNotExported": [
+    "EnumwaiiCasesBrand",
+    "EnumwaiiValuesBrand",
+    "EnumwaiiRawValue",
+    "EnumwaiiValidateDeriveEntries",
+    "NonEmptyStrings",
+    "RawOf",
+    "SourceRaw"
+  ],
+  "includeVersion": false,
+  "gitRevision": "main",
+  "sourceLinkTemplate": "https://github.com/CatOfJupit3r/enumwaii/blob/{gitRevision}/{path}#L{line}",
+  "validation": {
+    "invalidLink": true,
+    "notDocumented": false,
+    "notExported": true
+  }
+}

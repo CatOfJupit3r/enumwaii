@@ -4,9 +4,13 @@ dist
 coverage
 .next
 .output
+.source
 .tanstack
 .vite
 *.tsbuildinfo
 examples/**/.data
+docs/api/enumwaii
+docs/api/eslint-plugin-enumwaii
+docs/out
 *.tgz
 .DS_Store

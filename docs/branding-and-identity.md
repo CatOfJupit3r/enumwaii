@@ -1,4 +1,7 @@
-# Branding and identity
+---
+title: Branding and identity
+description: Why enumwaii requires branded values and how declaration identity behaves.
+---
 
 ## The required brand
 
@@ -24,8 +27,9 @@ We keep the brand required because rejecting raw strings is the library's defini
 ```ts
 const first = em(["ON", "OFF"]);
 const second = em(["OFF", "ON"]);
+const FIRST = first.enum;
 
-const value: (typeof second)["~type"] = first.enum.ON; // valid
+const value: (typeof second)["~type"] = FIRST.ON; // valid
 ```
 
 Declarations with the same complete member set are intentionally compatible, regardless of order. Declarations with different sets are distinct, even when an individual raw value overlaps:
@@ -33,9 +37,10 @@ Declarations with the same complete member set are intentionally compatible, reg
 ```ts
 const roles = em(["ADMIN", "USER"]);
 const legacyRoles = em(["ADMIN"]);
+const LEGACY_ROLE = legacyRoles.enum;
 
 // TypeScript error: the declarations have different identities.
-const role: (typeof roles)["~type"] = legacyRoles.enum.ADMIN;
+const role: (typeof roles)["~type"] = LEGACY_ROLE.ADMIN;
 ```
 
 This is set identity, not instance identity. Enumwaii cannot distinguish two separately-created declarations with exactly the same members without asking users to supply an additional nominal token or name. We chose values-only declarations because they are easier to keep synchronized and because independently declared equivalent sets should interoperate.

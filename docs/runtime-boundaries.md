@@ -1,4 +1,7 @@
-# Runtime boundaries and integrations
+---
+title: Runtime boundaries and integrations
+description: Validate JSON, forms, URLs, databases, and other untrusted values safely.
+---
 
 Enumwaii brands exist only in TypeScript. External strings must be validated before application code treats them as owned members.
 

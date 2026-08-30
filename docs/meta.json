@@ -1,0 +1,21 @@
+{
+  "title": "enumwaii",
+  "pages": [
+    "index",
+    "getting-started",
+    "---Core API---",
+    "core-api",
+    "branding-and-identity",
+    "member-surfaces",
+    "runtime-boundaries",
+    "derivation",
+    "adapters",
+    "---Tooling---",
+    "eslint-plugin",
+    "linting",
+    "examples",
+    "---Reference---",
+    "api",
+    "release-and-compatibility"
+  ]
+}

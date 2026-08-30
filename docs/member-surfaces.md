@@ -1,15 +1,21 @@
-# Member surfaces
+---
+title: Member surfaces
+description: Choose between .enum, .values, .rawEnum, .rawValues, and .cases.
+---
 
 An enumwaii declaration exposes several views of the same closed set. They are intentionally different at the type level.
 
 ```ts
 const roles = em(["ADMIN", "USER"]);
+const ROLE = roles.enum;
+const RAW_ROLE = roles.rawEnum;
+const ROLE_CASE = roles.cases;
 
-roles.enum.ADMIN; // branded application value
+ROLE.ADMIN; // branded application value
 roles.values; // branded member tuple
-roles.rawEnum.ADMIN; // raw literal "ADMIN"
+RAW_ROLE.ADMIN; // raw literal "ADMIN"
 roles.rawValues; // raw literal tuple
-roles.cases.ADMIN; // raw discriminant "ADMIN"
+ROLE_CASE.ADMIN; // raw discriminant "ADMIN"
 ```
 
 ## `.enum`: the default
@@ -55,7 +61,9 @@ The tuple carries declaration provenance. Do not pass it back into `em()` to rec
 Some APIs require literal strings or literal arrays and cannot preserve enumwaii's brand. `.rawEnum` and `.rawValues` provide canonical unbranded values without making raw literals the normal authoring style.
 
 ```ts
-provider.configure({ defaultRole: roles.rawEnum.USER });
+const RAW_ROLE = roles.rawEnum;
+
+provider.configure({ defaultRole: RAW_ROLE.USER });
 database.defineEnum("role", roles.rawValues);
 ```
 

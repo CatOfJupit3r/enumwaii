@@ -1,4 +1,7 @@
-# Linting boundaries
+---
+title: Linting boundaries
+description: Understand what enumwaii's lint rules enforce and where TypeScript remains authoritative.
+---
 
 TypeScript enforces assignability, but it does not control every way raw strings can appear in source code. `eslint-plugin-enumwaii` handles conventions and suspicious patterns that are better expressed as lint rules.
 

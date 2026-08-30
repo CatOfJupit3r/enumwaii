@@ -1,0 +1,34 @@
+{
+  "name": "enumwaii-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "api:generate": "premove api/enumwaii api/eslint-plugin-enumwaii && typedoc --options typedoc.enumwaii.json && typedoc --options typedoc.eslint-plugin.json",
+    "build": "pnpm api:generate && next build && node ../scripts/check-docs-export.mjs out",
+    "clean": "premove .next .source out api/enumwaii api/eslint-plugin-enumwaii",
+    "dev": "pnpm api:generate && next dev",
+    "test:types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fumadocs-core": "^16.15.4",
+    "fumadocs-mdx": "^15.4.0",
+    "fumadocs-ui": "^16.15.4",
+    "next": "^16.3.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/mdx": "^2.0.14",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "postcss": "^8.5.26",
+    "premove": "^4.0.0",
+    "tailwindcss": "^4.3.3",
+    "typedoc": "^0.28.20",
+    "typedoc-plugin-frontmatter": "^1.3.1",
+    "typedoc-plugin-markdown": "^4.13.0",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,6 +1,11 @@
-# enumwaii design and API guide
+---
+title: Documentation
+description: Learn enumwaii's API, guarantees, integrations, and deliberate escape hatches.
+---
 
-This directory documents the decisions behind enumwaii's public API. The root [README](../README.md) is the quick-start guide; these pages explain the parts that are intentionally stricter or less conventional.
+These pages document enumwaii's public API and the decisions behind it. Start
+with [Getting started](./getting-started.md) for the practical path; the design
+guides explain the parts that are intentionally stricter or less conventional.
 
 ## API map
 

@@ -1,4 +1,7 @@
-# Derivation
+---
+title: Derivation
+description: Build exhaustive lookups without losing enum member provenance.
+---
 
 Derivation creates an exhaustive, frozen lookup from every source member to another value.
 

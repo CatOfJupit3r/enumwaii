@@ -15,10 +15,11 @@
     "lint": "oxlint --type-aware --deny-warnings .",
     "test": "pnpm --recursive --if-present run test",
     "test:types": "pnpm --recursive --if-present run test:types",
+    "test:docs": "node scripts/check-api-jsdoc.mjs",
     "test:build": "pnpm --recursive --if-present run test:build",
     "test:skills": "pnpm --filter enumwaii exec intent validate skills --check",
     "skills:stale": "pnpm --filter enumwaii exec intent stale",
-    "check": "pnpm format:check && pnpm lint && pnpm test && pnpm test:types && pnpm test:skills && pnpm build && pnpm test:build",
+    "check": "pnpm format:check && pnpm lint && pnpm test && pnpm test:types && pnpm test:skills && pnpm build && pnpm test:docs && pnpm test:build",
     "changeset": "changeset",
     "changeset:version": "changeset version && pnpm install --lockfile-only",
     "changeset:publish": "changeset publish"

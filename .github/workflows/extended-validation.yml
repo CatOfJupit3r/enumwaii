@@ -48,6 +48,11 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+          # Checkout v7 blocks fork code in privileged trigger workflows unless
+          # the repository explicitly opts in. This job is protected by the
+          # maintainer-reviewed environment, checks out an immutable SHA, has no
+          # secrets or persisted credentials, and only receives read access.
+          allow-unsafe-pr-checkout: true
       - uses: pnpm/action-setup@v6.0.10
         with:
           version: 11.18.0

@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
@@ -22,6 +23,18 @@ const program = ts.createProgram(rootNames, {
 });
 const checker = program.getTypeChecker();
 const failures = [];
+
+const coreSourceIndexPath = path.resolve(
+  repositoryRoot,
+  "packages/enumwaii/src/index.ts",
+);
+const coreSourceIndex = ts.createSourceFile(
+  coreSourceIndexPath,
+  fs.readFileSync(coreSourceIndexPath, "utf8"),
+  ts.ScriptTarget.Latest,
+  true,
+  ts.ScriptKind.TS,
+);
 
 function formatDocumentation(parts) {
   return ts.displayPartsToString(parts).replaceAll(/\s+/gu, " ").trim();
@@ -199,6 +212,29 @@ function inspectAllExports(entrypointKey) {
   }
 }
 
+function requireLocalReExportDocumentation(
+  sourceFile,
+  exportName,
+  options = {},
+) {
+  const declaration = sourceFile.statements.find(
+    (statement) =>
+      ts.isExportDeclaration(statement) &&
+      statement.exportClause &&
+      ts.isNamedExports(statement.exportClause) &&
+      statement.exportClause.elements.some(
+        (element) => element.name.text === exportName,
+      ),
+  );
+  if (!declaration) {
+    failures.push(`Local re-export ${exportName} is missing.`);
+    return;
+  }
+  requireNodeDocumentation(`core.${exportName} local re-export`, declaration, {
+    example: options.example,
+  });
+}
+
 function requirePropertyPath(entrypointKey, exportName, pathSegments) {
   const exported = resolveExport(entrypointKey, exportName);
   if (!exported) return;
@@ -219,6 +255,13 @@ function requirePropertyPath(entrypointKey, exportName, pathSegments) {
 for (const entrypointKey of Object.keys(entrypoints)) {
   inspectAllExports(entrypointKey);
 }
+
+// External symbols retain their official declaration docs after bundling. The
+// local re-export must also explain enumwaii-specific usage before it reaches
+// the declaration bundler, which currently consolidates external exports.
+requireLocalReExportDocumentation(coreSourceIndex, "StandardSchemaV1", {
+  example: true,
+});
 
 for (const [entrypointKey, exportName] of [
   ["core", "em"],
@@ -285,5 +328,7 @@ if (failures.length > 0) {
   for (const failure of failures) console.error(`- ${failure}`);
   process.exitCode = 1;
 } else {
-  console.log("All emitted public API declarations include meaningful JSDoc.");
+  console.log(
+    "All public APIs include meaningful source and emitted declaration JSDoc.",
+  );
 }

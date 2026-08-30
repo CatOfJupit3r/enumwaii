@@ -11,3 +11,9 @@ allowBuilds:
 # 6.4.1 omits dist/types.js even though its entry point exports that file.
 overrides:
   "@solid-primitives/utils": 6.4.0
+
+peerDependencyRules:
+  allowedVersions:
+    # Expo Router 57 installs Reanimated 4.6, whose required Worklets 0.12 is
+    # newer than expo-modules-core 57's stale optional peer declaration.
+    "expo-modules-core@57>react-native-worklets": "0.12"

@@ -9,8 +9,11 @@ coverage
 .tanstack
 .vite
 .wrangler
+.expo
 *.tsbuildinfo
 examples/**/.data
+examples/react-native/android
+examples/react-native/ios
 examples/hono/worker-configuration.d.ts
 docs/api/enumwaii
 docs/api/eslint-plugin-enumwaii

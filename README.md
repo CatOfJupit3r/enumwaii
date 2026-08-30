@@ -170,12 +170,14 @@ services. See the complete [ESLint setup](https://catofjupit3r.github.io/enumwai
 - [Design decisions and limitations](https://catofjupit3r.github.io/enumwaii/docs/)
 - [Runnable example applications](examples/README.md)
 
-The examples cover Next.js, TanStack Start with Solid, Vue, Hono across
-Node/Bun/Deno/Cloudflare workerd, Elysia, oRPC, Effect, and NestJS with Mongoose.
+The examples cover Next.js, TanStack Start with Solid, Vue, React Native with
+Expo across Android/iOS/web, Hono across Node/Bun/Deno/Cloudflare workerd,
+Elysia, oRPC, Effect, and NestJS with Mongoose.
 The Hono showcase runs its complete Drizzle + PGlite application on Node, Bun,
 and Deno, while workerd executes its shared database-free boundary routes. The
-examples also include forms, TanStack Table, URL and persistence hydration, SQL
-and MongoDB metadata, request/response validation, and visible failure paths.
+examples also include native and web forms, TanStack Table, deep links, URL and
+persistence hydration, SQL and MongoDB metadata, request/response validation,
+and visible failure paths.
 
 ## Packages
 

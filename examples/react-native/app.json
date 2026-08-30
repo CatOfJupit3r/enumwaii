@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "Enumwaii Field Desk",
+    "slug": "enumwaii-field-desk",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "enumwaii",
+    "userInterfaceStyle": "automatic",
+    "platforms": ["ios", "android", "web"],
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    }
+  }
+}

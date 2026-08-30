@@ -1,6 +1,6 @@
 ---
 title: Runnable examples
-description: Full applications covering frontend, server, forms, tables, SQL, MongoDB, and framework integrations.
+description: Full applications covering mobile, frontend, server, forms, tables, databases, and framework integrations.
 ---
 
 The repository examples are independent applications rather than artificial
@@ -14,6 +14,7 @@ Run commands from a cloned repository after `pnpm install`.
 | [Next.js](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/nextjs)                              | App Router, Server Components, Server Actions, route handlers, TanStack Table, reducer cases, defaults, and fallbacks.                                               | `pnpm --filter @enumwaii/example-nextjs dev`               |
 | [TanStack Start + Solid](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/tanstack-start-solid) | SSR loaders, typed search, TanStack Form, server functions, Standard Schema, Zod objects, and RPC branding boundaries.                                               | `pnpm --filter @enumwaii/example-tanstack-start-solid dev` |
 | [Vue](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/vue)                                     | Composition API, native forms, typed events, URL/localStorage hydration, and `deriveTo`.                                                                             | `pnpm --filter @enumwaii/example-vue dev`                  |
+| [React Native + Expo](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/react-native)            | Expo Router, native forms, AsyncStorage, deep-link and repeated-query boundaries, array derivation, and Android/iOS/web.                                             | `pnpm --filter @enumwaii/example-react-native start`       |
 | [Hono + Drizzle + PGlite](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/hono)                | Standard Schema, PostgreSQL metadata, strict hydration, transitions, and conflicts on Node/Bun/Deno; shared status boundaries in workerd without Node compatibility. | `pnpm --filter @enumwaii/example-hono-drizzle dev`         |
 | [Elysia](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/elysia)                               | Native request/response validation, scalar and object boundaries, lifecycle errors, and content-type behavior.                                                       | `pnpm --filter @enumwaii/example-elysia dev`               |
 | [oRPC](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/orpc)                                   | Native contracts and procedures, direct scalar schemas, Zod objects, typed errors, and real HTTP calls.                                                              | `pnpm --filter @enumwaii/example-orpc dev`                 |
@@ -22,11 +23,12 @@ Run commands from a cloned repository after `pnpm install`.
 
 ## Everyday development seams
 
-- Forms use TanStack Form in the Solid application and a dependency-free native
-  approach in Vue.
+- Forms use TanStack Form in the Solid application and dependency-free native
+  approaches in Vue and React Native.
 - TanStack Table drives a searchable and sortable operations grid in Next.js.
-- Next.js, TanStack Start, and Vue all parse URL or persistence state rather
-  than asserting it.
+- Next.js, TanStack Start, Vue, and Expo all parse URL or persistence state
+  rather than asserting it. Expo includes repeated deep-link values and stale
+  AsyncStorage data.
 - Hono uses Drizzle with embedded PGlite on Node, Bun, and Deno; its shared
   database-free status routes also run in Cloudflare workerd with Node
   compatibility disabled. NestJS uses Mongoose with a checked-in MongoDB

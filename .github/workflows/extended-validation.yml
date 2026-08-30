@@ -12,32 +12,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  queue:
-    name: Queue PR status
-    permissions:
-      statuses: write
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - name: Mark extended validation pending
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          STATUS_CONTEXT: enumwaii/extended-validation
-        run: >-
-          gh api --method POST
-          "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}"
-          -f state=pending
-          -f context="${STATUS_CONTEXT}"
-          -f description="Awaiting maintainer-approved extended validation"
-          -f target_url="${RUN_URL}"
-
   check:
+    name: Extended validation
     # Configure this environment with required reviewers. The job then remains
     # pending on each PR until a maintainer explicitly approves the run.
     environment: extended-validation
-    needs: queue
     permissions:
       contents: read
     runs-on: ubuntu-24.04
@@ -75,8 +54,8 @@ jobs:
 
   report:
     name: Report PR status
-    if: always() && needs.queue.result == 'success'
-    needs: [queue, check]
+    if: always()
+    needs: check
     permissions:
       statuses: write
     runs-on: ubuntu-24.04

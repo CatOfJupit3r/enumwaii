@@ -3,7 +3,7 @@ title: Runtime boundaries and integrations
 description: Validate JSON, forms, URLs, databases, and other untrusted values safely.
 ---
 
-Enumwaii brands exist only in TypeScript. External strings must be validated before application code treats them as owned members.
+Enumwaii brands exist only in TypeScript. External strings must be validated before they enter trusted application code as owned members.
 
 ## Parsing
 
@@ -46,7 +46,7 @@ if (!result.success) {
 }
 ```
 
-Runtime validation checks string membership. It cannot determine which declaration originally produced an equal string.
+Runtime validation establishes string membership. It cannot distinguish equal strings that originated from different declarations because declaration provenance is erased at runtime.
 
 ## Defaults and fallbacks
 
@@ -85,13 +85,13 @@ consumer.acceptSchema(roles);
 roles["~standard"].validate(input);
 ```
 
-The public types come from `@standard-schema/spec`. No local copy of the protocol is maintained, and the specification package contributes no runtime implementation.
+The public protocol types come directly from the official `@standard-schema/spec` package. Each enumwaii declaration supplies its own validation implementation.
 
 Use `enumwaii/zod` or `enumwaii/valibot` only when a consumer specifically requires that library's schema type. Those adapters are optional entry points with optional peer dependencies.
 
 ## Serialization
 
-There is no `serialize` method. Branded members are already strings at runtime:
+Owned members are strings at runtime and serialize directly through platform APIs:
 
 ```ts
 import { em } from "enumwaii";
@@ -103,19 +103,19 @@ JSON.stringify({ role: ROLE.ADMIN });
 new URLSearchParams({ role: ROLE.ADMIN });
 ```
 
-Validation is needed when data enters the trusted application domain, not when an already-owned value leaves it.
+Validate data as it enters the trusted application domain; owned values can leave through ordinary string serialization.
 
 ## Plain runtime objects
 
-Enum member objects and derived records are frozen plain objects. Enumwaii intentionally does not throw when arbitrary properties are read.
+Enumwaii intentionally does not throw when arbitrary properties are read. Enum member objects and derived records are frozen plain objects, so an unknown property returns `undefined` under normal JavaScript semantics. This avoids collisions with React, promise resolution, serializers, inspectors, equality matchers, and other tools that probe objects while TypeScript checks known properties in typed code.
 
-This decision avoids collisions with object-probing behavior in React, promise resolution, serializers, inspectors, equality matchers, and other tools. TypeScript prevents unknown property access in typed code; JavaScript receives normal object semantics.
+## Validation scope
 
-## What runtime validation cannot guarantee
+Runtime validation can establish membership, but it cannot recover erased TypeScript provenance:
 
-- It cannot distinguish equal strings produced by different declarations.
-- It cannot detect a TypeScript brand after compilation.
-- It cannot undo `any`, unsafe assertions, or ignored type errors.
-- It cannot force downstream JavaScript consumers to use `.enum` rather than raw literals.
+- Equal strings from different declarations are indistinguishable at runtime.
+- Brands are erased during compilation.
+- JavaScript, `any`, assertions, and ignored type errors can bypass compile-time ownership.
+- Downstream JavaScript can still construct matching raw literals.
 
-Use parsing at data boundaries and the [lint package](https://catofjupit3r.github.io/enumwaii/docs/linting/) for authoring patterns TypeScript alone does not cover.
+Treat values that cross one of those paths as external data and parse them again. The [lint package](https://catofjupit3r.github.io/enumwaii/docs/linting/) adds source conventions around member extraction, comparisons, subsets, and `.cases`.

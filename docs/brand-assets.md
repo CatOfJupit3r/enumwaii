@@ -3,8 +3,6 @@ title: Brand asset usage
 description: Brand-by-brand sources, permissions, and landing-page decisions for third-party marks.
 ---
 
-# Brand asset usage
-
 The landing page uses technology names and marks only to identify the real, runnable enumwaii examples behind each link. They stay visually subordinate to enumwaii and do not imply affiliation, sponsorship, certification, or endorsement.
 
 This audit was last reviewed on **August 30, 2026**. It is a project-maintenance record, not legal advice or a reusable license for another context.

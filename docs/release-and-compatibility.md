@@ -8,7 +8,7 @@ description: Runtime requirements, module formats, optional peers, versioning, a
 - Node.js 18 or newer is supported by both published packages. The ESLint plugin is specifically a Node-based development tool.
 - The core package's ESM entry is additionally exercised under Bun 1.4, Deno 2.9, and Cloudflare Workers. The Worker configuration explicitly disables both Node compatibility modes.
 - Both packages publish ESM and CommonJS entry points, declarations, and source maps.
-- Package exports define every supported subpath. Import internal files only at your own risk; they are not part of the compatibility contract.
+- Package exports define the public compatibility contract; import through the declared root and adapter subpaths.
 - Runtime package code is marked side-effect free.
 
 The [Hono compatibility application](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/hono) runs its complete Drizzle + PGlite order console through native Node, Bun, and Deno servers. Its database-free status routes are also bundled and executed in Cloudflare `workerd`, where both Node compatibility modes are disabled. Every non-Node host exercises one shared HTTP contract, and a Wrangler dry-run checks the production Worker bundle. These pinned CI versions are compatibility canaries, not a promise that every older Bun or Deno release is supported.

@@ -1,9 +1,9 @@
 ---
-title: Core API
-description: A practical map of declarations, member views, parsing, composition, and derivation.
+title: API essentials
+description: Create declarations, choose member views, parse input, compose sets, and derive exhaustive data.
 ---
 
-The base API is intentionally small. A declaration owns a closed set of strings, validates them at runtime, and carries their identity through TypeScript.
+The base API gives a closed string set an owner, validates unknown input, and carries member identity through TypeScript.
 
 ## Create a declaration
 
@@ -23,7 +23,7 @@ The values tuple must be non-empty. Duplicate values are removed in first-seen o
 | --- | --- |
 | `enum` | Named, branded application members. This is the default. |
 | `values` | Iterating branded members. |
-| `rawEnum` | Named unbranded values for an integration that rejects branded types. |
+| `rawEnum` | Named unbranded values for integration APIs that cannot accept branded types. |
 | `rawValues` | An unbranded tuple for schema, database, or provider metadata. |
 | `cases` | Native discriminated-union tags when TypeScript cannot narrow a branded string. |
 | `~type` | The branded member union, available only to TypeScript. |
@@ -48,7 +48,7 @@ states.safeParse(input); // success/failure result
 
 Both parse methods accept `{ default, fallback }`. `default` covers only `null` and `undefined`; `fallback` covers every otherwise-invalid input.
 
-There is no serializer. Members already are strings at runtime and work with JSON, URLs, form data, database drivers, and structured cloning.
+Members are strings at runtime and serialize directly through JSON, URLs, form data, database drivers, and structured cloning.
 
 ## Compose declarations
 

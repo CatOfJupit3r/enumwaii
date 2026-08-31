@@ -7,10 +7,9 @@ description: Use native Standard Schema support or opt into Zod and Valibot entr
 
 An enumwaii declaration is already a Standard Schema v1 schema. Pass the declaration itself to a compatible library; no wrapper or adapter is necessary.
 
-<Callout type="info" title="Start without an adapter">
-  Install Zod or Valibot only when the receiving API specifically requires that
-  library's schema type. Standard Schema integrations accept the enumwaii
-  declaration directly.
+<Callout type="info" title="Start with Standard Schema">
+  Standard Schema integrations accept the enumwaii declaration directly. Add Zod
+  or Valibot when the receiving API requires that library's schema type.
 </Callout>
 
 ```ts
@@ -39,7 +38,7 @@ Enumwaii uses the official `StandardSchemaV1` type from `@standard-schema/spec`,
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 ```
 
-The spec package remains a regular enumwaii dependency because its type appears in enumwaii's public declarations. It contributes no validation runtime of its own. Applications that name the type in their own source should also declare the spec package directly instead of relying on a transitive dependency.
+The spec package is a regular enumwaii dependency because its type appears in enumwaii's public declarations. It contributes no validation runtime of its own. Applications that name the type in their own source should also declare the spec package directly instead of relying on a transitive dependency.
 
 `@standard-schema/utils` is not required by enumwaii. It is useful to authors of generic Standard Schema tooling, but adding it to the runtime package would not improve declaration validation or the consumer API.
 
@@ -49,7 +48,7 @@ Choose the adapter required by the surrounding API. The package-manager choice i
 
 <Tabs items={["Zod", "Valibot"]} groupId="enumwaii-schema-adapter" persist>
   <Tab value="Zod">
-Install Zod only when an API specifically requires a Zod schema:
+Install Zod for APIs that require a Zod schema:
 
 ```sh tab="npm" tab-group="enumwaii-package-manager"
 npm install zod
@@ -91,7 +90,7 @@ The adapter follows Zod's normal parse and error behavior while preserving the b
 
   </Tab>
   <Tab value="Valibot">
-Install Valibot only when the receiving API requires its schema type:
+Install Valibot for APIs that require its schema type:
 
 ```sh tab="npm" tab-group="enumwaii-package-manager"
 npm install valibot

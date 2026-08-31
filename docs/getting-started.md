@@ -131,7 +131,7 @@ If an integration requires a library-specific schema type, use the optional [Zod
 
 ## Continue
 
-- [Core API](https://catofjupit3r.github.io/enumwaii/docs/core-api/) is the practical surface map.
+- [API essentials](https://catofjupit3r.github.io/enumwaii/docs/core-api/) is the practical surface map.
 - [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/) explains the narrow uses of `.rawEnum`, `.rawValues`, and `.cases`.
 - [Runtime boundaries](https://catofjupit3r.github.io/enumwaii/docs/runtime-boundaries/) covers validation and serialization.
 - [AI agents](https://catofjupit3r.github.io/enumwaii/docs/agents/) provides the packaged skill, machine-readable docs, and ready-to-run setup and migration-analysis prompts.

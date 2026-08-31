@@ -1,9 +1,9 @@
 ---
 title: Documentation
-description: Learn enumwaii's API, guarantees, integrations, and deliberate escape hatches.
+description: Learn enumwaii's ownership model, API, integrations, and tooling.
 ---
 
-These pages document enumwaii's public API and the decisions behind it. Start with [Getting started](https://catofjupit3r.github.io/enumwaii/docs/getting-started/) for the practical path; the design guides explain the parts that are intentionally stricter or less conventional.
+These pages document enumwaii's public API, ownership guarantees, integrations, and tooling. Start with [Getting started](https://catofjupit3r.github.io/enumwaii/docs/getting-started/) to declare a vocabulary and validate its first external value.
 
 ## API map
 
@@ -17,33 +17,31 @@ These pages document enumwaii's public API and the decisions behind it. Start wi
 | `.pick`, `.omit`, `.extend`, `em.combine` | Compose related declarations | [Branding and identity](https://catofjupit3r.github.io/enumwaii/docs/branding-and-identity/#composition-and-identity) |
 | `.derive`, `.deriveTo` | Build exhaustive lookups while preserving provenance | [Derivation](https://catofjupit3r.github.io/enumwaii/docs/derivation/) |
 | `~type`, `~keys`, `~safeParseResult` | Declaration-local TypeScript utilities | [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/#type-only-properties) |
-| `eslint-plugin-enumwaii` | Enforce conventions TypeScript cannot express | [Linting boundaries](https://catofjupit3r.github.io/enumwaii/docs/linting/) |
+| `eslint-plugin-enumwaii` | Enforce source-level ownership conventions | [Enforcement model](https://catofjupit3r.github.io/enumwaii/docs/linting/) |
 
-## Design decisions
+## Design foundations
 
-Enumwaii optimizes for one central guarantee: application code should use a member from the declaration that owns it, rather than an indistinguishable raw string.
+Enumwaii centers one guarantee: application code receives members from the declaration that owns them.
 
-That leads to four decisions:
+Five foundations carry that guarantee across application code and integrations:
 
-1. Values are required branded strings in TypeScript, but remain ordinary strings at runtime.
-2. `.enum` is the default surface. Raw surfaces exist only for specific TypeScript or integration limitations.
-3. APIs that must retain member provenance accept members as values, not object keys.
-4. Runtime objects are plain and frozen. Enumwaii does not use proxy traps to police arbitrary property access.
+1. Required TypeScript brands attach ownership to each member while runtime values remain ordinary strings.
+2. `.enum` is the application surface; raw views serve literal-only integrations and native union discriminants.
+3. Provenance-sensitive APIs accept members in value positions so their ownership survives inference.
+4. Frozen plain objects provide predictable behavior across frameworks, serializers, inspectors, and test tools.
+5. Runtime parsing and optional lint rules extend the ownership model to external data and source conventions.
 
-The resulting API is not magic. Type assertions, `any`, plain JavaScript, and unvalidated external data can bypass its static guarantees. [Runtime validation](https://catofjupit3r.github.io/enumwaii/docs/runtime-boundaries/) and [lint rules](https://catofjupit3r.github.io/enumwaii/docs/linting/) cover different parts of that boundary.
+The [branding and identity](https://catofjupit3r.github.io/enumwaii/docs/branding-and-identity/) guide explains the type contract and records the alternatives tested during API design. [Runtime boundaries](https://catofjupit3r.github.io/enumwaii/docs/runtime-boundaries/) establish trust for external values, and the [enforcement model](https://catofjupit3r.github.io/enumwaii/docs/linting/) maps each source convention to TypeScript or lint.
 
-## Why not the alternatives?
+## Guarantees by layer
 
-| Alternative | Why it is not the default |
+| Layer | Responsibility |
 | --- | --- |
-| Plain string unions | Any matching raw string is assignable, which loses the ownership guarantee. |
-| TypeScript `enum` | Adds generated runtime semantics, is less natural at serialization boundaries, and does not provide enumwaii's parsing and composition API. |
-| Brandless values plus lint | Lint cannot reliably follow aliases, re-exports, generic flows, laundering, or every consumer configuration. |
-| Object-key derivation | TypeScript erases the provenance of string keys, including computed branded keys. |
-| Runtime wrappers | Preserve identity but stop behaving like normal strings in JSON, URLs, databases, and third-party APIs. |
-| Proxy member guards | Arbitrary object probing by React, test libraries, serializers, and future tooling makes throwing `get` traps an integration hazard. |
-
-These are pre-1.0 decisions, but changes should preserve the central ownership guarantee unless a replacement can demonstrate the same behavior across TypeScript and common tooling.
+| TypeScript | Carries declaration ownership through branded members and composition. |
+| Runtime parsing | Establishes membership when values enter from JSON, forms, URLs, databases, providers, or agent output. |
+| Standard Schema | Lets compatible consumers use the declaration as their validation contract. |
+| ESLint | Guides casing, member extraction, comparisons, subsets, `.cases`, and union authoring. |
+| Plain runtime values | Preserve native string equality, serialization, persistence, and framework interoperability. |
 
 ## For coding agents
 

@@ -3,7 +3,7 @@ title: ESLint plugin
 description: Install and understand the syntax-only and type-aware rules that complement enumwaii's TypeScript guarantees.
 ---
 
-The lint package guides source-level conventions that TypeScript does not fully express. It is separate from the runtime package and is never needed in a production bundle.
+The lint package guides source-level conventions alongside TypeScript's ownership checks. It runs as a Node-based development dependency and stays outside production bundles.
 
 ## Install
 
@@ -33,7 +33,7 @@ The plugin is a Node-based development tool. Deno and Cloudflare applications ne
 
 ### Syntax-only flat config
 
-The lightweight preset enforces declaration casing and needs no TypeScript project:
+The lightweight preset uses syntax-only analysis to enforce declaration casing:
 
 ```js
 import enumwaii from "eslint-plugin-enumwaii";
@@ -66,7 +66,7 @@ export default [
 ];
 ```
 
-Legacy equivalents are available as `recommended` and `recommended-type-checked`.
+For eslintrc configuration, use the `recommended` and `recommended-type-checked` presets.
 
 ## Rules
 
@@ -79,9 +79,7 @@ Legacy equivalents are available as `recommended` and `recommended-type-checked`
 | `no-raw-enum-member` | Type-aware | Yes | Use owned members and composition APIs for subsets and targeted mappings. |
 | `no-union-property-in` | Type-aware | Yes | Prefer an enumwaii case discriminant to structural `in` narrowing. |
 
-The rules have no options and do not autofix. Provenance-sensitive changes should remain explicit and reviewable.
-
-Each flagged example below renders the rule and report ID beside the affected source. Those annotations explain the executable rule behavior covered by the plugin test suite; they do not run a second ESLint program inside the docs build.
+The rules have no options and do not autofix. Provenance-sensitive changes should remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
 
 ### `enforce-enum-casing`
 
@@ -367,4 +365,4 @@ Oxlint can load the package as a JavaScript plugin. JavaScript-plugin support is
 }
 ```
 
-Run the type-aware preset through ESLint. See [Linting boundaries](https://catofjupit3r.github.io/enumwaii/docs/linting/) for why lint complements rather than replaces required branding.
+Run the type-aware preset through ESLint. See the [enforcement model](https://catofjupit3r.github.io/enumwaii/docs/linting/) for how branding and lint divide responsibility.

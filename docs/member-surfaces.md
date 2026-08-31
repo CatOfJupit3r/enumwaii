@@ -3,7 +3,7 @@ title: Member surfaces
 description: Choose between .enum, .values, .rawEnum, .rawValues, and .cases.
 ---
 
-An enumwaii declaration exposes several views of the same closed set. They are intentionally different at the type level.
+An enumwaii declaration exposes several typed views of the same closed set. Each view serves a specific application or integration role.
 
 ```ts
 import { em } from "enumwaii";
@@ -39,7 +39,7 @@ acceptRole(ROLE.ADMIN);
 acceptRole("ADMIN"); // TypeScript error
 ```
 
-If no documented exception applies, `.enum` is the correct surface.
+`.enum` is the standard surface for trusted application code.
 
 Extract member views once and reference members through the extracted constant:
 
@@ -71,7 +71,7 @@ for (const role of roles.values) {
 }
 ```
 
-The tuple carries declaration provenance. Do not pass it back into `em()` to reconstruct another declaration; use the composition methods instead.
+The tuple carries declaration provenance. Do not pass it back into `em()` to reconstruct another declaration; use `pick`, `omit`, `extend`, or `em.combine` to preserve the intended identity relationship.
 
 ## `.rawEnum` and `.rawValues`: integration escapes
 
@@ -94,11 +94,11 @@ provider.configure({ defaultRole: RAW_ROLE.USER });
 database.defineEnum("role", roles.rawValues);
 ```
 
-These surfaces should generally stay at an integration boundary. Returning their values to application code loses the ownership check; parse values coming back from that boundary.
+Keep these surfaces at the integration boundary, then parse values returning from that boundary to establish application ownership.
 
 ## `.cases`: native discriminated-union narrowing
 
-TypeScript does not reliably narrow discriminated unions when the discriminant is a branded string intersection. `.cases` exposes raw literal members so native `switch` and equality narrowing continue to work:
+TypeScript does not reliably narrow discriminated unions when the discriminant is a branded string intersection. `.cases` supplies raw literal tags for union definitions, `switch`, and equality narrowing:
 
 ```ts
 import { em } from "enumwaii";
@@ -121,9 +121,7 @@ function handle(event: Event) {
 }
 ```
 
-`.cases` is not a second general-purpose enum. Individual case members are deliberately raw literals. The `.cases` object carries a type marker so enumwaii's lint rules can recognize its intended provenance and flag use outside discriminated-union positions.
-
-Use `.enum` for ordinary values and `.cases` only where TypeScript narrowing requires raw discriminants.
+`.cases` is not a second general-purpose enum. Treat `.enum` as the application-value surface and `.cases` as the narrow compatibility surface for discriminated unions. The `.cases` object carries a type marker so enumwaii's lint rules can recognize its provenance and keep its members in union definitions and narrowing positions.
 
 ## Runtime identity and object behavior
 
@@ -138,13 +136,13 @@ Object.is(roles.enum, roles.rawEnum); // true
 Object.is(roles.enum, roles.cases); // true
 ```
 
-They are plain objects, not proxies. Unknown properties behave like normal object properties and return `undefined`. This avoids surprising behavior when React, serializers, assertion libraries, inspectors, or promise detection probe an object.
+They are frozen plain objects rather than proxies. Unknown properties therefore return `undefined`, which lets React, serializers, assertion libraries, inspectors, and promise detection probe them without triggering member-access errors.
 
 The distinction between the surfaces exists entirely in TypeScript. Runtime code cannot recover which view a consumer used.
 
 ## Type-only properties
 
-Three declaration-local properties exist only for TypeScript and are not emitted as runtime fields:
+Three declaration-local properties provide compile-time utilities. They are not emitted at runtime:
 
 ```ts
 import { em } from "enumwaii";

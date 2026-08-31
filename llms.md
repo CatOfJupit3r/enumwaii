@@ -92,7 +92,7 @@ roles.parse(input, { default: ROLE.USER });
 roles.parse(input, { fallback: ROLE.USER });
 ```
 
-There is no serializer. Owned members already work with JSON, URLs, forms, database drivers, structured cloning, and other string-based APIs.
+Owned members serialize directly through JSON, URLs, forms, database drivers, structured cloning, and other string-based APIs.
 
 ## Standard Schema and adapters
 
@@ -187,7 +187,7 @@ The hosted [enumwaii skill](https://catofjupit3r.github.io/enumwaii/skills/enumw
 Each documentation page is also available as Markdown by appending `.md` to its canonical documentation path.
 
 - [Getting started](https://catofjupit3r.github.io/enumwaii/docs/getting-started.md)
-- [Core API](https://catofjupit3r.github.io/enumwaii/docs/core-api.md)
+- [API essentials](https://catofjupit3r.github.io/enumwaii/docs/core-api.md)
 - [Branding and identity](https://catofjupit3r.github.io/enumwaii/docs/branding-and-identity.md)
 - [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces.md)
 - [Runtime boundaries](https://catofjupit3r.github.io/enumwaii/docs/runtime-boundaries.md)

@@ -1,6 +1,6 @@
 ---
 title: Derivation
-description: Build exhaustive lookups without losing enum member provenance.
+description: Build exhaustive lookups that retain member provenance.
 ---
 
 Derivation creates an exhaustive, frozen lookup from every source member to another value.
@@ -61,7 +61,7 @@ const labels = roles.derive({
 });
 ```
 
-That is the more ergonomic API enumwaii would expose if TypeScript could preserve the origin of computed object keys. The snippet is intentionally hypothetical and is not type-checked on this page. Pasting it into an application currently produces `TS2769: No overload matches this call` because the object overload does not exist; that generic diagnostic describes the unsupported shape, not the reason behind the design.
+That block sketches the ergonomic object API the design experiments targeted. The current overloads accept callbacks or member/value tuples, so pasting the object form into an application produces `TS2769: No overload matches this call`.
 
 JavaScript object keys are property keys, and TypeScript reduces `[ROLE.ADMIN]` to the raw property name `ADMIN`. By the time the object reaches `derive`, its type cannot reliably prove whether that key came from `ROLE.ADMIN`, a raw literal, or an `ADMIN` member owned by another declaration.
 

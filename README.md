@@ -68,7 +68,7 @@ The package ships ESM and CommonJS entry points with declarations and source map
 
 - Raw literals cannot enter an owned enum position accidentally.
 - Same-text members from distinct value sets remain incompatible.
-- Members serialize naturally through JSON, URLs, forms, databases, and structured cloning—there is no serializer to learn.
+- Members serialize naturally through JSON, URLs, forms, databases, and structured cloning.
 - `parse`, `safeParse`, and `is` validate unknown values where they enter.
 - Every declaration implements [Standard Schema v1](https://standardschema.dev/) directly.
 - `pick`, `omit`, `extend`, and `combine` preserve or deliberately create identity; `derive` and `deriveTo` build exhaustive data from owned members.
@@ -160,9 +160,9 @@ Every example is independently runnable and exercises invalid or ambiguous input
 ## Learn more
 
 - [Getting started](https://catofjupit3r.github.io/enumwaii/docs/getting-started/) — install, declare, extract, and parse.
-- [Core API](https://catofjupit3r.github.io/enumwaii/docs/core-api/) — the practical surface map.
+- [API essentials](https://catofjupit3r.github.io/enumwaii/docs/core-api/) — the practical surface map.
 - [Branding and identity](https://catofjupit3r.github.io/enumwaii/docs/branding-and-identity/) — guarantees, tradeoffs, and why the brand is required.
-- [Design decisions](https://catofjupit3r.github.io/enumwaii/docs/) — limitations and rejected alternatives.
+- [Documentation map](https://catofjupit3r.github.io/enumwaii/docs/) — API guides, validation, integrations, and tooling.
 - [Generated API reference](https://catofjupit3r.github.io/enumwaii/docs/api/) — signatures generated from public JSDoc.
 - [AI agents](https://catofjupit3r.github.io/enumwaii/docs/agents/) — `llms.txt`, the full agent brief, and the packaged skill.
 

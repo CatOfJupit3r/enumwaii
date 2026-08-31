@@ -30,8 +30,8 @@ export interface Em {
    *
    * Use the returned declaration's `.enum` view for application values. Input
    * is copied and duplicate raw values are removed in first-seen order; an
-   * empty tuple is rejected at runtime. The declaration has no runtime name,
-   * and its identity is derived from the complete member union.
+   * empty tuple is rejected at runtime. Identity is derived from the complete
+   * member union.
    *
    * @param rawValues Non-empty string-literal members to own.
    * @returns An {@link Enumwaii} declaration with branded members and frozen

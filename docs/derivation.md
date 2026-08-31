@@ -51,37 +51,36 @@ Every output is contextually checked as `RoleMetadata`, so object literals do no
 
 ## Why tuples instead of an object?
 
-The more familiar syntax would be:
+The API would ideally accept an object keyed by owned `.enum` members:
 
-```ts
-// @noErrors: false
-// @errors: 2769
-import { em } from "enumwaii";
-
-const roles = em(["ADMIN", "USER", "GUEST"]);
-// ---cut---
-roles.derive({
-  ADMIN: "Administrator",
-  USER: "Member",
-  GUEST: "Guest",
+```ts no-twoslash
+const labels = roles.derive({
+  [ROLE.ADMIN]: "Administrator",
+  [ROLE.USER]: "Member",
+  [ROLE.GUEST]: "Guest",
 });
 ```
 
-However, JavaScript object keys are property keys, and TypeScript reduces branded or computed string keys to their raw property names. By the time the object reaches `derive`, the type system cannot reliably tell whether `ADMIN` came from `ROLE.ADMIN`, a raw literal, or a member of another declaration.
+That is the more ergonomic API enumwaii would expose if TypeScript could preserve the origin of computed object keys. The snippet is intentionally hypothetical and is not type-checked on this page. Pasting it into an application currently produces `TS2769: No overload matches this call` because the object overload does not exist; that generic diagnostic describes the unsupported shape, not the reason behind the design.
 
-A tuple keeps the source member in a value position. Its brand and declaration identity therefore survive inference:
+JavaScript object keys are property keys, and TypeScript reduces `[ROLE.ADMIN]` to the raw property name `ADMIN`. By the time the object reaches `derive`, its type cannot reliably prove whether that key came from `ROLE.ADMIN`, a raw literal, or an `ADMIN` member owned by another declaration.
 
-```ts
+The actual API moves every source member into a value position:
+
+```ts twoslash
 import { em } from "enumwaii";
 
 const roles = em(["ADMIN", "USER", "GUEST"]);
 const ROLE = roles.enum;
 // ---cut---
-[ROLE.ADMIN, "Administrator"];
-// ^ provenance is retained here
+const labels = roles.derive(
+  [ROLE.ADMIN, "Administrator"],
+  [ROLE.USER, "Member"],
+  [ROLE.GUEST, "Guest"],
+);
 ```
 
-The syntax is slightly longer, but it preserves the ownership guarantee instead of making `derive` an exception to the rest of the API.
+Each array is a two-item `[owned member, output]` tuple, not an arbitrary nested array. The member's brand and declaration identity survive inference because it remains a value. The syntax is slightly longer, but it preserves the ownership guarantee instead of making `derive` an exception to the rest of the API.
 
 ## Callback derivation
 

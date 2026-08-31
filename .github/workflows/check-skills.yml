@@ -1,3 +1,5 @@
+# intent-workflow-version: 4
+
 name: Check Skills
 
 on:
@@ -83,7 +85,8 @@ jobs:
 
       - name: Check skills
         id: stale
-        run: pnpm --filter enumwaii exec intent stale --github-review --package-label "enumwaii"
+        run: >-
+          ./packages/enumwaii/node_modules/.bin/intent stale packages/enumwaii --github-review --package-label "enumwaii"
 
       - name: Open or update review PR
         if: steps.stale.outputs.has_review == 'true'

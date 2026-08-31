@@ -71,6 +71,8 @@ for (const required of [
   "docs/getting-started.md",
   "docs/adapters.md",
   "docs/agents/index.html",
+  "docs/documentation-system/index.html",
+  "docs/documentation-system.md",
   "docs/eslint-plugin/index.html",
   "docs/api/index.html",
   "docs/api/enumwaii/index.html",

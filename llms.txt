@@ -30,4 +30,5 @@ Start with the full agent guide for the ownership model and safe workflow. Follo
 
 - [Generated API reference](https://catofjupit3r.github.io/enumwaii/docs/api/enumwaii/): Detailed signatures generated from the public JSDoc surface.
 - [Runnable examples](https://catofjupit3r.github.io/enumwaii/docs/examples.md): Framework, runtime, database, form, table, and mobile applications.
+- [Documentation architecture](https://catofjupit3r.github.io/enumwaii/docs/documentation-system.md): How the Fumadocs site, generated API reference, Twoslash examples, Markdown routes, export checks, and GitHub Pages deployment fit together.
 - [Source repository](https://github.com/CatOfJupit3r/enumwaii): Packages, tests, examples, documentation source, and contribution guidance.

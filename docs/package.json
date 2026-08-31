@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "api:generate": "premove api/enumwaii api/eslint-plugin-enumwaii && typedoc --options typedoc.enumwaii.json",
-    "build": "pnpm --filter enumwaii build && pnpm api:generate && next build && node ../scripts/materialize-docs-markdown.mjs out && node ../scripts/check-docs-export.mjs out",
+    "build": "pnpm api:generate && next build && node ../scripts/materialize-docs-markdown.mjs out && node ../scripts/check-docs-export.mjs out",
     "clean": "premove .next .source out api/enumwaii api/eslint-plugin-enumwaii",
     "dev": "pnpm --filter enumwaii build && pnpm api:generate && next dev",
     "test:types": "tsc --noEmit"

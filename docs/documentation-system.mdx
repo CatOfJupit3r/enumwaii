@@ -194,11 +194,11 @@ The complete build is available from the repository root:
 pnpm docs:build
 ```
 
-Inside the documentation workspace, that expands to the following ordered pipeline:
+The repository-level command builds the core package before entering the documentation workspace, then continues through the following ordered pipeline:
 
 <DocumentationBuildDiagram />
 
-The order is deliberate. Package declarations must exist before TypeDoc and Twoslash inspect them. API Markdown must exist before Fumadocs discovers pages. Markdown files must be materialized after Next.js has emitted the internal raw responses. Artifact checks run last because they validate the files GitHub Pages will receive.
+The order is deliberate. Package declarations must exist before TypeDoc and Twoslash inspect them. The documentation package consumes that completed workspace dependency instead of rebuilding it while other consumers compile. API Markdown must exist before Fumadocs discovers pages. Markdown files must be materialized after Next.js has emitted the internal raw responses. Artifact checks run last because they validate the files GitHub Pages will receive.
 
 For a local preview:
 

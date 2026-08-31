@@ -61,9 +61,45 @@ const labels = roles.derive({
 });
 ```
 
-That block sketches the ergonomic object API the design experiments targeted. The current overloads accept callbacks or member/value tuples, so pasting the object form into an application produces `TS2769: No overload matches this call`.
+This is the object-shaped API enumwaii originally targeted, but TypeScript erases the necessary ownership information before `derive` can inspect the argument. An enumwaii member is a branded string intersection such as `"ADMIN" & EnumwaiiBrand<...>`. When that value is used as a computed object key, TypeScript infers a string index signature rather than preserving the individual property name. Even a correctly exhaustive object therefore appears as `{ [x: string]: TValue }`, with `keyof` equal to `string | number`.
 
-JavaScript object keys are property keys, and TypeScript reduces `[ROLE.ADMIN]` to the raw property name `ADMIN`. By the time the object reaches `derive`, its type cannot reliably prove whether that key came from `ROLE.ADMIN`, a raw literal, or an `ADMIN` member owned by another declaration.
+This standalone example reproduces the erasure without depending on enumwaii:
+
+```ts
+// @noErrors: false
+// @errors: 2739
+declare const brand: unique symbol;
+type Owned<T extends string> = T & { readonly [brand]: "roles" };
+type Role = Owned<"ADMIN"> | Owned<"USER">;
+
+declare const ADMIN: Owned<"ADMIN">;
+declare const USER: Owned<"USER">;
+
+// A computed object key loses the branded member type.
+const mapping = {
+  [ADMIN]: "Administrator",
+  [USER]: "Member",
+} as const;
+
+type InferredKeys = keyof typeof mapping;
+//   ^?
+
+const exhaustive: Record<"ADMIN" | "USER", string> = mapping;
+// Type '{ readonly [x: string]: ... }' is missing ADMIN and USER.
+
+// A tuple keeps the member in a value position.
+const entries = [
+  [ADMIN, "Administrator"],
+  [USER, "Member"],
+] as const satisfies readonly (readonly [Role, string])[];
+
+type PreservedMembers = (typeof entries)[number][0];
+//   ^?
+```
+
+Copy it into the [TypeScript Playground](https://www.typescriptlang.org/play/) to compare `InferredKeys` with `PreservedMembers` and inspect the failing exhaustive assignment. The tuple half isolates the compiler behavior rather than reimplementing `derive`: enumwaii builds its source-ownership, exhaustiveness, and duplicate checks on top of the member types that survive in those value positions.
+
+No `derive` overload can then prove which members were supplied, reject a member from another declaration, or distinguish an owned member from a raw string. Reverse mapped types, exactness constraints, `NoInfer`, `const` type parameters, and template-literal key constraints were all prototyped; every approach received the same already-erased index signature.
 
 The actual API moves every source member into a value position:
 
@@ -78,6 +114,9 @@ const labels = roles.derive(
   [ROLE.USER, "Member"],
   [ROLE.GUEST, "Guest"],
 );
+
+const adminLabel = labels.get(ROLE.ADMIN);
+//    ^?
 ```
 
 Each array is a two-item `[owned member, output]` tuple, not an arbitrary nested array. The member's brand and declaration identity survive inference because it remains a value. The syntax is slightly longer, but it preserves the ownership guarantee instead of making `derive` an exception to the rest of the API.

@@ -29,10 +29,7 @@ if (result.success) {
 - `safeParse` returns a discriminated success or failure result.
 - `is` is a type guard for control-flow validation.
 
-The failure keeps the exact rejected input in `error.received` and provides a
-non-throwing diagnostic in `error.receivedText`. The diagnostic is safe for
-values JSON cannot represent, including `bigint`, circular structures, and
-hostile proxies:
+The failure keeps the exact rejected input in `error.received` and provides a non-throwing diagnostic in `error.receivedText`. The diagnostic is safe for values JSON cannot represent, including `bigint`, circular structures, and hostile proxies:
 
 ```ts
 import { em } from "enumwaii";

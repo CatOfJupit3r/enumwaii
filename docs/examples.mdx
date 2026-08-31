@@ -3,9 +3,7 @@ title: Runnable examples
 description: Full applications covering mobile, frontend, server, forms, tables, databases, and framework integrations.
 ---
 
-The repository examples are independent applications rather than artificial
-snippets. Each has a package manifest, runnable commands, tests, type contracts,
-and a README explaining its boundary and failure cases.
+The repository examples are independent applications rather than artificial snippets. Each has a package manifest, runnable commands, tests, type contracts, and a README explaining its boundary and failure cases.
 
 <Callout type="warn" title="Hosted demos exercise the portable slice">
   StackBlitz runs the browser or Node.js path inside a WebContainer. It cannot
@@ -14,9 +12,7 @@ and a README explaining its boundary and failure cases.
   for those environments.
 </Callout>
 
-The hosted links import the complete repository so the unpublished
-`workspace:*` copy of enumwaii remains available. They install only the selected
-example and its dependencies, then build the local library before starting.
+The hosted links import the complete repository so the unpublished `workspace:*` copy of enumwaii remains available. They install only the selected example and its dependencies, then build the local library before starting.
 
 <Cards>
   <Card
@@ -104,20 +100,11 @@ example and its dependencies, then build the local library before starting.
 
 ## Everyday development seams
 
-- Forms use TanStack Form in the Solid application and dependency-free native
-  approaches in Vue and React Native.
+- Forms use TanStack Form in the Solid application and dependency-free native approaches in Vue and React Native.
 - TanStack Table drives a searchable and sortable operations grid in Next.js.
-- Next.js, TanStack Start, Vue, and Expo all parse URL or persistence state
-  rather than asserting it. Expo includes repeated deep-link values and stale
-  AsyncStorage data.
-- Hono uses Drizzle with embedded PGlite on Node, Bun, and Deno; its shared
-  database-free status routes also run in Cloudflare workerd with Node
-  compatibility disabled. NestJS uses Mongoose with a checked-in MongoDB
-  Compose service.
-- Server examples cover JSON, form data, route parameters, request/response
-  schemas, error mapping, and serialized branded strings.
-- The Hono runtime suite keeps one status-boundary contract constant across
-  native Bun and Deno servers and Cloudflare workerd.
+- Next.js, TanStack Start, Vue, and Expo all parse URL or persistence state rather than asserting it. Expo includes repeated deep-link values and stale AsyncStorage data.
+- Hono uses Drizzle with embedded PGlite on Node, Bun, and Deno; its shared database-free status routes also run in Cloudflare workerd with Node compatibility disabled. NestJS uses Mongoose with a checked-in MongoDB Compose service.
+- Server examples cover JSON, form data, route parameters, request/response schemas, error mapping, and serialized branded strings.
+- The Hono runtime suite keeps one status-boundary contract constant across native Bun and Deno servers and Cloudflare workerd.
 
-Every application exposes invalid and ambiguous inputs instead of demonstrating
-only its happy path.
+Every application exposes invalid and ambiguous inputs instead of demonstrating only its happy path.

@@ -3,9 +3,7 @@ title: Getting started
 description: Install enumwaii, declare a vocabulary, and validate your first external value.
 ---
 
-Enumwaii is for string vocabularies that cross application boundaries: roles,
-states, event types, permissions, provider values, and other sets where a raw
-string is easy to mistype or source from the wrong place.
+Enumwaii is for string vocabularies that cross application boundaries: roles, states, event types, permissions, provider values, and other sets where a raw string is easy to mistype or source from the wrong place.
 
 ## Install
 
@@ -31,14 +29,9 @@ bun add enumwaii
 deno add npm:enumwaii
 ```
 
-The package ships ESM and CommonJS builds with declarations and source maps.
-Node.js 18 or newer is supported, and the ESM entry point is also tested under
-Bun, Deno, and Cloudflare Workers without Node compatibility flags. In a
-Cloudflare Workers project, use whichever package manager already owns the
-project and import `enumwaii` normally.
+The package ships ESM and CommonJS builds with declarations and source maps. Node.js 18 or newer is supported, and the ESM entry point is also tested under Bun, Deno, and Cloudflare Workers without Node compatibility flags. In a Cloudflare Workers project, use whichever package manager already owns the project and import `enumwaii` normally.
 
-The only runtime dependency is the type-focused official Standard Schema
-specification package. Zod, Valibot, and ESLint are opt-in.
+The only runtime dependency is the type-focused official Standard Schema specification package. Zod, Valibot, and ESLint are opt-in.
 
 ## Declare and extract
 
@@ -50,8 +43,7 @@ export const ROLE = roles.enum;
 export type Role = (typeof roles)["~type"];
 ```
 
-Hover an identifier in any TypeScript example in these guides to inspect the
-same inferred type and API documentation that an editor would show.
+Hover an identifier in any TypeScript example in these guides to inspect the same inferred type and API documentation that an editor would show.
 
 Use the extracted member object in application code:
 
@@ -72,14 +64,11 @@ canDelete(ROLE.ADMIN); // valid
 canDelete("ADMIN"); // TypeScript error
 ```
 
-Enumwaii deliberately requires this brand. At runtime `ROLE.ADMIN` is still the
-ordinary string `"ADMIN"`; at compile time it proves that the value came from a
-compatible declaration.
+Enumwaii deliberately requires this brand. At runtime `ROLE.ADMIN` is still the ordinary string `"ADMIN"`; at compile time it proves that the value came from a compatible declaration.
 
 ## Parse external input
 
-JSON, form fields, route parameters, database rows, and agent output are
-untrusted even when TypeScript gives their container a convenient shape.
+JSON, form fields, route parameters, database rows, and agent output are untrusted even when TypeScript gives their container a convenient shape.
 
 ```ts
 import { em, type EnumwaiiParseError } from "enumwaii";
@@ -117,14 +106,11 @@ roles.parse(input, {
 });
 ```
 
-For a nil input, `default` wins. For any other non-member input, `fallback`
-applies. With neither option, `parse` throws `EnumwaiiParseError` and
-`safeParse` returns its failure branch.
+For a nil input, `default` wins. For any other non-member input, `fallback` applies. With neither option, `parse` throws `EnumwaiiParseError` and `safeParse` returns its failure branch.
 
 ## Pass it as a schema
 
-Every declaration implements Standard Schema v1, so compatible libraries can
-accept it directly:
+Every declaration implements Standard Schema v1, so compatible libraries can accept it directly:
 
 ```ts
 import type { StandardSchemaV1 } from "@standard-schema/spec";
@@ -141,16 +127,12 @@ registerField({ schema: roles });
 const result = await roles["~standard"].validate(input);
 ```
 
-If an integration requires a library-specific schema type, use the optional
-[Zod or Valibot adapter](https://catofjupit3r.github.io/enumwaii/docs/adapters/).
+If an integration requires a library-specific schema type, use the optional [Zod or Valibot adapter](https://catofjupit3r.github.io/enumwaii/docs/adapters/).
 
 ## Continue
 
 - [Core API](https://catofjupit3r.github.io/enumwaii/docs/core-api/) is the practical surface map.
-- [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/) explains the narrow uses of
-  `.rawEnum`, `.rawValues`, and `.cases`.
-- [Runtime boundaries](https://catofjupit3r.github.io/enumwaii/docs/runtime-boundaries/) covers validation and
-  serialization.
-- [AI agents](https://catofjupit3r.github.io/enumwaii/docs/agents/) provides the packaged skill, machine-readable docs,
-  and ready-to-run setup and migration-analysis prompts.
+- [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/) explains the narrow uses of `.rawEnum`, `.rawValues`, and `.cases`.
+- [Runtime boundaries](https://catofjupit3r.github.io/enumwaii/docs/runtime-boundaries/) covers validation and serialization.
+- [AI agents](https://catofjupit3r.github.io/enumwaii/docs/agents/) provides the packaged skill, machine-readable docs, and ready-to-run setup and migration-analysis prompts.
 - [Runnable examples](https://catofjupit3r.github.io/enumwaii/docs/examples/) show the library in full applications.

@@ -5,6 +5,9 @@ const docs = defineDocs({
   dir: ".",
   docs: {
     files: ["*.md", "*.mdx", "api/**/*.md", "api/**/*.mdx"],
+    postprocess: {
+      includeProcessedMarkdown: true,
+    },
   },
   meta: {
     files: ["meta.json", "api/**/meta.json"],

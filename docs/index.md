@@ -4,22 +4,22 @@ description: Learn enumwaii's API, guarantees, integrations, and deliberate esca
 ---
 
 These pages document enumwaii's public API and the decisions behind it. Start
-with [Getting started](./getting-started.md) for the practical path; the design
+with [Getting started](https://catofjupit3r.github.io/enumwaii/docs/getting-started/) for the practical path; the design
 guides explain the parts that are intentionally stricter or less conventional.
 
 ## API map
 
-| API                                       | Purpose                                              | Detailed guide                                                               |
-| ----------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `em([...])`                               | Declare a non-empty closed string set                | [Branding and identity](./branding-and-identity.md)                          |
-| `.enum`                                   | Branded application members                          | [Member surfaces](./member-surfaces.md)                                      |
-| `.rawEnum`, `.rawValues`                  | Canonical unbranded integration values               | [Member surfaces](./member-surfaces.md)                                      |
-| `.cases`                                  | Raw discriminants for native union narrowing         | [Member surfaces](./member-surfaces.md)                                      |
-| `.parse`, `.safeParse`, `.is`             | Validate untrusted values at a boundary              | [Runtime boundaries and integrations](./runtime-boundaries.md)               |
-| `.pick`, `.omit`, `.extend`, `em.combine` | Compose related declarations                         | [Branding and identity](./branding-and-identity.md#composition-and-identity) |
-| `.derive`, `.deriveTo`                    | Build exhaustive lookups while preserving provenance | [Derivation](./derivation.md)                                                |
-| `~type`, `~keys`, `~safeParseResult`      | Declaration-local TypeScript utilities               | [Member surfaces](./member-surfaces.md#type-only-properties)                 |
-| `eslint-plugin-enumwaii`                  | Enforce conventions TypeScript cannot express        | [Linting boundaries](./linting.md)                                           |
+| API                                       | Purpose                                              | Detailed guide                                                                                                        |
+| ----------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `em([...])`                               | Declare a non-empty closed string set                | [Branding and identity](https://catofjupit3r.github.io/enumwaii/docs/branding-and-identity/)                          |
+| `.enum`                                   | Branded application members                          | [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/)                                      |
+| `.rawEnum`, `.rawValues`                  | Canonical unbranded integration values               | [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/)                                      |
+| `.cases`                                  | Raw discriminants for native union narrowing         | [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/)                                      |
+| `.parse`, `.safeParse`, `.is`             | Validate untrusted values at a boundary              | [Runtime boundaries and integrations](https://catofjupit3r.github.io/enumwaii/docs/runtime-boundaries/)               |
+| `.pick`, `.omit`, `.extend`, `em.combine` | Compose related declarations                         | [Branding and identity](https://catofjupit3r.github.io/enumwaii/docs/branding-and-identity/#composition-and-identity) |
+| `.derive`, `.deriveTo`                    | Build exhaustive lookups while preserving provenance | [Derivation](https://catofjupit3r.github.io/enumwaii/docs/derivation/)                                                |
+| `~type`, `~keys`, `~safeParseResult`      | Declaration-local TypeScript utilities               | [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/#type-only-properties)                 |
+| `eslint-plugin-enumwaii`                  | Enforce conventions TypeScript cannot express        | [Linting boundaries](https://catofjupit3r.github.io/enumwaii/docs/linting/)                                           |
 
 ## Design decisions
 
@@ -32,7 +32,7 @@ That leads to four decisions:
 3. APIs that must retain member provenance accept members as values, not object keys.
 4. Runtime objects are plain and frozen. Enumwaii does not use proxy traps to police arbitrary property access.
 
-The resulting API is not magic. Type assertions, `any`, plain JavaScript, and unvalidated external data can bypass its static guarantees. [Runtime validation](./runtime-boundaries.md) and [lint rules](./linting.md) cover different parts of that boundary.
+The resulting API is not magic. Type assertions, `any`, plain JavaScript, and unvalidated external data can bypass its static guarantees. [Runtime validation](https://catofjupit3r.github.io/enumwaii/docs/runtime-boundaries/) and [lint rules](https://catofjupit3r.github.io/enumwaii/docs/linting/) cover different parts of that boundary.
 
 ## Why not the alternatives?
 
@@ -46,3 +46,13 @@ The resulting API is not magic. Type assertions, `any`, plain JavaScript, and un
 | Proxy member guards        | Arbitrary object probing by React, test libraries, serializers, and future tooling makes throwing `get` traps an integration hazard.        |
 
 These are pre-1.0 decisions, but changes should preserve the central ownership guarantee unless a replacement can demonstrate the same behavior across TypeScript and common tooling.
+
+## For coding agents
+
+The [AI agents guide](https://catofjupit3r.github.io/enumwaii/docs/agents/)
+provides a packaged `SKILL.md`, an
+[`llms.txt`](https://catofjupit3r.github.io/enumwaii/llms.txt) discovery index,
+an [`llms.md`](https://catofjupit3r.github.io/enumwaii/llms.md) library brief, and
+prompts for both initial setup and read-only repository migration analysis.
+Every documentation page is also available as Markdown at the same path with a
+`.md` suffix.

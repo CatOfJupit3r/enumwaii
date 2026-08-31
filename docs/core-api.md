@@ -8,7 +8,7 @@ validates them at runtime, and carries their identity through TypeScript.
 
 ## Create a declaration
 
-```ts
+```ts twoslash
 import { em } from "enumwaii";
 
 const states = em(["DRAFT", "READY", "ARCHIVED"]);
@@ -40,6 +40,11 @@ using its members; the type-aware lint preset can enforce that convention.
 ## Validate values
 
 ```ts
+import { em } from "enumwaii";
+
+const states = em(["DRAFT", "READY", "ARCHIVED"]);
+declare const input: unknown;
+// ---cut---
 states.is(input); // type guard
 states.parse(input); // State or EnumwaiiParseError
 states.safeParse(input); // success/failure result
@@ -54,6 +59,11 @@ JSON, URLs, form data, database drivers, and structured cloning.
 ## Compose declarations
 
 ```ts
+import { em } from "enumwaii";
+
+const states = em(["DRAFT", "READY", "ARCHIVED"]);
+const STATE = states.enum;
+// ---cut---
 const PUBLIC_STATE = states.pick([STATE.READY, STATE.ARCHIVED]);
 const MUTABLE_STATE = states.omit([STATE.ARCHIVED]);
 const extendedStates = states.extend(["DELETED"]);
@@ -69,6 +79,11 @@ complete combined member set.
 ## Derive exhaustive data
 
 ```ts
+import { em } from "enumwaii";
+
+const states = em(["DRAFT", "READY", "ARCHIVED"]);
+const STATE = states.enum;
+// ---cut---
 const labels = states.derive(
   [STATE.DRAFT, "Draft"],
   [STATE.READY, "Ready"],
@@ -89,6 +104,10 @@ must belong to another declaration.
 Prefer declaration-local utilities when the declaration is already in scope:
 
 ```ts
+import { em } from "enumwaii";
+
+const states = em(["DRAFT", "READY", "ARCHIVED"]);
+// ---cut---
 type State = (typeof states)["~type"];
 type StateKey = (typeof states)["~keys"];
 type StateParseResult = (typeof states)["~safeParseResult"];
@@ -102,5 +121,5 @@ const labels = {
 
 `InferEnumwaii<T>` and `InferEnumwaiiCase<T>` are also exported for generic or
 cross-module code where naming the declaration-local properties is less useful.
-See the [generated API reference](./api/enumwaii/index.md) for every exported
+See the [generated API reference](https://catofjupit3r.github.io/enumwaii/docs/api/enumwaii/) for every exported
 signature, class member, error property, and type parameter.

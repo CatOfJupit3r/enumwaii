@@ -6,6 +6,8 @@ description: Choose between .enum, .values, .rawEnum, .rawValues, and .cases.
 An enumwaii declaration exposes several views of the same closed set. They are intentionally different at the type level.
 
 ```ts
+import { em } from "enumwaii";
+// ---cut---
 const roles = em(["ADMIN", "USER"]);
 const ROLE = roles.enum;
 const RAW_ROLE = roles.rawEnum;
@@ -23,6 +25,12 @@ ROLE_CASE.ADMIN; // raw discriminant "ADMIN"
 Use `.enum` for application values, comparisons, defaults, fixtures, function arguments, and derivation.
 
 ```ts
+// @noErrors: false
+// @errors: 2345
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER"]);
+// ---cut---
 const ROLE = roles.enum;
 
 function acceptRole(role: (typeof roles)["~type"]) {}
@@ -36,6 +44,10 @@ If no documented exception applies, `.enum` is the correct surface.
 Extract member views once and reference members through the extracted constant:
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER"]);
+// ---cut---
 const ROLE = roles.enum;
 
 ROLE.ADMIN; // preferred
@@ -49,6 +61,11 @@ The same convention applies to `.rawEnum` and `.cases`. It makes the owning voca
 Use `.values` when iterating over owned application members:
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER"]);
+declare function acceptRole(role: (typeof roles)["~type"]): void;
+// ---cut---
 for (const role of roles.values) {
   acceptRole(role);
 }
@@ -61,6 +78,16 @@ The tuple carries declaration provenance. Do not pass it back into `em()` to rec
 Some APIs require literal strings or literal arrays and cannot preserve enumwaii's brand. `.rawEnum` and `.rawValues` provide canonical unbranded values without making raw literals the normal authoring style.
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER"]);
+declare const provider: {
+  configure(options: { defaultRole: string }): void;
+};
+declare const database: {
+  defineEnum(name: string, values: readonly string[]): void;
+};
+// ---cut---
 const RAW_ROLE = roles.rawEnum;
 
 provider.configure({ defaultRole: RAW_ROLE.USER });
@@ -74,6 +101,8 @@ These surfaces should generally stay at an integration boundary. Returning their
 TypeScript does not reliably narrow discriminated unions when the discriminant is a branded string intersection. `.cases` exposes raw literal members so native `switch` and equality narrowing continue to work:
 
 ```ts
+import { em } from "enumwaii";
+// ---cut---
 const EVENT_TYPE = em(["CREATED", "DELETED"]);
 const EVENT_CASE = EVENT_TYPE.cases;
 
@@ -101,8 +130,12 @@ Use `.enum` for ordinary values and `.cases` only where TypeScript narrowing req
 `.enum`, `.rawEnum`, and `.cases` are different static views of one canonical frozen object:
 
 ```ts
-roles.enum === roles.rawEnum; // true
-roles.enum === roles.cases; // true
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER"]);
+// ---cut---
+Object.is(roles.enum, roles.rawEnum); // true
+Object.is(roles.enum, roles.cases); // true
 ```
 
 They are plain objects, not proxies. Unknown properties behave like normal object properties and return `undefined`. This avoids surprising behavior when React, serializers, assertion libraries, inspectors, or promise detection probe an object.
@@ -114,6 +147,10 @@ The distinction between the surfaces exists entirely in TypeScript. Runtime code
 Three declaration-local properties exist only for TypeScript and are not emitted as runtime fields:
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER"]);
+// ---cut---
 type Role = (typeof roles)["~type"];
 type RoleKey = (typeof roles)["~keys"];
 type RoleParseResult = (typeof roles)["~safeParseResult"];
@@ -124,6 +161,10 @@ type RoleParseResult = (typeof roles)["~safeParseResult"];
 - `~safeParseResult` is the exact discriminated result returned by this declaration's `safeParse` method.
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER"]);
+// ---cut---
 const labels = {
   ADMIN: "Administrator",
   USER: "Member",

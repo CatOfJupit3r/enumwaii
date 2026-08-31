@@ -8,6 +8,13 @@ Enumwaii brands exist only in TypeScript. External strings must be validated bef
 ## Parsing
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER"]);
+declare const payload: { role: unknown };
+declare function useRole(role: (typeof roles)["~type"]): void;
+declare function report(error: unknown): void;
+// ---cut---
 const role = roles.parse(payload.role);
 
 const result = roles.safeParse(payload.role);
@@ -28,6 +35,13 @@ values JSON cannot represent, including `bigint`, circular structures, and
 hostile proxies:
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER"]);
+declare const input: unknown;
+declare function audit(value: unknown): void;
+declare function show(value: string): void;
+// ---cut---
 const result = roles.safeParse(input);
 if (!result.success) {
   audit(result.error.received);
@@ -42,6 +56,12 @@ Runtime validation checks string membership. It cannot determine which declarati
 `default` and `fallback` intentionally cover different cases:
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER", "GUEST"]);
+const ROLE = roles.enum;
+declare const input: unknown;
+// ---cut---
 roles.parse(input, { default: ROLE.USER });
 roles.parse(input, { fallback: ROLE.GUEST });
 ```
@@ -58,6 +78,12 @@ This keeps absence distinct from malformed data while supporting both strict and
 Every declaration implements Standard Schema v1 directly:
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER"]);
+declare const input: unknown;
+declare const consumer: { acceptSchema(schema: unknown): void };
+// ---cut---
 consumer.acceptSchema(roles);
 roles["~standard"].validate(input);
 ```
@@ -71,6 +97,11 @@ Use `enumwaii/zod` or `enumwaii/valibot` only when a consumer specifically requi
 There is no `serialize` method. Branded members are already strings at runtime:
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER"]);
+const ROLE = roles.enum;
+// ---cut---
 JSON.stringify({ role: ROLE.ADMIN });
 new URLSearchParams({ role: ROLE.ADMIN });
 ```
@@ -90,4 +121,4 @@ This decision avoids collisions with object-probing behavior in React, promise r
 - It cannot undo `any`, unsafe assertions, or ignored type errors.
 - It cannot force downstream JavaScript consumers to use `.enum` rather than raw literals.
 
-Use parsing at data boundaries and the [lint package](./linting.md) for authoring patterns TypeScript alone does not cover.
+Use parsing at data boundaries and the [lint package](https://catofjupit3r.github.io/enumwaii/docs/linting/) for authoring patterns TypeScript alone does not cover.

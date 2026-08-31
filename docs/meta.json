@@ -13,9 +13,11 @@
     "---Tooling---",
     "eslint-plugin",
     "linting",
+    "agents",
     "examples",
     "---Reference---",
     "api",
-    "release-and-compatibility"
+    "release-and-compatibility",
+    "brand-assets"
   ]
 }

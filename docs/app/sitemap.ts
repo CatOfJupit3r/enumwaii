@@ -1,16 +1,18 @@
 import type { MetadataRoute } from "next";
 
 import { source } from "@/lib/source";
-
-const siteUrl = "https://catofjupit3r.github.io/enumwaii";
+import { getSiteUrl } from "@/lib/site";
 
 export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
-    { url: `${siteUrl}/` },
+    { url: getSiteUrl("/") },
+    { url: getSiteUrl("/llms.txt") },
+    { url: getSiteUrl("/llms.md") },
+    { url: getSiteUrl("/skills/enumwaii/SKILL.md") },
     ...source.getPages().map((page) => ({
-      url: `${siteUrl}${page.url}/`,
+      url: getSiteUrl(`${page.url}/`),
     })),
   ];
 }

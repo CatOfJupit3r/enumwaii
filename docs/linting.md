@@ -41,4 +41,4 @@ The `.cases` container therefore carries a type marker used by the type-aware li
 - The brand remains required for ordinary application values.
 - Lint discourages the narrow compatibility escape from spreading through the codebase.
 
-See [member surfaces](./member-surfaces.md#cases-native-discriminated-union-narrowing) for the intended pattern.
+See [member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/#cases-native-discriminated-union-narrowing) for the intended pattern.

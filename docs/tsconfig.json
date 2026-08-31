@@ -21,6 +21,7 @@
     "components/**/*.ts",
     "components/**/*.tsx",
     "lib/**/*.ts",
+    "source.config.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]

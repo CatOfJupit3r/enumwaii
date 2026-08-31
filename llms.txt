@@ -1,0 +1,33 @@
+# enumwaii
+
+> TypeScript string enums with declaration ownership, runtime parsing, Standard Schema support, composition, exhaustive derivation, and optional lint enforcement.
+
+Enumwaii is for finite, authored vocabularies whose values drive application behavior. Members remain ordinary strings at runtime while a required TypeScript brand prevents raw strings or members from unrelated declarations from entering trusted application code accidentally.
+
+Start with the full agent guide for the ownership model and safe workflow. Follow the focused Markdown guides when a task involves a particular API surface, integration, or TypeScript limitation.
+
+## Start here
+
+- [Full agent guide](https://catofjupit3r.github.io/enumwaii/llms.md): Product model, API boundaries, limitations, and an implementation workflow.
+- [Getting started](https://catofjupit3r.github.io/enumwaii/docs/getting-started.md): Installation, declaration, extraction, parsing, and first lint setup.
+- [Core API](https://catofjupit3r.github.io/enumwaii/docs/core-api.md): Parsing options, composition, derivation, and declaration-local types.
+
+## Ownership and boundaries
+
+- [Branding and identity](https://catofjupit3r.github.io/enumwaii/docs/branding-and-identity.md): Why enumwaii requires a brand and how identity behaves through composition.
+- [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces.md): When to use `.enum`, `.values`, `.rawEnum`, `.rawValues`, and the narrow `.cases` escape hatch.
+- [Runtime boundaries](https://catofjupit3r.github.io/enumwaii/docs/runtime-boundaries.md): Parsing external JSON, routes, forms, databases, providers, and agent output.
+- [API decisions and limitations](https://catofjupit3r.github.io/enumwaii/docs.md): Design tradeoffs and TypeScript restrictions that shape the public API.
+
+## Tooling and integrations
+
+- [Schemas and adapters](https://catofjupit3r.github.io/enumwaii/docs/adapters.md): Standard Schema support plus optional Zod and Valibot adapters.
+- [Derivation](https://catofjupit3r.github.io/enumwaii/docs/derivation.md): Exhaustive member-indexed data and source-to-target mappings.
+- [ESLint plugin](https://catofjupit3r.github.io/enumwaii/docs/eslint-plugin.md): Syntax-only and type-aware rules with flagged and accepted examples.
+- [AI agents](https://catofjupit3r.github.io/enumwaii/docs/agents.md): Packaged skill, setup prompt, and read-only migration analysis prompt.
+
+## Optional
+
+- [Generated API reference](https://catofjupit3r.github.io/enumwaii/docs/api/enumwaii/): Detailed signatures generated from the public JSDoc surface.
+- [Runnable examples](https://catofjupit3r.github.io/enumwaii/docs/examples.md): Framework, runtime, database, form, table, and mobile applications.
+- [Source repository](https://github.com/CatOfJupit3r/enumwaii): Packages, tests, examples, documentation source, and contribution guidance.

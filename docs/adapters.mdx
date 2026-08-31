@@ -1,0 +1,150 @@
+---
+title: Schemas and adapters
+description: Use native Standard Schema support or opt into Zod and Valibot entry points.
+---
+
+## Standard Schema is the default
+
+An enumwaii declaration is already a Standard Schema v1 schema. Pass the
+declaration itself to a compatible library; no wrapper or adapter is necessary.
+
+<Callout type="info" title="Start without an adapter">
+  Install Zod or Valibot only when the receiving API specifically requires that
+  library's schema type. Standard Schema integrations accept the enumwaii
+  declaration directly.
+</Callout>
+
+```ts
+import type { StandardSchemaV1 } from "@standard-schema/spec";
+import { em } from "enumwaii";
+
+declare const form: {
+  register<TOutput>(
+    name: string,
+    schema: StandardSchemaV1<unknown, TOutput>,
+  ): void;
+};
+declare const router: {
+  input<TOutput>(schema: StandardSchemaV1<unknown, TOutput>): void;
+};
+// ---cut---
+const roles = em(["ADMIN", "USER"]);
+
+form.register("role", roles);
+router.input(roles);
+```
+
+Enumwaii uses the official `StandardSchemaV1` type from
+`@standard-schema/spec`, but does not re-export it. Import the type from the
+official package when authoring a generic Standard Schema integration:
+
+```ts
+import type { StandardSchemaV1 } from "@standard-schema/spec";
+```
+
+The spec package remains a regular enumwaii dependency because its type appears
+in enumwaii's public declarations. It contributes no validation runtime of its
+own. Applications that name the type in their own source should also declare
+the spec package directly instead of relying on a transitive dependency.
+
+`@standard-schema/utils` is not required by enumwaii. It is useful to authors of
+generic Standard Schema tooling, but adding it to the runtime package would not
+improve declaration validation or the consumer API.
+
+## Library-specific adapters
+
+Choose the adapter required by the surrounding API. The package-manager choice
+is shared with every other install command in these docs.
+
+<Tabs items={["Zod", "Valibot"]} groupId="enumwaii-schema-adapter" persist>
+  <Tab value="Zod">
+Install Zod only when an API specifically requires a Zod schema:
+
+```sh tab="npm" tab-group="enumwaii-package-manager"
+npm install zod
+```
+
+```sh tab="pnpm"
+pnpm add zod
+```
+
+```sh tab="yarn"
+yarn add zod
+```
+
+```sh tab="bun"
+bun add zod
+```
+
+```sh tab="deno"
+deno add npm:zod
+```
+
+```ts
+declare const payload: unknown;
+// ---cut---
+import { z } from "zod";
+import { em } from "enumwaii";
+import { zodSchema } from "enumwaii/zod";
+
+const roles = em(["ADMIN", "USER"]);
+const inputSchema = z.object({
+  role: zodSchema(roles),
+});
+
+const input = inputSchema.parse(payload);
+// input.role is the branded enumwaii member union
+```
+
+The adapter follows Zod's normal parse and error behavior while preserving the
+branded output type.
+
+  </Tab>
+  <Tab value="Valibot">
+Install Valibot only when the receiving API requires its schema type:
+
+```sh tab="npm" tab-group="enumwaii-package-manager"
+npm install valibot
+```
+
+```sh tab="pnpm"
+pnpm add valibot
+```
+
+```sh tab="yarn"
+yarn add valibot
+```
+
+```sh tab="bun"
+bun add valibot
+```
+
+```sh tab="deno"
+deno add npm:valibot
+```
+
+```ts
+declare const payload: unknown;
+// ---cut---
+import * as v from "valibot";
+import { em } from "enumwaii";
+import { valibotSchema } from "enumwaii/valibot";
+
+const roles = em(["ADMIN", "USER"]);
+const inputSchema = v.object({
+  role: valibotSchema(roles),
+});
+
+const input = v.parse(inputSchema, payload);
+// input.role is the branded enumwaii member union
+```
+
+The adapter follows Valibot's normal parsing and issue behavior while
+preserving the branded output type.
+
+  </Tab>
+</Tabs>
+
+Both library adapters are separate package entry points and both validator
+packages are optional peers. Applications that use only Standard Schema do not
+load either integration.

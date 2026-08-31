@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
+@import "fumadocs-twoslash/twoslash.css";
+
 :root {
   --enumwaii-lime: #c8f45d;
   --enumwaii-lime-soft: #efffca;

@@ -7,7 +7,9 @@ Derivation creates an exhaustive, frozen lookup from every source member to anot
 
 ## Entry-based derivation
 
-```ts
+```ts twoslash
+import { em } from "enumwaii";
+
 const roles = em(["ADMIN", "USER", "GUEST"]);
 const ROLE = roles.enum;
 
@@ -29,6 +31,11 @@ When derived objects should all implement an existing application type, pass
 that type once and call the returned entry builder:
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER", "GUEST"]);
+const ROLE = roles.enum;
+// ---cut---
 interface RoleMetadata {
   readonly label: string;
   readonly rank: number;
@@ -52,6 +59,12 @@ individual object literal shapes.
 The more familiar syntax would be:
 
 ```ts
+// @noErrors: false
+// @errors: 2769
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER", "GUEST"]);
+// ---cut---
 roles.derive({
   ADMIN: "Administrator",
   USER: "Member",
@@ -64,6 +77,11 @@ However, JavaScript object keys are property keys, and TypeScript reduces brande
 A tuple keeps the source member in a value position. Its brand and declaration identity therefore survive inference:
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER", "GUEST"]);
+const ROLE = roles.enum;
+// ---cut---
 [ROLE.ADMIN, "Administrator"];
 // ^ provenance is retained here
 ```
@@ -75,14 +93,21 @@ The syntax is slightly longer, but it preserves the ownership guarantee instead 
 Use a callback when every member follows the same transformation:
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER", "GUEST"]);
+// ---cut---
 const lowerRoles = roles.derive((role) => role.toLowerCase());
 ```
 
 Optional reusable callbacks are available from `enumwaii/derive-with`:
 
 ```ts
+import { em } from "enumwaii";
 import { lowercase } from "enumwaii/derive-with";
 
+const roles = em(["ADMIN", "USER", "GUEST"]);
+// ---cut---
 const lowerRoles = roles.derive(lowercase);
 ```
 
@@ -93,6 +118,11 @@ The callback receives a branded source member. Callback derivation is exhaustive
 `deriveTo` additionally checks that every result belongs to a target enumwaii. A result may be one target member or an array of target members:
 
 ```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER", "GUEST"]);
+const ROLE = roles.enum;
+// ---cut---
 const permissions = em(["READ", "WRITE"]);
 const PERMISSION = permissions.enum;
 

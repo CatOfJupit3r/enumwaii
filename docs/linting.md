@@ -1,17 +1,17 @@
 ---
-title: Linting boundaries
-description: Understand what enumwaii's lint rules enforce and where TypeScript remains authoritative.
+title: Enforcement model
+description: See how TypeScript, runtime validation, and ESLint divide ownership responsibilities.
 ---
 
-TypeScript enforces assignability, but it does not control every way raw strings can appear in source code. `eslint-plugin-enumwaii` handles conventions and suspicious patterns that are better expressed as lint rules.
+Enumwaii uses three cooperating enforcement layers: TypeScript owns assignability, runtime parsing establishes membership, and `eslint-plugin-enumwaii` guides source conventions.
 
-## Why linting is separate
+## Separation by concern
 
-The runtime package remains small and does not require ESLint, TypeScript compiler services, or project configuration. Consumers opt into lint enforcement through a separate development dependency.
+The runtime package contains declarations and validation. The ESLint package is a separate development dependency for repositories that want source-level guidance.
 
-Syntax-only rules can run without type information. Provenance-sensitive rules require `typescript-eslint` parser services and should use the type-checked configuration.
+The syntax-only preset checks declaration casing from source syntax. The type-checked preset uses `typescript-eslint` parser services for provenance-sensitive rules.
 
-## Current responsibilities
+## Rule coverage
 
 The lint package covers:
 
@@ -23,22 +23,20 @@ The lint package covers:
 - misuse of `.cases` outside discriminated-union flows;
 - structural `in` narrowing patterns that undermine enum-driven unions.
 
-`CONSTANT_CASE` is deliberately not a runtime restriction. External protocols may legitimately use lowercase, kebab-case, or another fixed wire format.
+`CONSTANT_CASE` is an authoring convention for internal declarations. External protocols can retain lowercase, kebab-case, or another fixed wire format with a local rule override.
 
-## Why lint cannot replace branding
+## Branding and lint together
 
-Lint analysis is incomplete by nature. Rules may be disabled, not installed in a consumer, or unable to follow a value through aliases, re-exports, generics, generated code, or deliberate laundering.
-
-Required branding provides the ownership guarantee wherever TypeScript checks assignability. Lint complements that guarantee by guiding source-level authoring; it is not the authority that makes raw strings safe.
+Lint rules may be disabled or omitted and cannot reliably follow every alias, re-export, generic, generated file, JavaScript consumer, or deliberately laundered value. Required branding provides ownership wherever TypeScript checks assignability. Lint adds repository-level conventions for casing, extraction, comparisons, subsets, derivation, and discriminated unions. Runtime parsing completes the model at external boundaries.
 
 ## `.cases` enforcement
 
-`.cases` exposes raw literal members because TypeScript needs them for native discriminated-union narrowing. That also makes accidental general use type-correct.
+`.cases` supplies the raw literal members used by native discriminated-union narrowing. That raw representation is type-correct outside its intended control-flow role, so TypeScript alone cannot keep it scoped there.
 
-The `.cases` container therefore carries a type marker used by the type-aware lint rule. The rule can identify case members and restrict them to their intended control-flow role. This is a pragmatic division of responsibility:
+The `.cases` container carries a type marker used by the type-aware lint rule. The rule identifies case members and keeps them in their control-flow role:
 
 - TypeScript performs the actual union narrowing.
 - The brand remains required for ordinary application values.
-- Lint discourages the narrow compatibility escape from spreading through the codebase.
+- Lint keeps raw case values scoped to discriminated-union authoring and narrowing.
 
 See [member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/#cases-native-discriminated-union-narrowing) for the intended pattern.

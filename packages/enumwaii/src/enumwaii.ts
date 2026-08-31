@@ -231,7 +231,7 @@ export class Enumwaii<
    * Prefer calling `em`; direct construction is useful when a generic
    * wrapper already has the `Enumwaii` type. The input is copied immediately,
    * duplicate values are removed in first-seen order, and all exposed member
-   * objects and tuples are frozen. The constructor has no runtime enum name.
+   * objects and tuples are frozen.
    *
    * @param rawValues Non-empty raw member tuple to own.
    * @throws {@link EnumwaiiError} If the runtime tuple is empty.

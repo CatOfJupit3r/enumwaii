@@ -1,0 +1,273 @@
+---
+title: Documentation under the hood
+description: The complete authoring, API generation, TypeScript tooling, Markdown, search, verification, and GitHub Pages architecture behind enumwaii's documentation.
+---
+
+Enumwaii's documentation is a statically exported Next.js application built with Fumadocs. The system serves people, editors, search, and coding agents from one reviewed set of sources. Curated guides stay close to the site code, API reference pages come directly from public JSDoc, and machine-readable resources keep stable public URLs.
+
+<DocumentationContentDiagram />
+
+## Design goals
+
+The setup is built around six properties:
+
+1. **One authority for each kind of information.** Guides are authored in `docs`, API descriptions live beside exports as JSDoc, and agent briefs live in their dedicated source files.
+2. **A shared presentation layer.** Authored and generated pages use the same navigation, typography, search, copy controls, canonical metadata, and static deployment.
+3. **Executable TypeScript examples.** Curated TypeScript fences receive compiler-backed hover information and inline diagnostics through Twoslash.
+4. **First-class Markdown.** Every documentation page has a `.md` alternate, while `llms.txt`, `llms.md`, and the packaged skill provide stable entry points for agents.
+5. **A deployable artifact as the test subject.** Export validation reads `docs/out`, checks its files and links, and confirms the production base path.
+6. **Pinned, reproducible tooling.** The documentation workspace uses exact dependency versions and the repository lockfile.
+
+## Repository map
+
+| Path | Responsibility | Editing rule |
+| --- | --- | --- |
+| `docs/*.md` and `docs/*.mdx` | Curated product guides and the documentation home | Edit directly. Choose MDX when the page uses interactive or visual components. |
+| `docs/meta.json` | Sidebar order and section labels | Add every new top-level guide here. |
+| `docs/api/index.md` and `docs/api/meta.json` | Curated API landing page and API navigation root | Edit directly. |
+| `docs/api/enumwaii/**` | Generated API Markdown | Regenerate with TypeDoc; the directory is gitignored. |
+| `packages/enumwaii/src/**` | Public implementation and authoritative JSDoc | Update JSDoc with the export it describes. |
+| `docs/components/mdx.tsx` | Components available inside MDX | Register shared documentation components here. |
+| `docs/source.config.ts` | Markdown compilation, syntax highlighting, and Twoslash | Keep content transformations centralized here. |
+| `docs/lib/source.ts` | Fumadocs source loader | Defines which guides and metadata enter navigation, rendering, search, and Markdown output. |
+| `docs/app/**` | Next.js layouts, page routes, search, metadata, and machine-readable endpoints | Keep route behavior static-export compatible. |
+| `llms.txt` and `llms.md` | Agent discovery index and authored library brief | Edit directly at the repository root. |
+| `packages/enumwaii/skills/enumwaii/SKILL.md` | Installable coding-agent instructions | Edit with the packaged skill and validate with the skill check. |
+| `scripts/materialize-docs-markdown.mjs` | Converts generated raw page responses into public `.md` files | Preserve canonical-URL and output-boundary checks. |
+| `scripts/check-docs-export.mjs` | Production artifact contract | Extend it when a new public surface becomes release-critical. |
+| `.github/workflows/pages.yml` | GitHub Pages build and deployment | Keep the filtered install, base path, artifact directory, and permissions aligned with the site. |
+
+## Authored guide pipeline
+
+### Discovery and navigation
+
+[`docs/lib/source.ts`](https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/lib/source.ts) asks Fumadocs to collect root Markdown and MDX files plus the generated API tree. It also enables processed Markdown because the `.md` routes need the rendered textual representation of each page.
+
+[`docs/meta.json`](https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/meta.json) is the human-controlled navigation manifest. Strings such as `"---Resources---"` create section separators; page slugs select files. Fumadocs turns that manifest and the collected page metadata into the sidebar tree consumed by `DocsLayout`.
+
+Every guide begins with frontmatter:
+
+```md
+---
+title: Runtime boundaries
+description: Validate external values before they enter trusted application code.
+---
+```
+
+The title feeds the page heading, browser metadata, navigation, and search. The description feeds the page introduction, browser metadata, and search result context.
+
+### Page rendering
+
+The catch-all route in [`docs/app/docs/[[...slug]]/page.tsx`](https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/app/docs/%5B%5B...slug%5D%5D/page.tsx) resolves a slug through the shared source loader and renders it with Fumadocs' `DocsPage` primitives. That route also:
+
+- limits generated API tables of contents to three heading levels;
+- adds **Copy Markdown** and view-source controls;
+- points authored pages to their GitHub source;
+- advertises the page's `.md` representation with `rel="alternate"` metadata;
+- creates static parameters for every known page.
+
+The surrounding layout obtains its sidebar from `source.getPageTree()`. The root layout installs the Fumadocs provider, static search dialog, global metadata, themes, and the `llms.txt` discovery relationship.
+
+### Shared MDX components
+
+[`docs/components/mdx.tsx`](https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/components/mdx.tsx) merges Fumadocs defaults with the components specific to this site:
+
+| Component family | Purpose |
+| --- | --- |
+| Fumadocs defaults | Callouts, cards, accordions, links, tables, code blocks, and normal prose primitives |
+| `Tab` and `Tabs` | Package-manager choices and adapter-specific guides |
+| Twoslash UI | Hover cards, compiler diagnostics, query output, warnings, and annotations |
+| `BrandIcons` and `ExampleCard` | Audited technology marks and runnable-example cards |
+| Documentation diagrams | Responsive, accessible architecture diagrams used on this page |
+
+Components remain presentation helpers. The surrounding prose, tables, and headings carry the same information in processed Markdown.
+
+## TypeScript examples and syntax metadata
+
+Fumadocs passes code through Shiki with matching GitHub light and dark themes. The site supports Bash, JavaScript, JSX, JSON, JSONC, TypeScript, and TSX fences.
+
+[`docs/remark-auto-twoslash.ts`](https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/remark-auto-twoslash.ts) marks curated `ts` and `tsx` fences for Twoslash automatically. This makes compiler-backed hover types the default authoring experience:
+
+```ts
+import { em } from "enumwaii";
+
+const roles = em(["ADMIN", "USER"]);
+const ROLE = roles.enum;
+
+ROLE.ADMIN;
+//   ^?
+```
+
+Use an explicit fence marker when the default needs refinement:
+
+| Fence metadata | Effect |
+| --- | --- |
+| `ts twoslash` | Explicitly enables the TypeScript analysis pass. |
+| `ts no-twoslash` | Keeps syntax highlighting while skipping compilation for illustrative or intentionally incomplete code. |
+| `// @errors: 2322` | Declares an expected TypeScript diagnostic. |
+| `// @noErrors: false` | Allows expected diagnostic rendering in a teaching example. |
+| `// @annotate`, `// @error`, `// @warn` | Supplies the custom inline annotations configured by the site. |
+
+Generated TypeDoc pages keep syntax highlighting and skip the automatic Twoslash pass. Their code blocks are signatures emitted by the reference generator, while curated guides are the home for interactive compiler lessons. This separation keeps reference generation fast and guide diagnostics intentional.
+
+<Callout
+  type="info"
+  title="A code example is part of the documentation contract"
+>
+  Prefer a small, compiling example with a meaningful inferred type. Use
+  expected diagnostics when the error itself teaches a constraint, and reserve
+  `no-twoslash` for snippets that cannot represent a complete TypeScript
+  program.
+</Callout>
+
+## Generated API reference
+
+The API reference begins in the package source rather than a parallel prose catalog. Public exports carry JSDoc that explains purpose, parameters, return values, examples, errors, and related APIs. `pnpm test:docs` checks that the public declaration surface is documented.
+
+The `api:generate` script performs two ordered actions:
+
+1. `premove` clears earlier generated API directories.
+2. TypeDoc reads the configured public entry points and writes Markdown to `docs/api/enumwaii`.
+
+[`docs/typedoc.enumwaii.json`](https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/typedoc.enumwaii.json) defines the source entry points, TypeScript project, table layouts, visibility rules, validation, source-link template, and plugins. Internal, private, and protected declarations stay outside the public reference.
+
+[`docs/typedoc-frontmatter.mjs`](https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/typedoc-frontmatter.mjs) bridges TypeDoc and Fumadocs by:
+
+- assigning stable titles and descriptions to generated entry-point pages;
+- deriving descriptions from source comments for other pages;
+- converting file-relative TypeDoc Markdown links into deployed documentation routes;
+- preserving source links back to the package implementation.
+
+The generated directory is ignored by Git. A local preview and a production build both regenerate it after building the package, so reference signatures always match the current source tree.
+
+## Human and machine-readable surfaces
+
+Every source page fans out to several consumers:
+
+| Public surface | Producer | Consumer |
+| --- | --- | --- |
+| `/docs/<slug>/` | Fumadocs page renderer and Next.js static export | People browsing the site |
+| `/docs/<slug>.md` | Processed Fumadocs Markdown, then the materialization script | Copy actions, agents, text tools, and direct downloads |
+| `/api/search` | Fumadocs static Orama search endpoint | The site search dialog |
+| `/llms.txt` | Verbatim root `llms.txt` route | Agent discovery and focused routing |
+| `/llms.md` | Verbatim root `llms.md` route | An agent that needs the ownership model and implementation guidance |
+| `/skills/enumwaii/SKILL.md` | Verbatim packaged skill route | Coding agents installing enumwaii-specific instructions |
+| `/sitemap.xml` and `/robots.txt` | Static Next.js metadata routes | Crawlers and indexing tools |
+
+### Why Markdown pages pass through an internal route
+
+During compilation, Fumadocs can provide processed page text, but a static export needs a concrete file for each public `.md` URL. The site therefore generates one internal route per documentation slug. Each slug is serialized as JSON and encoded with base64url. A single opaque path segment cannot collide when one documentation page is also the parent of another, such as the API entry page and its nested modules.
+
+Each internal response contains:
+
+```md
+# Page title
+
+Canonical URL: https://catofjupit3r.github.io/enumwaii/docs/page/
+
+Processed page content...
+```
+
+After `next build`, [`scripts/materialize-docs-markdown.mjs`](https://github.com/CatOfJupit3r/enumwaii/blob/main/scripts/materialize-docs-markdown.mjs) reads those responses, obtains the destination from the canonical URL, verifies that the resolved path stays inside `docs/out`, and writes the public file. The development server maps public `.md` URLs to those internal IDs with rewrites. The rewrite table is created when Next.js starts, so adding a new source file calls for one `pnpm docs:dev` restart; editing an existing page stays on the normal refresh path.
+
+`llms.txt`, `llms.md`, and `SKILL.md` use dedicated route handlers because their source files are already the exact public representation. Their content is returned verbatim with a Markdown content type.
+
+## Search, links, and canonical URLs
+
+The search endpoint is generated from the same `source` object used for pages and navigation. The browser loads that static index through Fumadocs' Orama client, so GitHub Pages does not need a search server.
+
+[`docs/lib/site.ts`](https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/lib/site.ts) owns the canonical production origin. Page metadata uses it for Markdown alternates, the sitemap uses it for every page and agent resource, and the root layout advertises `llms.txt` with `rel="describedby"`.
+
+Authored documentation links use deployed URLs when they refer to public guides. Source-code links use GitHub URLs. TypeDoc's build plugin performs the equivalent translation for generated cross-reference links.
+
+## Package-manager tabs
+
+Install command fences use Fumadocs' `tab` metadata and share the `enumwaii-package-manager` tab group. A package manager selected on one page is persisted and becomes the selected tab on other pages using the same group. Each command remains a separate copyable code block, with `OR` between fallback commands where a tab layout is not appropriate.
+
+The landing-page switcher uses that same storage key, so a choice made before entering the guides carries into their code-block tabs. Adapter selection is a separate persisted `Tabs` group because choosing Zod or Valibot represents a different decision.
+
+## Production build
+
+The complete build is available from the repository root:
+
+```sh
+pnpm docs:build
+```
+
+The repository-level command builds the core package before entering the documentation workspace, then continues through the following ordered pipeline:
+
+<DocumentationBuildDiagram />
+
+The order is deliberate. Package declarations must exist before TypeDoc and Twoslash inspect them. The documentation package consumes that completed workspace dependency instead of rebuilding it while other consumers compile. API Markdown must exist before Fumadocs discovers pages. Markdown files must be materialized after Next.js has emitted the internal raw responses. Artifact checks run last because they validate the files GitHub Pages will receive.
+
+For a local preview:
+
+```sh
+pnpm docs:dev
+```
+
+The development command builds enumwaii, regenerates the API reference, and starts Next.js. Subsequent authored-page edits use the normal development refresh path. Changes to public package signatures or JSDoc require API regeneration so the reference reflects them.
+
+To regenerate only the reference:
+
+```sh
+pnpm docs:api
+```
+
+## Export verification
+
+[`scripts/check-docs-export.mjs`](https://github.com/CatOfJupit3r/enumwaii/blob/main/scripts/check-docs-export.mjs) treats the exported directory as a public contract. It currently verifies:
+
+- required HTML, Markdown, search, sitemap, robots, and agent files;
+- the configured GitHub Pages base path;
+- internal links and assets across every exported HTML page;
+- static search coverage for guides and the API reference;
+- the complete ESLint rule catalog, accepted examples, and inline diagnostics;
+- adapter-tab table-of-contents behavior;
+- interactive TypeScript metadata and Markdown alternates;
+- the authored structure of `llms.txt` and `llms.md`;
+- the packaged skill's identifying metadata and core guidance;
+- the absence of retired public resources.
+
+Add a focused assertion when a documentation feature becomes important enough that a visually plausible regression could still produce a broken public artifact. This keeps site behavior testable without coupling every sentence to a snapshot.
+
+## GitHub Pages deployment
+
+The [`Documentation` workflow](https://github.com/CatOfJupit3r/enumwaii/blob/main/.github/workflows/pages.yml) runs for relevant changes on `main` and supports a manual workflow dispatch. Its build job:
+
+1. checks out the repository without persisted credentials;
+2. installs the pinned pnpm and Node versions;
+3. configures GitHub Pages for a Next.js static site;
+4. validates exact dependency pins;
+5. installs only the workspace slices needed for packages and documentation;
+6. builds with `PAGES_BASE_PATH=/enumwaii`;
+7. uploads `docs/out` as the Pages artifact.
+
+The deploy job receives only `pages: write` and `id-token: write`, targets the protected `github-pages` environment, and publishes the uploaded artifact through GitHub's Pages deployment action. Concurrency keeps one current Pages run and cancels an older in-progress run when a newer eligible commit arrives.
+
+Static export shapes several implementation choices: images are unoptimized, search is client-side over an exported index, routes enumerate their parameters at build time, and `docs/public/.nojekyll` instructs Pages to serve generated asset paths unchanged.
+
+## Adding or changing a page
+
+Use this sequence for a curated guide:
+
+1. Create a Markdown or MDX file under `docs` with a focused title and description.
+2. Add its slug to the appropriate section in `docs/meta.json`.
+3. Use deployed documentation URLs for guide links and GitHub URLs for source links.
+4. Write complete TypeScript examples and let automatic Twoslash analysis verify them.
+5. Register any reusable MDX component in `docs/components/mdx.tsx` and keep equivalent meaning in prose.
+6. Extend export verification when the page establishes a new public route or release-critical capability.
+7. Run formatting and the production documentation build.
+
+For API reference changes, update the export's JSDoc, run `pnpm test:docs`, and regenerate the reference. For agent behavior, update the authored `llms` or skill source and keep its dedicated export assertion current.
+
+## Maintenance boundaries
+
+- **Guide copy belongs in authored pages.** Shared components carry interaction and presentation rather than hiding product guidance in JSX.
+- **API truth belongs beside the export.** Generated files remain disposable build output.
+- **Public routes remain stable.** Renaming a slug updates navigation, cross-links, Markdown paths, sitemap entries, and any artifact assertions together.
+- **Examples remain compiler-backed.** Hover data and expected errors teach the current API rather than a remembered signature.
+- **Visuals remain accessible.** Diagrams use semantic figures, captions, readable text nodes, responsive layouts, and prose that preserves their meaning in Markdown.
+- **The static artifact remains authoritative.** A successful development render is followed by the production export check before handoff.
+
+The result is a documentation system where the public package, its explanations, its reference, and its agent-facing guidance are generated and reviewed as one coherent product.

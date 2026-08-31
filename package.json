@@ -42,7 +42,7 @@
     "stackblitz:tanstack-start-solid": "pnpm install --frozen-lockfile --filter enumwaii-workspace --filter @enumwaii/example-tanstack-start-solid... && pnpm --filter enumwaii build && pnpm --filter @enumwaii/example-tanstack-start-solid dev --host 0.0.0.0",
     "stackblitz:vue": "pnpm install --frozen-lockfile --filter enumwaii-workspace --filter @enumwaii/example-vue... && pnpm --filter enumwaii build && pnpm --filter @enumwaii/example-vue dev --host 0.0.0.0",
     "docs:api": "pnpm --filter enumwaii-docs api:generate",
-    "docs:build": "pnpm --filter enumwaii-docs build",
+    "docs:build": "pnpm --filter enumwaii build && pnpm --filter enumwaii-docs build",
     "docs:dev": "pnpm --filter enumwaii-docs dev",
     "check:core": "pnpm format:check:core && pnpm test:pins && pnpm lint:core && pnpm test:core && pnpm test:types:core && pnpm test:skills && pnpm build:core && pnpm test:docs && pnpm test:build:core",
     "check": "pnpm format:check && pnpm test:pins && pnpm lint && pnpm test && pnpm test:types && pnpm test:skills && pnpm build && pnpm test:docs && pnpm test:build",

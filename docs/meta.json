@@ -2,22 +2,24 @@
   "title": "enumwaii",
   "pages": [
     "index",
+    "---Start---",
     "getting-started",
-    "---Core API---",
     "core-api",
-    "branding-and-identity",
+    "---Guides---",
     "member-surfaces",
     "runtime-boundaries",
     "derivation",
     "adapters",
+    "branding-and-identity",
     "---Tooling---",
     "eslint-plugin",
     "linting",
+    "---Resources---",
     "agents",
     "examples",
-    "---Reference---",
     "api",
     "release-and-compatibility",
-    "brand-assets"
+    "brand-assets",
+    "documentation-system"
   ]
 }

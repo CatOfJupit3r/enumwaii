@@ -1,9 +1,6 @@
 # NestJS 12 + Mongoose 9 + enumwaii
 
-An independently runnable order service and MongoDB operations console. It uses
-real Nest modules/controllers/pipes, `MongooseModule`, schema decorators, injected
-models, queries, and optimistic updates. Open `http://localhost:3000` to operate
-the same endpoints described below.
+An independently runnable order service and MongoDB operations console. It uses real Nest modules/controllers/pipes, `MongooseModule`, schema decorators, injected models, queries, and optimistic updates. Open `http://localhost:3000` to operate the same endpoints described below.
 
 ## Run it
 
@@ -14,18 +11,11 @@ pnpm --filter @enumwaii/example-nestjs-mongoose db:up
 pnpm --filter @enumwaii/example-nestjs-mongoose dev
 ```
 
-The Compose service exposes MongoDB on `127.0.0.1:27017`; the application uses
-`mongodb://127.0.0.1:27017/enumwaii_nest_orders` by default. Override it with
-`MONGODB_URI`. Override the HTTP listener with `PORT` or `HOST`.
+The Compose service exposes MongoDB on `127.0.0.1:27017`; the application uses `mongodb://127.0.0.1:27017/enumwaii_nest_orders` by default. Override it with `MONGODB_URI`. Override the HTTP listener with `PORT` or `HOST`.
 
-Both `dev` and `build` compile directly with SWC before running Node. The
-checked-in `.swcrc` emits decorator metadata and rewrites local ESM specifiers
-to `.js` while keeping authored TypeScript imports extensionless. Calling SWC
-directly also keeps this example independent of the Nest CLI:
+Both `dev` and `build` compile directly with SWC before running Node. The checked-in `.swcrc` emits decorator metadata and rewrites local ESM specifiers to `.js` while keeping authored TypeScript imports extensionless. Calling SWC directly also keeps this example independent of the Nest CLI:
 
-`@nestjs/common` is intentionally pinned to `12.0.0`: the published `12.0.1`
-artifact omits runtime `.js` files that its ESM interface barrels export. Nest
-core, platform, and testing stay on `12.0.1`, whose peer ranges accept `12.0.0`.
+`@nestjs/common` is intentionally pinned to `12.0.0`: the published `12.0.1` artifact omits runtime `.js` files that its ESM interface barrels export. Nest core, platform, and testing stay on `12.0.1`, whose peer ranges accept `12.0.0`.
 
 ```sh
 pnpm --filter @enumwaii/example-nestjs-mongoose build
@@ -37,30 +27,27 @@ pnpm --filter @enumwaii/example-nestjs-mongoose db:down
 
 ## UI tour
 
-The responsive console at `/` is a live client, not a screenshot or pasted test
-output. It fetches Mongo-backed order records and provides controls for:
+The responsive console at `/` is a live client, not a screenshot or pasted test output. It fetches Mongo-backed order records and provides controls for:
 
-- listing and creating orders (an omitted create status demonstrates the
-  nil-only `PENDING` default);
+- listing and creating orders (an omitted create status demonstrates the nil-only `PENDING` default);
 - a legal workflow transition and a valid-but-illegal transition;
 - a stale optimistic version and a missing ObjectId;
 - strict valid, unknown-string, and wrong-primitive enumwaii inputs;
 - nil default versus malformed default-only rejection and explicit fallback.
 
-Every operation is written to the on-page HTTP trace with its real status and
-JSON response.
+Every operation is written to the on-page HTTP trace with its real status and JSON response.
 
 ## API
 
-| Method and route                   | Boundary policy                              | Behavior                                                                        |
-| ---------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------- |
-| `GET /api/orders`                  | database hydration                           | Lists real Mongoose query results                                               |
-| `POST /api/orders`                 | `@Body("status", defaultPipe)`               | Creates an order; missing status defaults to `PENDING`, malformed status is 400 |
-| `PATCH /api/orders/:id/status`     | param, strict enum body-field, integer pipes | Applies a legal versioned transition or reports 404/409                         |
-| `GET /api/boundary/strict/:status` | strict param                                 | Accepts only a canonical scalar                                                 |
-| `POST /api/boundary/strict`        | strict `status` body field                   | Demonstrates unknown strings and wrong primitives                               |
-| `GET /api/boundary/default`        | nil-only default query                       | Missing is `PENDING`; malformed is 400                                          |
-| `GET /api/boundary/fallback`       | explicit fallback query                      | Malformed input recovers to `PENDING`                                           |
+| Method and route | Boundary policy | Behavior |
+| --- | --- | --- |
+| `GET /api/orders` | database hydration | Lists real Mongoose query results |
+| `POST /api/orders` | `@Body("status", defaultPipe)` | Creates an order; missing status defaults to `PENDING`, malformed status is 400 |
+| `PATCH /api/orders/:id/status` | param, strict enum body-field, integer pipes | Applies a legal versioned transition or reports 404/409 |
+| `GET /api/boundary/strict/:status` | strict param | Accepts only a canonical scalar |
+| `POST /api/boundary/strict` | strict `status` body field | Demonstrates unknown strings and wrong primitives |
+| `GET /api/boundary/default` | nil-only default query | Missing is `PENDING`; malformed is 400 |
+| `GET /api/boundary/fallback` | explicit fallback query | Malformed input recovers to `PENDING` |
 
 Example calls after creating an order:
 
@@ -82,44 +69,21 @@ curl -X POST http://localhost:3000/api/boundary/strict \
 curl 'http://localhost:3000/api/boundary/fallback?status=RETURNED'
 ```
 
-Parse errors are `400 Bad Request` responses generated by the enumwaii pipe and
-never include an available-value list. Valid-but-illegal transitions, optimistic
-version conflicts, missing records, and corrupt persisted rows are separate
-application errors handled by a Nest exception filter.
+Parse errors are `400 Bad Request` responses generated by the enumwaii pipe and never include an available-value list. Valid-but-illegal transitions, optimistic version conflicts, missing records, and corrupt persisted rows are separate application errors handled by a Nest exception filter.
 
 ## The raw/brand boundary
 
-`src/domain/order-status.ts` takes canonical branded and raw views once. Domain
-metadata uses `derive`; the complete transition table uses `deriveTo`. Mongoose
-receives only `ORDER_STATUS_DB_VALUES` and `ORDER_STATUS_DB_ENUM.PENDING`, the
-extracted canonical **raw** integration values.
+`src/domain/order-status.ts` takes canonical branded and raw views once. Domain metadata uses `derive`; the complete transition table uses `deriveTo`. Mongoose receives only `ORDER_STATUS_DB_VALUES` and `ORDER_STATUS_DB_ENUM.PENDING`, the extracted canonical **raw** integration values.
 
-`OrderRecord.status` is intentionally `RawOrderStatus`, an unbranded raw string
-union. Mongoose validates values at runtime, but Mongoose does not manufacture a
-nominal enumwaii brand. Every lean query and newly created document therefore
-passes through `hydrateOrder`. That function calls `orderStatusSchema.safeParse`
-and returns a domain `Order` containing `OrderStatus`; only then can transition
-logic and presentation metadata run. The compile-time contract file proves raw
-strings, raw persisted values, and an overlapping value from another enumwaii
-cannot enter those domain functions.
+`OrderRecord.status` is intentionally `RawOrderStatus`, an unbranded raw string union. Mongoose validates values at runtime, but Mongoose does not manufacture a nominal enumwaii brand. Every lean query and newly created document therefore passes through `hydrateOrder`. That function calls `orderStatusSchema.safeParse` and returns a domain `Order` containing `OrderStatus`; only then can transition logic and presentation metadata run. The compile-time contract file proves raw strings, raw persisted values, and an overlapping value from another enumwaii cannot enter those domain functions.
 
-Writes use the current version in both the read check and the atomic
-`findOneAndUpdate` predicate. If another writer wins between those operations,
-the service reads the latest row and reports the observed version as a 409.
+Writes use the current version in both the read check and the atomic `findOneAndUpdate` predicate. If another writer wins between those operations, the service reads the latest row and reports the observed version as a 409.
 
 ## Schema evolution and historical corruption
 
-Adding a state requires updating the enumwaii declaration, exhaustive `derive`
-metadata, exhaustive `deriveTo` workflow, and the deployment/migration plan as
-one change. Renaming or removing a persisted state is a data migration, not a
-TypeScript refactor: migrate old documents before deploying a schema that no
-longer accepts them.
+Adding a state requires updating the enumwaii declaration, exhaustive `derive` metadata, exhaustive `deriveTo` workflow, and the deployment/migration plan as one change. Renaming or removing a persisted state is a data migration, not a TypeScript refactor: migrate old documents before deploying a schema that no longer accepts them.
 
-The runtime policy for an already-corrupt historical row is fail closed.
-`hydrateOrder` throws `InvalidOrderDocumentError`; the filter returns a generic
-500 without echoing the bad stored value. The service does not silently default
-or fallback database data, because that would turn corruption into a legitimate
-domain transition.
+The runtime policy for an already-corrupt historical row is fail closed. `hydrateOrder` throws `InvalidOrderDocumentError`; the filter returns a generic 500 without echoing the bad stored value. The service does not silently default or fallback database data, because that would turn corruption into a legitimate domain transition.
 
 ## Tests without Docker
 
@@ -130,13 +94,10 @@ pnpm --filter @enumwaii/example-nestjs-mongoose test:types
 
 The suite is intentionally separated from runtime infrastructure:
 
-- Mongoose's real `Schema` and document validation test the enum/default without
-  opening a connection;
+- Mongoose's real `Schema` and document validation test the enum/default without opening a connection;
 - hydration tests exercise valid and corrupt plain records;
-- Nest's documented `getModelToken(OrderRecord.name)` provider override supplies
-  model mocks to service/controller units;
-- workflow tests cover legal, illegal, missing, observed-version, and atomic-race
-  conflict paths;
+- Nest's documented `getModelToken(OrderRecord.name)` provider override supplies model mocks to service/controller units;
+- workflow tests cover legal, illegal, missing, observed-version, and atomic-race conflict paths;
 - type tests prove the nominal domain boundary.
 
 Docker is needed only for the interactive application.

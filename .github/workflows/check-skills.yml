@@ -41,9 +41,7 @@ jobs:
 
       - name: Install pinned intent
         run: >-
-          pnpm install --frozen-lockfile
-          --filter enumwaii-workspace
-          --filter enumwaii
+          pnpm install --frozen-lockfile --filter enumwaii-workspace --filter enumwaii
 
       - name: Validate skills
         run: pnpm --filter enumwaii exec intent validate skills --github-summary
@@ -51,8 +49,7 @@ jobs:
   review:
     name: Check intent skill coverage
     if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.ref_name == github.event.repository.default_branch
+      github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch
     permissions:
       contents: write
       pull-requests: write
@@ -82,9 +79,7 @@ jobs:
 
       - name: Install pinned intent
         run: >-
-          pnpm install --frozen-lockfile
-          --filter enumwaii-workspace
-          --filter enumwaii
+          pnpm install --frozen-lockfile --filter enumwaii-workspace --filter enumwaii
 
       - name: Check skills
         id: stale

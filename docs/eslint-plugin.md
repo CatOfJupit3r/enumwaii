@@ -3,9 +3,7 @@ title: ESLint plugin
 description: Install and understand the syntax-only and type-aware rules that complement enumwaii's TypeScript guarantees.
 ---
 
-The lint package guides source-level conventions that TypeScript does not fully
-express. It is separate from the runtime package and is never needed in a
-production bundle.
+The lint package guides source-level conventions alongside TypeScript's ownership checks. It runs as a Node-based development dependency and stays outside production bundles.
 
 ## Install
 
@@ -31,14 +29,11 @@ bun add -d eslint eslint-plugin-enumwaii
 deno add --dev npm:eslint npm:eslint-plugin-enumwaii
 ```
 
-The plugin is a Node-based development tool. Deno and Cloudflare applications
-need it only when their repository already runs ESLint through a compatible
-toolchain; it is not part of enumwaii's runtime support.
+The plugin is a Node-based development tool. Deno and Cloudflare applications need it only when their repository already runs ESLint through a compatible toolchain; it is not part of enumwaii's runtime support.
 
 ### Syntax-only flat config
 
-The lightweight preset enforces declaration casing and needs no TypeScript
-project:
+The lightweight preset uses syntax-only analysis to enforce declaration casing:
 
 ```js
 import enumwaii from "eslint-plugin-enumwaii";
@@ -48,8 +43,7 @@ export default [...enumwaii.configs["flat/recommended"]];
 
 ### Type-aware flat config
 
-The complete preset needs `@typescript-eslint/parser` with project services.
-Apply it only to TypeScript files:
+The complete preset needs `@typescript-eslint/parser` with project services. Apply it only to TypeScript files:
 
 ```js
 import tsParser from "@typescript-eslint/parser";
@@ -72,37 +66,26 @@ export default [
 ];
 ```
 
-Legacy equivalents are available as `recommended` and
-`recommended-type-checked`.
+For eslintrc configuration, use the `recommended` and `recommended-type-checked` presets.
 
 ## Rules
 
-| Rule                           | Recommended | Type information | Purpose                                                                     |
-| ------------------------------ | ----------- | ---------------- | --------------------------------------------------------------------------- |
-| `enforce-enum-casing`          | Both        | No               | Require `CONSTANT_CASE` members in direct internal declarations.            |
-| `no-direct-enumwaii-reference` | Type-aware  | Yes              | Extract `.enum`, `.rawEnum`, and `.cases` before referencing members.       |
-| `no-enumwaii-case-misuse`      | Type-aware  | Yes              | Keep raw case values inside discriminated-union declarations and narrowing. |
-| `no-raw-enum-comparison`       | Type-aware  | Yes              | Replace raw comparison and `switch` literals with owned members.            |
-| `no-raw-enum-member`           | Type-aware  | Yes              | Use owned members and composition APIs for subsets and targeted mappings.   |
-| `no-union-property-in`         | Type-aware  | Yes              | Prefer an enumwaii case discriminant to structural `in` narrowing.          |
+| Rule | Recommended | Type information | Purpose |
+| --- | --- | --- | --- |
+| `enforce-enum-casing` | Both | No | Require `CONSTANT_CASE` members in direct internal declarations. |
+| `no-direct-enumwaii-reference` | Type-aware | Yes | Extract `.enum`, `.rawEnum`, and `.cases` before referencing members. |
+| `no-enumwaii-case-misuse` | Type-aware | Yes | Keep raw case values inside discriminated-union declarations and narrowing. |
+| `no-raw-enum-comparison` | Type-aware | Yes | Replace raw comparison and `switch` literals with owned members. |
+| `no-raw-enum-member` | Type-aware | Yes | Use owned members and composition APIs for subsets and targeted mappings. |
+| `no-union-property-in` | Type-aware | Yes | Prefer an enumwaii case discriminant to structural `in` narrowing. |
 
-The rules have no options and do not autofix. Provenance-sensitive changes
-should remain explicit and reviewable.
-
-Each flagged example below renders the rule and report ID beside the affected
-source. Those annotations explain the executable rule behavior covered by the
-plugin test suite; they do not run a second ESLint program inside the docs build.
+The rules have no options and do not autofix. Provenance-sensitive changes should remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
 
 ### `enforce-enum-casing`
 
-Requires `CONSTANT_CASE` string literals in the first array passed directly to
-`em([...])` or `new Enumwaii([...])`. This is the only syntax-only rule: it does
-not need TypeScript parser services. Non-literal array elements and declarations
-whose first argument is not an array are outside its scope.
+Requires `CONSTANT_CASE` string literals in the first array passed directly to `em([...])` or `new Enumwaii([...])`. This is the only syntax-only rule: it does not need TypeScript parser services. Non-literal array elements and declarations whose first argument is not an array are outside its scope.
 
-Intentional lowercase, kebab-case, or otherwise fixed external wire values are
-valid enumwaii members. Disable the rule locally at that declaration instead of
-changing the value at runtime.
+Intentional lowercase, kebab-case, or otherwise fixed external wire values are valid enumwaii members. Disable the rule locally at that declaration instead of changing the value at runtime.
 
 Reports: `invalidInternalMember`.
 
@@ -129,15 +112,9 @@ const wireStatus = em(["in-progress"]);
 
 ### `no-direct-enumwaii-reference`
 
-Requires `.enum`, `.rawEnum`, and `.cases` to be extracted before their members
-are referenced. A TypeScript `as`, `satisfies`, or non-null wrapper around the
-extraction is recognized. This makes the member vocabulary visible at module
-scope and avoids passing the declaration object around as a namespace.
+Requires `.enum`, `.rawEnum`, and `.cases` to be extracted before their members are referenced. A TypeScript `as`, `satisfies`, or non-null wrapper around the extraction is recognized. This makes the member vocabulary visible at module scope and avoids passing the declaration object around as a namespace.
 
-The rule identifies real enumwaii instances through their types. An unrelated
-object with an `enum` property is not flagged. Direct instance APIs such as
-`parse`, `safeParse`, `is`, `pick`, `derive`, `values`, and `rawValues` remain
-valid.
+The rule identifies real enumwaii instances through their types. An unrelated object with an `enum` property is not flagged. Direct instance APIs such as `parse`, `safeParse`, `is`, `pick`, `derive`, `values`, and `rawValues` remain valid.
 
 Reports: `directMemberView`.
 
@@ -176,14 +153,9 @@ const unrelatedAdmin = unrelated.enum.ADMIN;
 
 ### `no-enumwaii-case-misuse`
 
-Keeps `.cases` in the narrow role for which it exists: native discriminated
-union authoring and control-flow narrowing. Extract a cases object once into an
-uppercase name ending in `_CASES`, such as `ROLE_CASES`.
+Keeps `.cases` in the narrow role for which it exists: native discriminated union authoring and control-flow narrowing. Extract a cases object once into an uppercase name ending in `_CASES`, such as `ROLE_CASES`.
 
-Case members are accepted in type queries, recognized discriminant properties,
-`z.literal(...)`, equality comparisons, and `if` or `switch` narrowing. The
-rule flags incorrectly exposed case containers, computed raw-key access, and a
-case member used as an ordinary application value. Use `.enum` for the latter.
+Case members are accepted in type queries, recognized discriminant properties, `z.literal(...)`, equality comparisons, and `if` or `switch` narrowing. The rule flags incorrectly exposed case containers, computed raw-key access, and a case member used as an ordinary application value. Use `.enum` for the latter.
 
 Reports: `caseObjectEscape`, `computedCaseMember`, and `caseValueEscape`.
 
@@ -226,16 +198,9 @@ if (event.type === ROLE_CASES.ADMIN) {
 
 ### `no-raw-enum-comparison`
 
-Rejects raw string and no-expression template literals when they are compared
-with a branded value, used as a `switch` case for an enumwaii value, or supplied
-as a discriminant value in a `.cases`-backed union. Assignments to those
-discriminants are checked too.
+Rejects raw string and no-expression template literals when they are compared with a branded value, used as a `switch` case for an enumwaii value, or supplied as a discriminant value in a `.cases`-backed union. Assignments to those discriminants are checked too.
 
-Use an extracted `.enum` member for ordinary application values and an
-extracted `.cases` member for native union discriminants. Unrelated strings and
-ordinary string unions without enumwaii provenance are not flagged. Parsing a
-raw external value is also valid—the parser is the boundary that establishes
-ownership.
+Use an extracted `.enum` member for ordinary application values and an extracted `.cases` member for native union discriminants. Unrelated strings and ordinary string unions without enumwaii provenance are not flagged. Parsing a raw external value is also valid—the parser is the boundary that establishes ownership.
 
 Reports: `rawComparison`, `rawSwitchCase`, and `rawCaseValue`.
 
@@ -294,18 +259,11 @@ const event: Event = { type: ROLE_CASES.ADMIN };
 
 ### `no-raw-enum-member`
 
-Requires owned members in `pick` and `omit`, and owned target members in
-`deriveTo`. It also prevents creating a new declaration from another
-declaration's branded members or value collections, which would discard the
-existing ownership relationship.
+Requires owned members in `pick` and `omit`, and owned target members in `deriveTo`. It also prevents creating a new declaration from another declaration's branded members or value collections, which would discard the existing ownership relationship.
 
-Use the source declaration's extracted `.enum` view for subsets, the target
-declaration's `.enum` view for `deriveTo`, and the built-in `combine`, `pick`,
-`omit`, or `extend` composition APIs. Ordinary `derive` result values remain
-unrestricted because they are intentionally application-defined data.
+Use the source declaration's extracted `.enum` view for subsets, the target declaration's `.enum` view for `deriveTo`, and the built-in `combine`, `pick`, `omit`, or `extend` composition APIs. Ordinary `derive` result values remain unrestricted because they are intentionally application-defined data.
 
-Reports: `rawSubsetMember`, `rawTargetMember`, `derivedConstructorMember`, and
-`derivedConstructorValues`.
+Reports: `rawSubsetMember`, `rawTargetMember`, `derivedConstructorMember`, and `derivedConstructorValues`.
 
 #### Flagged
 
@@ -355,15 +313,9 @@ const combined = em.combine([roles, permissions]);
 
 ### `no-union-property-in`
 
-Flags a static string on the left side of `in` when the right side is an object
-union and the property is available on some variants but unavailable on others.
-It does not reject ordinary property-existence checks, non-unions, dynamic
-property names, or unions whose members are not structurally separated by that
-property.
+Flags a static string on the left side of `in` when the right side is an object union and the property is available on some variants but unavailable on others. It does not reject ordinary property-existence checks, non-unions, dynamic property names, or unions whose members are not structurally separated by that property.
 
-For a closed set of variants, add a `.cases` discriminant and narrow it with
-equality or `switch`. The union then remains explicit to both TypeScript and
-reviewers.
+For a closed set of variants, add a `.cases` discriminant and narrow it with equality or `switch`. The union then remains explicit to both TypeScript and reviewers.
 
 Reports: `structuralUnionNarrowing`.
 
@@ -402,9 +354,7 @@ if (scope.kind === SCOPE_CASES.CHAT) {
 
 ## Oxlint
 
-Oxlint can load the package as a JavaScript plugin. JavaScript-plugin support is
-still evolving, and only the syntax-only casing rule is useful without
-TypeScript parser services:
+Oxlint can load the package as a JavaScript plugin. JavaScript-plugin support is still evolving, and only the syntax-only casing rule is useful without TypeScript parser services:
 
 ```jsonc
 {
@@ -415,5 +365,4 @@ TypeScript parser services:
 }
 ```
 
-Run the type-aware preset through ESLint. See [Linting boundaries](https://catofjupit3r.github.io/enumwaii/docs/linting/)
-for why lint complements rather than replaces required branding.
+Run the type-aware preset through ESLint. See the [enforcement model](https://catofjupit3r.github.io/enumwaii/docs/linting/) for how branding and lint divide responsibility.

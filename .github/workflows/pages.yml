@@ -46,12 +46,8 @@ jobs:
         run: node scripts/check-dependency-pins.mjs
       - name: Install documentation dependencies
         run: >-
-          pnpm install --frozen-lockfile
-          --filter enumwaii-workspace
-          --filter enumwaii-docs
-          --filter enumwaii
-          --filter eslint-plugin-enumwaii
-      - run: pnpm --filter enumwaii-docs build
+          pnpm install --frozen-lockfile --filter enumwaii-workspace --filter enumwaii-docs --filter enumwaii --filter eslint-plugin-enumwaii
+      - run: pnpm --filter enumwaii build && pnpm --filter enumwaii-docs build
         env:
           PAGES_BASE_PATH: /enumwaii
       - uses: actions/upload-pages-artifact@v5.0.0

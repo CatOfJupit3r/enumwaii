@@ -2,9 +2,7 @@
 
 String enums that know where they belong.
 
-[Documentation](https://catofjupit3r.github.io/enumwaii/) ·
-[API reference](https://catofjupit3r.github.io/enumwaii/docs/api/enumwaii/) ·
-[Examples](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples)
+[Documentation](https://catofjupit3r.github.io/enumwaii/) · [API reference](https://catofjupit3r.github.io/enumwaii/docs/api/enumwaii/) · [Examples](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples)
 
 ## Install
 
@@ -51,9 +49,7 @@ role === ROLE.ADMIN;
 // const invalid: Role = "ADMIN"; // TypeScript error
 ```
 
-Members remain strings at runtime, so they serialize without wrappers. Their
-required TypeScript brand stops raw strings and members from incompatible
-declarations from entering an enum-typed position.
+Members remain strings at runtime, so they serialize without wrappers. Their required TypeScript brand stops raw strings and members from incompatible declarations from entering an enum-typed position.
 
 ## Boundaries and recovery
 
@@ -66,8 +62,7 @@ roles.parse(input, { default: ROLE.GUEST }); // nil input only
 roles.parse(input, { fallback: ROLE.USER }); // any invalid input
 ```
 
-Every declaration implements Standard Schema v1 and can be passed directly to a
-compatible consumer.
+Every declaration implements Standard Schema v1 and can be passed directly to a compatible consumer.
 
 ## Composition and derivation
 
@@ -85,11 +80,9 @@ const labels = roles.derive(
 labels.get(ROLE.USER);
 ```
 
-Duplicates are removed in first-seen order. `deriveTo` can additionally require
-one or many outputs from another enumwaii declaration.
+Duplicates are removed in first-seen order. `deriveTo` can additionally require one or many outputs from another enumwaii declaration.
 
-For object-shaped outputs, provide the shared type once instead of repeating
-`satisfies` on every entry:
+For object-shaped outputs, provide the shared type once instead of repeating `satisfies` on every entry:
 
 ```ts
 const metadata = roles.derive<RoleMetadata>()(
@@ -107,8 +100,7 @@ import { valibotSchema } from "enumwaii/valibot";
 import { lowercase, uppercase } from "enumwaii/derive-with";
 ```
 
-Zod and Valibot are optional peers. Install only the validator required by your
-integration.
+Zod and Valibot are optional peers. Install only the validator required by your integration.
 
 ## Member views
 
@@ -117,20 +109,13 @@ integration.
 - `.cases` exists for native discriminated-union narrowing.
 - `~type`, `~keys`, and `~safeParseResult` expose declaration-local TypeScript utilities.
 
-Extract member views before referencing their members. The separate
-[`eslint-plugin-enumwaii`](https://www.npmjs.com/package/eslint-plugin-enumwaii)
-package can enforce this and related conventions.
+Extract member views before referencing their members. The separate [`eslint-plugin-enumwaii`](https://www.npmjs.com/package/eslint-plugin-enumwaii) package can enforce this and related conventions.
 
-Read [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/)
-and [Branding and identity](https://catofjupit3r.github.io/enumwaii/docs/branding-and-identity/)
-before adopting a raw escape hatch.
+Read [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfaces/) and [Branding and identity](https://catofjupit3r.github.io/enumwaii/docs/branding-and-identity/) before adopting a raw escape hatch.
 
 ## Compatibility
 
-Node.js 18 or newer is supported. ESM and CommonJS entry points, declarations,
-and source maps are included. The ESM entry is also tested under Bun 1.4, Deno
-2.9, and Cloudflare Workers without Node compatibility flags. See
-[releases and compatibility](https://catofjupit3r.github.io/enumwaii/docs/release-and-compatibility/).
+Node.js 18 or newer is supported. ESM and CommonJS entry points, declarations, and source maps are included. The ESM entry is also tested under Bun 1.4, Deno 2.9, and Cloudflare Workers without Node compatibility flags. See [releases and compatibility](https://catofjupit3r.github.io/enumwaii/docs/release-and-compatibility/).
 
 ## License
 

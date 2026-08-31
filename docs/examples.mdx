@@ -3,9 +3,7 @@ title: Runnable examples
 description: Full applications covering mobile, frontend, server, forms, tables, databases, and framework integrations.
 ---
 
-The repository examples are independent applications rather than artificial
-snippets. Each has a package manifest, runnable commands, tests, type contracts,
-and a README explaining its boundary and failure cases.
+The repository examples are independent applications with package manifests, runnable commands, tests, type contracts, and READMEs explaining their boundary and recovery paths.
 
 <Callout type="warn" title="Hosted demos exercise the portable slice">
   StackBlitz runs the browser or Node.js path inside a WebContainer. It cannot
@@ -14,12 +12,11 @@ and a README explaining its boundary and failure cases.
   for those environments.
 </Callout>
 
-The hosted links import the complete repository so the unpublished
-`workspace:*` copy of enumwaii remains available. They install only the selected
-example and its dependencies, then build the local library before starting.
+The hosted links import the complete repository so the unpublished `workspace:*` copy of enumwaii remains available. They install only the selected example and its dependencies, then build the local library before starting.
 
 <Cards>
-  <Card
+  <ExampleCard
+    brands={["nextjs", "tanstack"]}
     title="Next.js"
     description="App Router, Server Components, Server Actions, route handlers, TanStack Table, reducer cases, defaults, and fallbacks."
   >
@@ -27,8 +24,9 @@ example and its dependencies, then build the local library before starting.
 
     `pnpm --filter @enumwaii/example-nextjs dev`
 
-  </Card>
-  <Card
+  </ExampleCard>
+  <ExampleCard
+    brands={["tanstackStart", "solid"]}
     title="TanStack Start + Solid"
     description="SSR loaders, typed search, TanStack Form, server functions, Standard Schema, Zod objects, and RPC branding boundaries."
   >
@@ -36,8 +34,9 @@ example and its dependencies, then build the local library before starting.
 
     `pnpm --filter @enumwaii/example-tanstack-start-solid dev`
 
-  </Card>
-  <Card
+  </ExampleCard>
+  <ExampleCard
+    brands={["vue"]}
     title="Vue"
     description="Composition API, native forms, typed events, URL/localStorage hydration, and deriveTo."
   >
@@ -45,8 +44,9 @@ example and its dependencies, then build the local library before starting.
 
     `pnpm --filter @enumwaii/example-vue dev`
 
-  </Card>
-  <Card
+  </ExampleCard>
+  <ExampleCard
+    brands={["expo"]}
     title="React Native + Expo"
     description="Expo Router, native forms, AsyncStorage, deep-link and repeated-query boundaries, array derivation, and Android/iOS/web."
   >
@@ -54,8 +54,9 @@ example and its dependencies, then build the local library before starting.
 
     `pnpm --filter @enumwaii/example-react-native start`
 
-  </Card>
-  <Card
+  </ExampleCard>
+  <ExampleCard
+    brands={["hono", "pglite"]}
     title="Hono + Drizzle + PGlite"
     description="Standard Schema, PostgreSQL metadata, hydration, transitions, and conflicts across Node, Bun, Deno, and workerd."
   >
@@ -63,8 +64,9 @@ example and its dependencies, then build the local library before starting.
 
     `pnpm --filter @enumwaii/example-hono-drizzle dev`
 
-  </Card>
-  <Card
+  </ExampleCard>
+  <ExampleCard
+    brands={["elysia"]}
     title="Elysia"
     description="Native request/response validation, scalar and object boundaries, lifecycle errors, and content-type behavior."
   >
@@ -72,8 +74,9 @@ example and its dependencies, then build the local library before starting.
 
     `pnpm --filter @enumwaii/example-elysia dev`
 
-  </Card>
-  <Card
+  </ExampleCard>
+  <ExampleCard
+    brands={["orpc"]}
     title="oRPC"
     description="Native contracts and procedures, direct scalar schemas, Zod objects, typed errors, and real HTTP calls."
   >
@@ -81,8 +84,9 @@ example and its dependencies, then build the local library before starting.
 
     `pnpm --filter @enumwaii/example-orpc dev`
 
-  </Card>
-  <Card
+  </ExampleCard>
+  <ExampleCard
+    brands={["effect"]}
     title="Effect"
     description="Context, Layer, Ref, tagged failures, exhaustive workflow derivation, and external input decoding."
   >
@@ -90,8 +94,9 @@ example and its dependencies, then build the local library before starting.
 
     `pnpm --filter @enumwaii/example-effect dev`
 
-  </Card>
-  <Card
+  </ExampleCard>
+  <ExampleCard
+    brands={["nestjs", "mongoose"]}
     title="NestJS + Mongoose"
     description="Modules, controllers, pipes, injected models, Mongo enum/default metadata, document hydration, and versioned writes."
   >
@@ -99,25 +104,18 @@ example and its dependencies, then build the local library before starting.
 
     `pnpm --filter @enumwaii/example-nestjs-mongoose dev`
 
-  </Card>
+  </ExampleCard>
 </Cards>
+
+Third-party marks identify technologies exercised by the runnable examples and link to their official websites; they do not imply endorsement. Vercel, the Vercel design, Next.js and related marks, designs and logos are trademarks or registered trademarks of Vercel, Inc. or its affiliates in the US and other countries. See the [brand asset audit](https://catofjupit3r.github.io/enumwaii/docs/brand-assets/) for sources, permissions, and text-only decisions.
 
 ## Everyday development seams
 
-- Forms use TanStack Form in the Solid application and dependency-free native
-  approaches in Vue and React Native.
+- Forms use TanStack Form in the Solid application and dependency-free native approaches in Vue and React Native.
 - TanStack Table drives a searchable and sortable operations grid in Next.js.
-- Next.js, TanStack Start, Vue, and Expo all parse URL or persistence state
-  rather than asserting it. Expo includes repeated deep-link values and stale
-  AsyncStorage data.
-- Hono uses Drizzle with embedded PGlite on Node, Bun, and Deno; its shared
-  database-free status routes also run in Cloudflare workerd with Node
-  compatibility disabled. NestJS uses Mongoose with a checked-in MongoDB
-  Compose service.
-- Server examples cover JSON, form data, route parameters, request/response
-  schemas, error mapping, and serialized branded strings.
-- The Hono runtime suite keeps one status-boundary contract constant across
-  native Bun and Deno servers and Cloudflare workerd.
+- Next.js, TanStack Start, Vue, and Expo parse URL or persistence state. Expo includes repeated deep-link values and stale AsyncStorage data.
+- Hono uses Drizzle with embedded PGlite on Node, Bun, and Deno; its shared database-free status routes also run in Cloudflare workerd with Node compatibility disabled. NestJS uses Mongoose with a checked-in MongoDB Compose service.
+- Server examples cover JSON, form data, route parameters, request/response schemas, error mapping, and serialized branded strings.
+- The Hono runtime suite keeps one status-boundary contract constant across native Bun and Deno servers and Cloudflare workerd.
 
-Every application exposes invalid and ambiguous inputs instead of demonstrating
-only its happy path.
+Every application includes invalid and ambiguous inputs alongside its successful flow.

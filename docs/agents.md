@@ -3,34 +3,21 @@ title: AI agents
 description: Give coding agents current enumwaii knowledge, or prompt them to set up and assess a repository safely.
 ---
 
-Enumwaii publishes agent guidance in two complementary forms. Use the one that
-matches how the agent consumes project knowledge.
+Enumwaii publishes agent guidance in two complementary forms. Use the one that matches how the agent consumes project knowledge.
 
-| Resource                                                                             | Use it when                                                                                               |
-| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| [`llms.txt`](https://catofjupit3r.github.io/enumwaii/llms.txt)                       | A crawler or agent needs the standard concise discovery index for the documentation.                      |
-| [`llms.md`](https://catofjupit3r.github.io/enumwaii/llms.md)                         | The agent needs the product model, API boundaries, limitations, safe workflow, and links to deeper pages. |
+| Resource | Use it when |
+| --- | --- |
+| [`llms.txt`](https://catofjupit3r.github.io/enumwaii/llms.txt) | A crawler or agent needs the standard concise discovery index for the documentation. |
+| [`llms.md`](https://catofjupit3r.github.io/enumwaii/llms.md) | The agent needs the product model, API boundaries, limitations, safe workflow, and links to deeper pages. |
 | [`enumwaii` skill](https://catofjupit3r.github.io/enumwaii/skills/enumwaii/SKILL.md) | A coding agent supports `SKILL.md`-style task instructions and should implement or review enumwaii usage. |
 
-`llms.txt` follows the standard discovery format: a short project summary and
-curated lists of Markdown resources. `llms.md` is deliberately authored as the
-deeper guide rather than generated from the navigation tree or every page. It
-gives an agent enough context to reason correctly before it follows a
-task-specific link. Every documentation page is separately available as
-Markdown by replacing its trailing slash with `.md`, such as
-[`/docs/runtime-boundaries.md`](https://catofjupit3r.github.io/enumwaii/docs/runtime-boundaries.md).
+`llms.txt` follows the standard discovery format: a short project summary and curated lists of Markdown resources. `llms.md` is deliberately authored as the deeper guide rather than generated from the navigation tree or every page. It gives an agent enough context to reason correctly before it follows a task-specific link. Every documentation page is separately available as Markdown by replacing its trailing slash with `.md`, such as [`/docs/runtime-boundaries.md`](https://catofjupit3r.github.io/enumwaii/docs/runtime-boundaries.md).
 
-The npm package contains the same skill at
-`node_modules/enumwaii/skills/enumwaii/SKILL.md`. It is generated and validated
-with TanStack Intent as part of the repository checks. The hosted skill is read
-from that packaged source during the documentation build, so the two copies
-cannot drift.
+The npm package contains the same skill at `node_modules/enumwaii/skills/enumwaii/SKILL.md`. It is generated and validated with TanStack Intent as part of the repository checks. The hosted skill is read from that packaged source during the documentation build, so the two copies cannot drift.
 
 ## Quick-start implementation prompt
 
-Copy this prompt into a coding agent when enumwaii is new to a repository. It
-asks the agent to follow the repository's existing tooling rather than assuming
-Node.js, pnpm, ESLint, or a particular application framework.
+Copy this prompt into a coding agent when enumwaii is new to a repository. It asks the agent to follow the repository's existing tooling rather than assuming Node.js, pnpm, ESLint, or a particular application framework.
 
 ```text
 Set up enumwaii in this repository and migrate one representative closed string
@@ -73,8 +60,7 @@ stay outside this first migration.
 
 ## Refactor blast-area prompt
 
-Use this before a broad adoption. It is intentionally read-only: the output is
-an evidence-backed migration map rather than a speculative automated rewrite.
+Use this before a broad adoption. It is intentionally read-only: the output is an evidence-backed migration map rather than a speculative automated rewrite.
 
 ```text
 Analyze this repository for an enumwaii migration. Do not modify files, install
@@ -127,7 +113,4 @@ recommendation must be tied to evidence that the vocabulary is closed.
 
 ## Agent boundaries
 
-Agent instructions improve generated code, but they do not replace TypeScript,
-runtime parsing, or linting. The required brand is still the ownership authority;
-the ESLint package handles source-level conventions; and external values remain
-untrusted until a runtime boundary validates them.
+Agent instructions improve generated code, but they do not replace TypeScript, runtime parsing, or linting. The required brand is still the ownership authority; the ESLint package handles source-level conventions; and external values remain untrusted until a runtime boundary validates them.

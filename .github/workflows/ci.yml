@@ -32,8 +32,5 @@ jobs:
         run: node scripts/check-dependency-pins.mjs
       - name: Install core dependencies
         run: >-
-          pnpm install --frozen-lockfile
-          --filter enumwaii-workspace
-          --filter enumwaii
-          --filter eslint-plugin-enumwaii
+          pnpm install --frozen-lockfile --filter enumwaii-workspace --filter enumwaii --filter eslint-plugin-enumwaii
       - run: pnpm check:core

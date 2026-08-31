@@ -14,3 +14,7 @@
 - [ ] Lint rule changes include valid and invalid parser-service cases.
 - [ ] A Changeset is included for each user-visible published-package change, or this pull request explains why none is needed.
 - [ ] `pnpm check` passes.
+
+## Maintainer gate
+
+- [ ] Extended validation was manually run against this pull request's latest commit.

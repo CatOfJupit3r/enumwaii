@@ -175,7 +175,7 @@ Every example is independently runnable and exercises invalid or ambiguous input
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, tests, documentation, and Changesets. Usage questions belong in [SUPPORT.md](SUPPORT.md), and security reports should follow [SECURITY.md](SECURITY.md).
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, tests, documentation, and Changesets. Release and repository administration live in [MAINTAINERS.md](MAINTAINERS.md). Usage questions belong in [SUPPORT.md](SUPPORT.md), and security reports should follow [SECURITY.md](SECURITY.md).
 
 ## License
 

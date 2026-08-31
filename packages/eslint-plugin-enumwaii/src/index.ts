@@ -10,6 +10,7 @@
 
 import type { ESLint, Linter } from "eslint";
 
+import packageMetadata from "../package.json" with { type: "json" };
 import { enforceEnumCasingRule } from "./rules/enforce-enum-casing";
 import { noDirectEnumwaiiReferenceRule } from "./rules/no-direct-enumwaii-reference";
 import { noEnumwaiiCaseMisuseRule } from "./rules/no-enumwaii-case-misuse";
@@ -138,7 +139,9 @@ const plugin = {
   /** Package metadata used by ESLint when identifying the plugin. */
   meta: {
     /** Canonical package name shown in ESLint diagnostics and tooling. */
-    name: "eslint-plugin-enumwaii",
+    name: packageMetadata.name,
+    /** Published package version shown in ESLint diagnostics and tooling. */
+    version: packageMetadata.version,
   },
   /** Public rule registry exposed to eslintrc and flat ESLint configurations. */
   rules,

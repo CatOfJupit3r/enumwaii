@@ -1,22 +1,251 @@
 import Link from "next/link";
 
+import {
+  InstallCommand,
+  LandingPlayground,
+} from "@/components/landing-playground";
+
 const guarantees = [
   {
-    eyebrow: "Authored values",
-    title: "Reject accidental raw strings",
-    body: "Required brands keep an unvalidated string out of positions that promise an owned member.",
+    label: "Own it",
+    promise: "Reject accidental raw strings.",
+    detail: "Only declaration-owned members satisfy your application types.",
   },
   {
-    eyebrow: "Runtime boundaries",
-    title: "Parse where data enters",
-    body: "parse, safeParse, and Standard Schema handle JSON, forms, URLs, databases, and agent output.",
+    label: "Parse it",
+    promise: "Handle every boundary.",
+    detail: "parse, safeParse, and Standard Schema validate external input.",
   },
   {
-    eyebrow: "Team conventions",
-    title: "Make misuse visible",
-    body: "Optional ESLint rules enforce member extraction, casing, comparisons, and narrow escape hatches.",
+    label: "Enforce it",
+    promise: "Prevent future mistakes.",
+    detail: "Optional ESLint rules make suspicious patterns visible in review.",
   },
 ] as const;
+
+const exampleRoot =
+  "https://github.com/CatOfJupit3r/enumwaii/tree/main/examples";
+
+interface EcosystemIcon {
+  readonly href: string;
+  readonly label: string;
+  readonly src: string;
+}
+
+interface EcosystemItem {
+  readonly href: string;
+  readonly icons?: readonly EcosystemIcon[];
+  readonly label: string;
+}
+
+interface EcosystemGroup {
+  readonly category: string;
+  readonly items: readonly EcosystemItem[];
+}
+
+function assetPath(pathname: string): string {
+  return `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${pathname}`;
+}
+
+const ecosystem: readonly EcosystemGroup[] = [
+  {
+    category: "Hosts & runtimes",
+    items: [
+      {
+        label: "Node.js®",
+        href: `${exampleRoot}/hono`,
+        icons: [
+          {
+            href: "https://nodejs.org/",
+            label: "Node.js",
+            src: "/brands/nodejs.svg",
+          },
+        ],
+      },
+      {
+        label: "Bun",
+        href: `${exampleRoot}/hono`,
+        icons: [
+          {
+            href: "https://bun.com/",
+            label: "Bun",
+            src: "/brands/bun.svg",
+          },
+        ],
+      },
+      {
+        label: "Deno",
+        href: `${exampleRoot}/hono`,
+        icons: [
+          {
+            href: "https://deno.com/",
+            label: "Deno",
+            src: "/brands/deno.svg",
+          },
+        ],
+      },
+      {
+        label: "Cloudflare Workers®",
+        href: `${exampleRoot}/hono`,
+      },
+    ],
+  },
+  {
+    category: "Web & mobile apps",
+    items: [
+      {
+        label: "Next.js",
+        href: `${exampleRoot}/nextjs`,
+        icons: [
+          {
+            href: "https://nextjs.org/",
+            label: "Next.js",
+            src: "/brands/nextjs.svg",
+          },
+        ],
+      },
+      {
+        label: "TanStack Start",
+        href: `${exampleRoot}/tanstack-start-solid`,
+        icons: [
+          {
+            href: "https://tanstack.com/start",
+            label: "TanStack Start",
+            src: "/brands/tanstack.svg",
+          },
+        ],
+      },
+      {
+        label: "Solid",
+        href: `${exampleRoot}/tanstack-start-solid`,
+        icons: [
+          {
+            href: "https://www.solidjs.com/",
+            label: "Solid",
+            src: "/brands/solid.svg",
+          },
+        ],
+      },
+      {
+        label: "Vue",
+        href: `${exampleRoot}/vue`,
+        icons: [
+          {
+            href: "https://vuejs.org/",
+            label: "Vue",
+            src: "/brands/vue.svg",
+          },
+        ],
+      },
+      {
+        label: "React Native",
+        href: `${exampleRoot}/react-native`,
+      },
+      {
+        label: "Expo",
+        href: `${exampleRoot}/react-native`,
+        icons: [
+          {
+            href: "https://expo.dev/",
+            label: "Expo",
+            src: "/brands/expo.svg",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    category: "Servers & workflows",
+    items: [
+      {
+        label: "Hono",
+        href: `${exampleRoot}/hono`,
+        icons: [
+          {
+            href: "https://hono.dev/",
+            label: "Hono",
+            src: "/brands/hono.svg",
+          },
+        ],
+      },
+      {
+        label: "Elysia",
+        href: `${exampleRoot}/elysia`,
+        icons: [
+          {
+            href: "https://elysiajs.com/",
+            label: "Elysia",
+            src: "/brands/elysia.svg",
+          },
+        ],
+      },
+      {
+        label: "NestJS",
+        href: `${exampleRoot}/nestjs`,
+        icons: [
+          {
+            href: "https://nestjs.com/",
+            label: "NestJS",
+            src: "/brands/nestjs.svg",
+          },
+        ],
+      },
+      {
+        label: "oRPC",
+        href: `${exampleRoot}/orpc`,
+        icons: [
+          {
+            href: "https://orpc.dev/",
+            label: "oRPC",
+            src: "/brands/orpc.svg",
+          },
+        ],
+      },
+      {
+        label: "Effect",
+        href: `${exampleRoot}/effect`,
+        icons: [
+          {
+            href: "https://effect.website/",
+            label: "Effect",
+            src: "/brands/effect.svg",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    category: "Persistence",
+    items: [
+      {
+        label: "Drizzle ORM",
+        href: `${exampleRoot}/hono`,
+      },
+      {
+        label: "PGlite",
+        href: `${exampleRoot}/hono`,
+        icons: [
+          {
+            href: "https://pglite.dev/",
+            label: "PGlite",
+            src: "/brands/pglite.svg",
+          },
+        ],
+      },
+      {
+        label: "Mongoose",
+        href: `${exampleRoot}/nestjs`,
+        icons: [
+          {
+            href: "https://mongoosejs.com/",
+            label: "Mongoose",
+            src: "/brands/mongoose.svg",
+          },
+        ],
+      },
+    ],
+  },
+];
 
 export default function HomePage() {
   return (
@@ -28,91 +257,172 @@ export default function HomePage() {
         </Link>
         <div className="home-nav-links">
           <Link href="/docs">Docs</Link>
+          <Link href="/docs/api">API</Link>
+          <Link href="/docs/examples">Examples</Link>
           <a href="https://github.com/CatOfJupit3r/enumwaii">GitHub</a>
         </div>
       </nav>
 
-      <section className="hero">
-        <div className="hero-copy">
-          <p className="hero-kicker">A closed vocabulary with an owner.</p>
-          <h1>String enums that are hard to misuse.</h1>
-          <p className="hero-lede">
-            Enumwaii keeps strings pleasant at runtime while making raw values,
-            crossed declarations, and unsafe deserialization difficult to slip
-            through TypeScript code unnoticed.
-          </p>
-          <div className="hero-actions">
-            <Link className="primary-action" href="/docs/getting-started">
-              Get started
-            </Link>
-            <Link className="secondary-action" href="/docs/api">
-              Browse the API
-            </Link>
+      <section className="home-stage">
+        <div className="home-hero">
+          <div>
+            <h1>String enums that know where they belong.</h1>
           </div>
-          <div aria-label="Install enumwaii" className="install-command">
-            <span aria-hidden="true">$</span>
-            <code>pnpm add enumwaii</code>
+          <div className="home-hero-intro">
+            <p>
+              Enumwaii keeps familiar string values while TypeScript tracks the
+              declaration that owns them. Parse boundaries, get useful errors,
+              and enforce the relationship in CI.
+            </p>
+            <div>
+              <Link className="primary-action" href="/docs/getting-started">
+                Get started
+              </Link>
+              <Link className="text-action" href="/docs/api">
+                Read the API
+              </Link>
+            </div>
           </div>
         </div>
 
-        <div aria-label="Enumwaii quick example" className="hero-code">
-          <div className="code-dots" aria-hidden="true">
-            <i />
-            <i />
-            <i />
+        <LandingPlayground />
+      </section>
+
+      <section className="home-proof">
+        <div aria-label="Enumwaii guarantees" className="guarantee-list">
+          {guarantees.map((guarantee) => (
+            <article key={guarantee.label}>
+              <h2>{guarantee.label}</h2>
+              <strong>{guarantee.promise}</strong>
+              <p>{guarantee.detail}</p>
+            </article>
+          ))}
+        </div>
+
+        <div aria-labelledby="ecosystem-title" className="ecosystem-list">
+          <div className="ecosystem-heading">
+            <div>
+              <h2 id="ecosystem-title">Tested across the stack.</h2>
+            </div>
+            <Link href="/docs/examples">Explore examples</Link>
+          </div>
+          <dl>
+            {ecosystem.map((group) => (
+              <div key={group.category}>
+                <dt>{group.category}</dt>
+                <dd>
+                  {group.items.map((item) => (
+                    <span className="ecosystem-item" key={item.label}>
+                      {item.icons?.length ? (
+                        <span className="ecosystem-icons">
+                          {item.icons.map((icon) => (
+                            <a
+                              aria-label={`Visit the official ${icon.label} website`}
+                              className="ecosystem-logo-link"
+                              href={icon.href}
+                              key={icon.label}
+                              title={icon.label}
+                            >
+                              {/* Official, unmodified artwork. See /docs/brand-assets
+                                  for provenance, licenses, and trademark decisions. */}
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img alt="" src={assetPath(icon.src)} />
+                            </a>
+                          ))}
+                        </span>
+                      ) : null}
+                      <a
+                        aria-label={`Open the ${item.label} example on GitHub`}
+                        className="ecosystem-example-link"
+                        href={item.href}
+                      >
+                        <strong>{item.label}</strong>
+                        <i aria-hidden="true">↗</i>
+                      </a>
+                    </span>
+                  ))}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <p className="brand-note">
+            Third-party marks identify tested integrations and do not imply
+            endorsement. Cloudflare Workers and React Native remain text-only
+            under their published trademark rules. Vercel, the Vercel design,
+            Next.js and related marks, designs and logos are trademarks or
+            registered trademarks of Vercel, Inc. or its affiliates in the US
+            and other countries. Node.js is a trademark of the OpenJS
+            Foundation. Cloudflare and Cloudflare Workers are trademarks and/or
+            registered trademarks of Cloudflare, Inc. React Native is a
+            trademark of Meta Platforms, Inc.{" "}
+            <Link href="/docs/brand-assets">Review the asset audit</Link>.
+          </p>
+        </div>
+      </section>
+
+      <section className="home-standard-schema">
+        <div className="standard-schema-copy">
+          <h2>Works wherever schemas work.</h2>
+          <p>
+            Every enumwaii declaration implements{" "}
+            <a href="https://standardschema.dev/">Standard Schema v1</a>, the
+            shared TypeScript contract for validators and the tools that consume
+            them. Compatible libraries accept the declaration directly—no
+            wrapper and no adapter dependency.
+          </p>
+          <div>
+            <Link href="/docs/adapters">Schemas and adapters</Link>
+            <a href="https://standardschema.dev/">
+              What is Standard Schema? <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </div>
+
+        <div
+          aria-label="Standard Schema example"
+          className="standard-schema-code"
+        >
+          <div>
+            <strong>roles.ts</strong>
+            <span>Standard Schema v1</span>
           </div>
           <pre>
-            <code>{`import { em } from "enumwaii";
-
-const roles = em(["ADMIN", "USER"]);
-const ROLE = roles.enum;
-type Role = (typeof roles)["~type"];
-
-function authorize(role: Role) {
-  return role === ROLE.ADMIN;
-}
-
-authorize(ROLE.ADMIN); // ✓
-authorize("ADMIN");    // TypeScript error
-
-const role = roles.parse(input);`}</code>
+            <code>
+              <span className="syntax-keyword">const</span> roles ={" "}
+              <span className="syntax-function">em</span>([
+              <span className="syntax-string">&quot;ADMIN&quot;</span>,{" "}
+              <span className="syntax-string">&quot;USER&quot;</span>]);{"\n\n"}
+              <span className="syntax-keyword">const</span> role = roles.
+              <span className="syntax-function">parse</span>(input);{"\n"}
+              <span className="syntax-keyword">const</span> result = roles.
+              <span className="syntax-function">safeParse</span>(input);{"\n\n"}
+              <span className="syntax-keyword">await</span> roles[
+              <span className="syntax-string">&quot;~standard&quot;</span>].
+              <span className="syntax-function">validate</span>(input);{"\n"}
+              <span className="code-comment">
+                // Standard Schema v1 — built in
+              </span>
+            </code>
           </pre>
         </div>
       </section>
 
-      <section aria-labelledby="guarantees-title" className="guarantees">
-        <div className="section-heading">
-          <p>One small declaration</p>
-          <h2 id="guarantees-title">Useful from source code to the wire.</h2>
-        </div>
-        <div className="guarantee-grid">
-          {guarantees.map((guarantee) => (
-            <article key={guarantee.title}>
-              <p>{guarantee.eyebrow}</p>
-              <h3>{guarantee.title}</h3>
-              <span>{guarantee.body}</span>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="surface-callout">
+      <section className="home-install-section">
         <div>
-          <p className="surface-kicker">Fits the ecosystem</p>
-          <h2>Native strings. Standard Schema. Optional adapters.</h2>
+          <h2>Add enumwaii with the tools you already use.</h2>
           <p>
-            Use enumwaii directly with Standard Schema consumers, or opt into
-            Zod and Valibot adapters. Runnable examples cover React, Vue, Solid,
-            Hono, Elysia, oRPC, Effect, NestJS, SQL, and MongoDB.
+            The same package runs across Node.js, Bun, Deno, browsers, and
+            Cloudflare Workers.
           </p>
         </div>
-        <Link href="/docs/examples">Explore integrations</Link>
+        <InstallCommand />
       </section>
 
       <footer className="home-footer">
         <span>MIT licensed</span>
         <div>
           <a href="https://www.npmjs.com/package/enumwaii">npm</a>
+          <Link href="/docs/agents">Agents</Link>
           <a href="https://github.com/CatOfJupit3r/enumwaii/blob/main/CONTRIBUTING.md">
             Contributing
           </a>

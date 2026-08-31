@@ -1,4 +1,5 @@
 import { expectTypeOf } from "vitest";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 import {
   em,
@@ -6,7 +7,6 @@ import {
   type EnumwaiiValue,
   type InferEnumwaii,
   type InferEnumwaiiCase,
-  type StandardSchemaV1,
 } from "../src/index";
 
 const roles = em(["ADMIN", "USER"]);

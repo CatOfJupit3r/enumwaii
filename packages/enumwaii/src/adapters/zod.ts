@@ -1,3 +1,10 @@
+/**
+ * Optional Zod adapter for integrations that cannot consume Standard Schema
+ * directly.
+ *
+ * @module adapters/zod
+ */
+
 import { z } from "zod";
 
 import type { Enumwaii } from "../enumwaii";

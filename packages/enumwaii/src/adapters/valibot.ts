@@ -1,3 +1,10 @@
+/**
+ * Optional Valibot adapter for integrations that cannot consume Standard
+ * Schema directly.
+ *
+ * @module adapters/valibot
+ */
+
 import * as v from "valibot";
 
 import type { Enumwaii } from "../enumwaii";

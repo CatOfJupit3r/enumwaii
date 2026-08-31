@@ -1,3 +1,13 @@
+/**
+ * ESLint presets and rule implementations for enumwaii authoring conventions.
+ *
+ * Most consumers should use one of the exported plugin presets. Individual
+ * rule implementations remain public for custom ESLint configurations and
+ * tooling integrations.
+ *
+ * @module
+ */
+
 import type { ESLint, Linter } from "eslint";
 
 import { enforceEnumCasingRule } from "./rules/enforce-enum-casing";

@@ -6,6 +6,10 @@ updates:
     schedule:
       interval: monthly
     open-pull-requests-limit: 2
+    # Examples are compatibility fixtures with framework-specific version
+    # contracts. Upgrade each stack deliberately and validate it as a unit.
+    exclude-paths:
+      - examples/**
     groups:
       npm-minor-and-patch:
         patterns:

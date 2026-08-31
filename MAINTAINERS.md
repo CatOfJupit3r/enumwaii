@@ -33,6 +33,8 @@ Use `pnpm hooks:install` to restore the configuration and `pnpm hooks:check` to 
 
 Dependabot opens one grouped monthly pull request for exact minor and patch npm updates and one grouped monthly pull request for GitHub Actions. Major npm upgrades remain deliberate maintainer work because the workspace contains many framework examples with distinct compatibility contracts.
 
+Example applications are excluded from routine Dependabot version-update scans. They are compatibility fixtures whose framework, runtime, adapter, and build-tool versions often form coordinated support sets, so independent updates can produce a valid lockfile for an unsupported stack. Refresh an example deliberately when reviewing that integration, follow its framework's migration guidance, retain exact pins, and run its dependency, type, test, and build checks before extended validation. For Expo specifically, upgrade one SDK release at a time and use `expo install --fix` to discover the compatible React Native dependency set. Dependabot security alerts and dependency review continue to inspect the shared lockfile.
+
 Once the repository is public, GitHub's dependency review workflow activates for manifest and lockfile pull requests and rejects newly introduced vulnerabilities of moderate severity or higher. In repository settings, also enable the dependency graph, Dependabot alerts, secret scanning, and push protection.
 
 The workspace quarantines newly published dependency versions for 24 hours. A reviewed urgent update can use the exact, version-scoped `minimumReleaseAgeExclude` escape hatch documented in [SECURITY.md](SECURITY.md).

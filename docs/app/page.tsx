@@ -4,6 +4,7 @@ import {
   InstallCommand,
   LandingPlayground,
 } from "@/components/landing-playground";
+import { brandAssetPath, brandAssets, type BrandAssetName } from "@/lib/brands";
 
 const guarantees = [
   {
@@ -26,25 +27,15 @@ const guarantees = [
 const exampleRoot =
   "https://github.com/CatOfJupit3r/enumwaii/tree/main/examples";
 
-interface EcosystemIcon {
-  readonly href: string;
-  readonly label: string;
-  readonly src: string;
-}
-
 interface EcosystemItem {
   readonly href: string;
-  readonly icons?: readonly EcosystemIcon[];
+  readonly icons?: readonly BrandAssetName[];
   readonly label: string;
 }
 
 interface EcosystemGroup {
   readonly category: string;
   readonly items: readonly EcosystemItem[];
-}
-
-function assetPath(pathname: string): string {
-  return `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${pathname}`;
 }
 
 const ecosystem: readonly EcosystemGroup[] = [
@@ -54,35 +45,17 @@ const ecosystem: readonly EcosystemGroup[] = [
       {
         label: "Node.js®",
         href: `${exampleRoot}/hono`,
-        icons: [
-          {
-            href: "https://nodejs.org/",
-            label: "Node.js",
-            src: "/brands/nodejs.svg",
-          },
-        ],
+        icons: ["nodejs"],
       },
       {
         label: "Bun",
         href: `${exampleRoot}/hono`,
-        icons: [
-          {
-            href: "https://bun.com/",
-            label: "Bun",
-            src: "/brands/bun.svg",
-          },
-        ],
+        icons: ["bun"],
       },
       {
         label: "Deno",
         href: `${exampleRoot}/hono`,
-        icons: [
-          {
-            href: "https://deno.com/",
-            label: "Deno",
-            src: "/brands/deno.svg",
-          },
-        ],
+        icons: ["deno"],
       },
       {
         label: "Cloudflare Workers®",
@@ -96,46 +69,22 @@ const ecosystem: readonly EcosystemGroup[] = [
       {
         label: "Next.js",
         href: `${exampleRoot}/nextjs`,
-        icons: [
-          {
-            href: "https://nextjs.org/",
-            label: "Next.js",
-            src: "/brands/nextjs.svg",
-          },
-        ],
+        icons: ["nextjs"],
       },
       {
         label: "TanStack Start",
         href: `${exampleRoot}/tanstack-start-solid`,
-        icons: [
-          {
-            href: "https://tanstack.com/start",
-            label: "TanStack Start",
-            src: "/brands/tanstack.svg",
-          },
-        ],
+        icons: ["tanstackStart"],
       },
       {
         label: "Solid",
         href: `${exampleRoot}/tanstack-start-solid`,
-        icons: [
-          {
-            href: "https://www.solidjs.com/",
-            label: "Solid",
-            src: "/brands/solid.svg",
-          },
-        ],
+        icons: ["solid"],
       },
       {
         label: "Vue",
         href: `${exampleRoot}/vue`,
-        icons: [
-          {
-            href: "https://vuejs.org/",
-            label: "Vue",
-            src: "/brands/vue.svg",
-          },
-        ],
+        icons: ["vue"],
       },
       {
         label: "React Native",
@@ -144,13 +93,7 @@ const ecosystem: readonly EcosystemGroup[] = [
       {
         label: "Expo",
         href: `${exampleRoot}/react-native`,
-        icons: [
-          {
-            href: "https://expo.dev/",
-            label: "Expo",
-            src: "/brands/expo.svg",
-          },
-        ],
+        icons: ["expo"],
       },
     ],
   },
@@ -160,57 +103,27 @@ const ecosystem: readonly EcosystemGroup[] = [
       {
         label: "Hono",
         href: `${exampleRoot}/hono`,
-        icons: [
-          {
-            href: "https://hono.dev/",
-            label: "Hono",
-            src: "/brands/hono.svg",
-          },
-        ],
+        icons: ["hono"],
       },
       {
         label: "Elysia",
         href: `${exampleRoot}/elysia`,
-        icons: [
-          {
-            href: "https://elysiajs.com/",
-            label: "Elysia",
-            src: "/brands/elysia.svg",
-          },
-        ],
+        icons: ["elysia"],
       },
       {
         label: "NestJS",
         href: `${exampleRoot}/nestjs`,
-        icons: [
-          {
-            href: "https://nestjs.com/",
-            label: "NestJS",
-            src: "/brands/nestjs.svg",
-          },
-        ],
+        icons: ["nestjs"],
       },
       {
         label: "oRPC",
         href: `${exampleRoot}/orpc`,
-        icons: [
-          {
-            href: "https://orpc.dev/",
-            label: "oRPC",
-            src: "/brands/orpc.svg",
-          },
-        ],
+        icons: ["orpc"],
       },
       {
         label: "Effect",
         href: `${exampleRoot}/effect`,
-        icons: [
-          {
-            href: "https://effect.website/",
-            label: "Effect",
-            src: "/brands/effect.svg",
-          },
-        ],
+        icons: ["effect"],
       },
     ],
   },
@@ -224,24 +137,12 @@ const ecosystem: readonly EcosystemGroup[] = [
       {
         label: "PGlite",
         href: `${exampleRoot}/hono`,
-        icons: [
-          {
-            href: "https://pglite.dev/",
-            label: "PGlite",
-            src: "/brands/pglite.svg",
-          },
-        ],
+        icons: ["pglite"],
       },
       {
         label: "Mongoose",
         href: `${exampleRoot}/nestjs`,
-        icons: [
-          {
-            href: "https://mongoosejs.com/",
-            label: "Mongoose",
-            src: "/brands/mongoose.svg",
-          },
-        ],
+        icons: ["mongoose"],
       },
     ],
   },
@@ -315,20 +216,24 @@ export default function HomePage() {
                     <span className="ecosystem-item" key={item.label}>
                       {item.icons?.length ? (
                         <span className="ecosystem-icons">
-                          {item.icons.map((icon) => (
-                            <a
-                              aria-label={`Visit the official ${icon.label} website`}
-                              className="ecosystem-logo-link"
-                              href={icon.href}
-                              key={icon.label}
-                              title={icon.label}
-                            >
-                              {/* Official, unmodified artwork. See /docs/brand-assets
-                                  for provenance, licenses, and trademark decisions. */}
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img alt="" src={assetPath(icon.src)} />
-                            </a>
-                          ))}
+                          {item.icons.map((name) => {
+                            const icon = brandAssets[name];
+
+                            return (
+                              <a
+                                aria-label={`Visit the official ${icon.label} website`}
+                                className="ecosystem-logo-link"
+                                href={icon.href}
+                                key={name}
+                                title={icon.label}
+                              >
+                                {/* Official, unmodified artwork. See /docs/brand-assets
+                                    for provenance, licenses, and trademark decisions. */}
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img alt="" src={brandAssetPath(name)} />
+                              </a>
+                            );
+                          })}
                         </span>
                       ) : null}
                       <a

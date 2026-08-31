@@ -17,4 +17,4 @@
 
 ## Maintainer gate
 
-- [ ] Extended validation was manually run against this pull request's latest commit.
+- [ ] Extended validation was approved and passed against this pull request's latest commit.

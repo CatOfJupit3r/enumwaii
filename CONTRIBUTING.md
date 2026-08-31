@@ -59,7 +59,7 @@ suite, so they are not prerequisites for ordinary Node-focused work.
   their tests.
 - `examples` contains independently runnable framework applications.
 - `docs` contains both authored documentation and the Fumadocs site. API pages
-  under `docs/api/enumwaii` and `docs/api/eslint-plugin-enumwaii` are generated
+  under `docs/api/enumwaii` are generated
   and must not be edited directly.
 
 ## Code and tests

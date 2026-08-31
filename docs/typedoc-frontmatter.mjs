@@ -4,6 +4,49 @@ import path from "node:path";
 
 import { MarkdownPageEvent } from "typedoc-plugin-markdown";
 
+const generatedPageMetadata = new Map([
+  [
+    "enumwaii",
+    {
+      title: "enumwaii",
+      description:
+        "Package entry points for the core API, schema adapters, and optional derivation helpers.",
+    },
+  ],
+  [
+    "core",
+    {
+      title: "Core API",
+      description:
+        "Factory, declaration class, parsing, member views, composition, errors, and public utility types.",
+    },
+  ],
+  [
+    "derive-with",
+    {
+      title: "Derivation helpers",
+      description:
+        "Optional string transformations for callback-based enumwaii derivation.",
+    },
+  ],
+  [
+    "adapters/zod",
+    {
+      title: "Zod adapter",
+      description:
+        "Adapt an enumwaii declaration for consumers that require a Zod schema.",
+    },
+  ],
+  [
+    "adapters/valibot",
+    {
+      title: "Valibot adapter",
+      description:
+        "Adapt an enumwaii declaration for consumers that require a Valibot schema.",
+    },
+  ],
+]);
+
 /**
  * Convert TypeDoc's file-relative Markdown links into Fumadocs routes. A
  * Markdown file named `Thing.md` becomes the `/Thing/` route, so leaving the
@@ -25,7 +68,7 @@ function toDocumentationRoute(filename, href) {
     .replace(/(?:^|\/)index$/u, "");
 
   if (targetRoute) targetRoute = `${targetRoute}/`;
-  return `/docs/${targetRoute}${hash}`;
+  return `https://catofjupit3r.github.io/enumwaii/docs/${targetRoute}${hash}`;
 }
 
 /**
@@ -39,6 +82,7 @@ export function load(app) {
     const reflection = page.model;
     const signature = reflection?.signatures?.[0];
     const comment = reflection?.comment ?? signature?.comment;
+    const configuredMetadata = generatedPageMetadata.get(reflection?.name);
     const description = comment?.summary
       .map((part) => part.text)
       .join("")
@@ -47,8 +91,11 @@ export function load(app) {
 
     page.frontmatter = {
       ...page.frontmatter,
-      title: reflection?.name ?? "API reference",
-      description: description || "API reference generated from source JSDoc.",
+      title: configuredMetadata?.title ?? reflection?.name ?? "API reference",
+      description:
+        description ??
+        configuredMetadata?.description ??
+        "API reference generated from source JSDoc.",
     };
   });
 

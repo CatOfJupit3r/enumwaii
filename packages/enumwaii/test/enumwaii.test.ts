@@ -48,6 +48,12 @@ describe("deserialization", () => {
     expect(() => roles.parse("OWNER")).toThrow(/^Cannot parse/);
   });
 
+  it("keeps parsing exact at untrusted boundaries", () => {
+    expect(roles.is("admin")).toBe(false);
+    expect(roles.is(" ADMIN ")).toBe(false);
+    expect(roles.safeParse("USER\n").success).toBe(false);
+  });
+
   it("supports nil defaults and invalid-input fallbacks", () => {
     expect(roles.parse(undefined, { default: ROLE.USER })).toBe(ROLE.USER);
     expect(roles.parse(null, { default: ROLE.USER })).toBe(ROLE.USER);

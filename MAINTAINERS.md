@@ -6,26 +6,22 @@ This runbook covers the repository controls that cannot be inferred from package
 
 Every pull request receives the automatic **Core validation** check. It installs only the root and publishable-package dependency graph, then checks formatting, dependency pins, lint, runtime and type tests, package skills, builds, JSDoc coverage, package contents, and type resolution.
 
-Run the expensive suite after the change is ready for final review:
+Approve the expensive suite after the change is ready for final review:
 
-1. Open **Actions → Extended validation → Run workflow**.
-2. Keep the workflow ref on the default branch and enter the pull request number.
-3. Confirm that `enumwaii/extended-validation` succeeds on the pull request's latest commit.
+1. Open the pending **Extended validation** run from the pull request.
+2. Review the deployment awaiting approval for the `extended-validation` environment.
+3. Approve and deploy, then confirm that `enumwaii/extended-validation` succeeds on the pull request's latest commit.
 
-The equivalent GitHub CLI command is:
+Configure the `extended-validation` environment with a maintainer as a required reviewer and no secrets. Leave **Prevent self-review** disabled for a single-maintainer repository so the pull request author can approve the gate.
 
-```sh
-gh workflow run extended-validation.yml --ref main -f pull_request_number=123
-```
-
-The workflow definition must live on the default branch, and GitHub restricts manual dispatch to collaborators with write access. The workflow resolves the open pull request through the API, verifies that it targets the default branch, and records a pending status on its immutable head SHA. Package, example, documentation, Node 18, Bun, Deno, and Workers checks then run without secrets or write permissions. A separate trusted job writes the final status.
+The workflow starts from the trusted default-branch definition through `pull_request_target`, then pauses before any pull request code is checked out or executed. After approval, package, example, documentation, Node 18, Bun, Deno, and Workers checks run against the immutable pull request head without secrets, persisted credentials, or write permissions. A separate trusted job writes the final status.
 
 Require these contexts in the default-branch ruleset:
 
 - `Core validation`
 - `enumwaii/extended-validation`
 
-GitHub requires successful checks on the latest commit, so every push naturally clears the effective extended-validation approval until the workflow is dispatched again. No `extended-validation` environment is needed.
+GitHub requires successful checks on the latest commit. Concurrency cancels an older pending or running validation after a push, and the replacement run waits for fresh environment approval.
 
 ## Local hooks
 
@@ -74,7 +70,7 @@ Before announcing 1.0.0:
 - make the repository public and confirm that all README, package metadata, issue, security, documentation, and source links resolve;
 - enable private vulnerability reporting, Dependabot alerts, secret scanning, and push protection;
 - apply the default-branch ruleset with pull requests, linear history, resolved review threads, CODEOWNERS, and the two required validation contexts;
-- protect the `npm-release` and `github-pages` environments and restrict them to protected `main`;
+- protect the `extended-validation`, `npm-release`, and `github-pages` environments, with deployment-branch restrictions appropriate to each workflow;
 - verify the GitHub Pages deployment and custom repository homepage metadata;
 - inspect both package tarballs from `pnpm test:build:core` before the first release; and
 - publish through the manual workflow, then verify exports, types, provenance, README rendering, and package ownership from a clean consumer project.

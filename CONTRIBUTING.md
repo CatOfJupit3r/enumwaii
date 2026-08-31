@@ -90,6 +90,6 @@ A pull request should:
 4. include a Changeset when a published package changes; and
 5. pass `pnpm check`.
 
-Core validation starts on every pull request. After review, a maintainer manually runs **Extended validation** from the Actions tab with the pull request number. That workflow checks the exact current head across all examples, documentation, Bun, Deno, and Cloudflare Workers. The required `enumwaii/extended-validation` status remains missing until the maintainer starts it, and a new push requires a fresh run.
+Core validation starts on every pull request. Extended validation is queued automatically and waits at the protected `extended-validation` environment until a maintainer approves it. Once approved, it checks the exact current head across all examples, documentation, Node 18, Bun, Deno, and Cloudflare Workers. A new push cancels the older run and requires approval for the new head.
 
 Maintainers may ask to split a pull request when independent changes make its behavior or release impact difficult to review.

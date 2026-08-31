@@ -31,6 +31,7 @@ Repository policy is enforced as follows:
 - Dependency lifecycle scripts fail closed. Only the exact reviewed versions listed under `allowBuilds` in `pnpm-workspace.yaml` may run install scripts.
 - New package versions are quarantined for 24 hours.
 - GitHub Actions use exact release tags. Dependabot groups their updates into a small monthly review PR.
+- Extended validation is dispatched only after a maintainer selects a pull request. Untrusted code runs in a read-only job with no secrets, while separate trusted jobs report the required commit status.
 - Release is manually dispatched, runs only the publishable packages, and is gated by the `npm-release` environment.
 
 ### Urgent dependency updates
@@ -48,8 +49,9 @@ Then pin that same version in the appropriate manifest, update the lockfile, and
 
 The workflow files define the boundaries, while these GitHub settings enforce the human approval points:
 
-1. Create an `extended-validation` environment with a maintainer as a required reviewer and no secrets. Require both `Core validation` and `enumwaii/extended-validation` in the branch ruleset. The base-branch-owned extended workflow installs and executes the pull request's examples, docs, Bun, Deno, and Workers only after a maintainer approves the protected job. Its isolated report job writes the final status directly to the pull request head because `pull_request_target` native checks belong to the default-branch commit. Until approval, GitHub displays the missing required context as expected and blocks merging without spending a runner on a placeholder job.
-2. Create an `npm-release` environment with required reviewers and restrict its deployment branches to protected `main`. Keep `NPM_TOKEN` as an environment secret until npm trusted publishing is configured, then remove the long-lived token.
-3. Restrict the `github-pages` environment to protected `main`, and require code-owner review for workflow, lockfile, and package-manifest changes.
+1. Require both `Core validation` and `enumwaii/extended-validation` in the branch ruleset. The latter is a commit status written only by the manually dispatched **Extended validation** workflow. It targets the exact pull request head and must be run again after any new commit.
+2. Create an `npm-release` environment with required reviewers and restrict its deployment branches to protected `main`. Keep `NPM_TOKEN` as an environment secret for the initial publication. After both packages exist on npm, configure `release.yml` as their trusted GitHub Actions publisher, select the `npm publish` action, bind it to the `npm-release` environment, verify a release, and then remove the long-lived token.
+3. Restrict the `github-pages` environment to protected `main`, and require code-owner review for workflow, lockfile, package-manifest, hook, and dependency-policy changes.
+4. After making the repository public, enable Dependabot alerts, secret scanning, and push protection. The checked-in dependency review workflow then begins rejecting pull requests that introduce moderate-or-higher known vulnerabilities.
 
 The extended validation job and its dependencies receive no secrets and only a read-only repository token, including for pull requests from forks.

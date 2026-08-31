@@ -5,7 +5,7 @@ description: Runtime requirements, module formats, optional peers, versioning, a
 
 ## Runtime and modules
 
-- Node.js 18 or newer is supported by both published packages. The ESLint plugin is specifically a Node-based development tool.
+- Node.js 18 or newer is supported by both published packages. The final Node 18 release loads both ESM and CommonJS builds in extended validation. The ESLint plugin is specifically a Node-based development tool.
 - The core package's ESM entry is additionally exercised under Bun 1.4, Deno 2.9, and Cloudflare Workers. The Worker configuration explicitly disables both Node compatibility modes.
 - Both packages publish ESM and CommonJS entry points, declarations, and source maps.
 - Package exports define the public compatibility contract; import through the declared root and adapter subpaths.
@@ -21,9 +21,9 @@ The ESLint package supports ESLint 8, 9, and 10 and TypeScript 5.5 through the c
 
 ## Versioning
 
-The project uses Changesets. A user-visible package change includes a changeset that records the affected package and release level. Merging the generated release pull request publishes npm packages from GitHub Actions with npm provenance.
+The project uses Changesets. A user-visible package change includes a changeset that records the affected package and release level. Releases are deliberately two-step and maintainer initiated: one manual workflow run creates or updates the version pull request, and a second manual run after that pull request is merged publishes the prepared versions from GitHub Actions with npm provenance.
 
-Before 1.0, a minor release may contain an API change that would be semver-major after 1.0. Read the package changelog when updating across minor versions.
+Stable releases follow semantic versioning. Read the package changelog before upgrading across major versions.
 
 ## Support and security
 

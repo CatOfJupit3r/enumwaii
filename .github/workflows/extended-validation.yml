@@ -1,22 +1,91 @@
 name: Extended validation
+run-name: Extended validation for PR #${{ inputs.pull_request_number }}
 
 on:
-  # Keep the workflow definition on the trusted base branch. The approved job
-  # still checks out and executes the pull request's exact head commit.
-  pull_request_target:
+  workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: Pull request number to validate
+        required: true
+        type: string
 
 permissions: {}
 
 concurrency:
-  group: extended-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: extended-pr-${{ inputs.pull_request_number }}
+  cancel-in-progress: false
 
 jobs:
+  resolve:
+    name: Resolve pull request
+    if: github.ref_name == github.event.repository.default_branch
+    permissions:
+      pull-requests: read
+      statuses: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      head_repository: ${{ steps.pull_request.outputs.head_repository }}
+      head_sha: ${{ steps.pull_request.outputs.head_sha }}
+    steps:
+      - name: Resolve exact pull request head
+        id: pull_request
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ inputs.pull_request_number }}
+        run: |
+          if ! [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Pull request number must be a positive integer." >&2
+            exit 1
+          fi
+
+          PR_JSON="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")"
+          PR_STATE="$(jq -r '.state' <<<"$PR_JSON")"
+          BASE_BRANCH="$(jq -r '.base.ref' <<<"$PR_JSON")"
+          HEAD_REPOSITORY="$(jq -r '.head.repo.full_name // empty' <<<"$PR_JSON")"
+          HEAD_SHA="$(jq -r '.head.sha' <<<"$PR_JSON")"
+
+          if [ "$PR_STATE" != "open" ]; then
+            echo "Pull request #${PR_NUMBER} is not open." >&2
+            exit 1
+          fi
+
+          if [ "$BASE_BRANCH" != "$DEFAULT_BRANCH" ]; then
+            echo "Pull request #${PR_NUMBER} does not target ${DEFAULT_BRANCH}." >&2
+            exit 1
+          fi
+
+          if ! [[ "$HEAD_REPOSITORY" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+            echo "Pull request #${PR_NUMBER} has no available head repository." >&2
+            exit 1
+          fi
+
+          if ! [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Pull request #${PR_NUMBER} has an invalid head SHA." >&2
+            exit 1
+          fi
+
+          echo "head_repository=$HEAD_REPOSITORY" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Mark extended validation as pending
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ steps.pull_request.outputs.head_sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          STATUS_CONTEXT: enumwaii/extended-validation
+        run: |
+          gh api --method POST \
+            "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" \
+            -f state=pending \
+            -f context="$STATUS_CONTEXT" \
+            -f description="Extended validation is running" \
+            -f target_url="$RUN_URL"
+
   check:
     name: Extended validation
-    # Configure this environment with required reviewers. The job then remains
-    # pending on each PR until a maintainer explicitly approves the run.
-    environment: extended-validation
+    needs: resolve
     permissions:
       contents: read
     runs-on: ubuntu-24.04
@@ -24,13 +93,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          repository: ${{ needs.resolve.outputs.head_repository }}
+          ref: ${{ needs.resolve.outputs.head_sha }}
           persist-credentials: false
-          # Checkout v7 blocks fork code in privileged trigger workflows unless
-          # the repository explicitly opts in. This job is protected by the
-          # maintainer-reviewed environment, checks out an immutable SHA, has no
-          # secrets or persisted credentials, and only receives read access.
+          # A maintainer selected this PR explicitly. The immutable head runs
+          # without secrets or write permissions in this isolated job.
           allow-unsafe-pr-checkout: true
       - uses: pnpm/action-setup@v6.0.10
         with:
@@ -51,11 +118,16 @@ jobs:
         run: pnpm check
       - name: Check Bun, Deno, and Cloudflare Workers
         run: pnpm test:runtimes
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 18.20.8
+      - name: Check the minimum supported Node major
+        run: node scripts/check-node18-runtime.mjs
 
   report:
     name: Report PR status
-    if: always()
-    needs: check
+    if: ${{ always() && needs.resolve.result == 'success' }}
+    needs: [resolve, check]
     permissions:
       statuses: write
     runs-on: ubuntu-24.04
@@ -65,7 +137,7 @@ jobs:
         env:
           CHECK_RESULT: ${{ needs.check.result }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_SHA: ${{ needs.resolve.outputs.head_sha }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           STATUS_CONTEXT: enumwaii/extended-validation
         run: |

@@ -49,6 +49,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "prepack": "pnpm run build",
     "clean": "premove dist coverage",
     "dev": "tsdown --watch --no-clean",
     "test": "vitest run",

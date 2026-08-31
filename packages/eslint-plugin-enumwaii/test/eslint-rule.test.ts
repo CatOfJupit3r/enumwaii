@@ -39,6 +39,11 @@ async function lintFixture(
 }
 
 describe("eslint-plugin-enumwaii", () => {
+  it("reports its package identity to ESLint", () => {
+    expect(plugin.meta?.name).toBe("eslint-plugin-enumwaii");
+    expect(plugin.meta?.version).toMatch(/^\d+\.\d+\.\d+$/);
+  });
+
   it("exports self-referential flat configs", () => {
     expect(plugin.configs["flat/recommended"][0]?.plugins?.enumwaii).toBe(
       plugin,

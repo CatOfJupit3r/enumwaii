@@ -32,6 +32,8 @@ jobs:
         with:
           node-version: 22.18.0
           registry-url: https://registry.npmjs.org
+      - name: Install OIDC-capable npm client
+        run: npm install --global npm@11.17.0 --ignore-scripts
       - name: Validate dependency pins
         run: node scripts/check-dependency-pins.mjs
       - name: Install release dependencies

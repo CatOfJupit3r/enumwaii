@@ -1,6 +1,10 @@
 /.github/ @CatOfJupit3r
+/.husky/ @CatOfJupit3r
 /.changeset/ @CatOfJupit3r
 **/package.json @CatOfJupit3r
 /pnpm-lock.yaml @CatOfJupit3r
 /pnpm-workspace.yaml @CatOfJupit3r
 /scripts/check-dependency-pins.mjs @CatOfJupit3r
+/scripts/check-node18-runtime.mjs @CatOfJupit3r
+/scripts/check-staged.mjs @CatOfJupit3r
+/scripts/dependency-pin-policy.mjs @CatOfJupit3r

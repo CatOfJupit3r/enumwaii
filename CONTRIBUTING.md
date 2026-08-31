@@ -23,6 +23,8 @@ pnpm install
 pnpm check
 ```
 
+`pnpm install` lets Husky configure the repository's tracked pre-commit hook. The hook checks staged files for whitespace errors and Prettier drift, and it reruns the exact-version policy when dependency manifests are staged. It stays intentionally fast; tests and builds remain CI and pre-push responsibilities. Run `pnpm hooks:install` to restore Husky's local Git configuration.
+
 Useful focused commands:
 
 ```sh
@@ -87,5 +89,7 @@ A pull request should:
 3. include tests and documentation appropriate to the change;
 4. include a Changeset when a published package changes; and
 5. pass `pnpm check`.
+
+Core validation starts on every pull request. After review, a maintainer manually runs **Extended validation** from the Actions tab with the pull request number. That workflow checks the exact current head across all examples, documentation, Bun, Deno, and Cloudflare Workers. The required `enumwaii/extended-validation` status remains missing until the maintainer starts it, and a new push requires a fresh run.
 
 Maintainers may ask to split a pull request when independent changes make its behavior or release impact difficult to review.

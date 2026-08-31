@@ -82,6 +82,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "prepack": "pnpm run build",
     "clean": "premove dist coverage",
     "dev": "tsdown --watch --no-clean",
     "benchmark:runtime": "pnpm run build && node --expose-gc bench/runtime.mjs",

@@ -1,7 +1,6 @@
 # enumwaii
 
-String enums with owned members, runtime validation, and Standard Schema support
-for TypeScript.
+String enums that know where they belong.
 
 [Documentation](https://catofjupit3r.github.io/enumwaii/) ·
 [API reference](https://catofjupit3r.github.io/enumwaii/docs/api/enumwaii/) ·
@@ -11,6 +10,30 @@ for TypeScript.
 
 ```sh
 npm install enumwaii
+```
+
+OR
+
+```sh
+pnpm add enumwaii
+```
+
+OR
+
+```sh
+yarn add enumwaii
+```
+
+OR
+
+```sh
+bun add enumwaii
+```
+
+OR
+
+```sh
+deno add npm:enumwaii
 ```
 
 ## Quick start
@@ -104,9 +127,9 @@ before adopting a raw escape hatch.
 
 ## Compatibility
 
-Node.js 18 or newer is the npm engine. ESM and CommonJS entry points,
-declarations, and source maps are included. The ESM entry is also tested under
-Bun 1.4, Deno 2.9, and Cloudflare Workers without Node compatibility flags. See
+Node.js 18 or newer is supported. ESM and CommonJS entry points, declarations,
+and source maps are included. The ESM entry is also tested under Bun 1.4, Deno
+2.9, and Cloudflare Workers without Node compatibility flags. See
 [releases and compatibility](https://catofjupit3r.github.io/enumwaii/docs/release-and-compatibility/).
 
 ## License

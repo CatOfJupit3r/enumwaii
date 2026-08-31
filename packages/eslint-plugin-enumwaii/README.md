@@ -13,6 +13,24 @@ Syntax-only and type-aware ESLint rules for
 npm install --save-dev eslint eslint-plugin-enumwaii
 ```
 
+OR
+
+```sh
+pnpm add -D eslint eslint-plugin-enumwaii
+```
+
+OR
+
+```sh
+yarn add -D eslint eslint-plugin-enumwaii
+```
+
+OR
+
+```sh
+bun add -d eslint eslint-plugin-enumwaii
+```
+
 ## Syntax-only flat config
 
 ```js

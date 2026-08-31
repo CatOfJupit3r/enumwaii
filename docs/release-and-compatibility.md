@@ -5,8 +5,8 @@ description: Runtime requirements, module formats, optional peers, versioning, a
 
 ## Runtime and modules
 
-- Node.js 18 or newer is the npm engine for both published packages. The ESLint
-  plugin is a Node tool.
+- Node.js 18 or newer is supported by both published packages. The ESLint plugin
+  is specifically a Node-based development tool.
 - The core package's ESM entry is additionally exercised under Bun 1.4, Deno
   2.9, and Cloudflare Workers. The Worker configuration explicitly disables
   both Node compatibility modes.

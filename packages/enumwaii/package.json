@@ -1,7 +1,7 @@
 {
   "name": "enumwaii",
   "version": "0.0.0",
-  "description": "Nominal, runtime-safe string enums for TypeScript and AI-generated code",
+  "description": "String enums that know where they belong",
   "keywords": [
     "enum",
     "typescript",

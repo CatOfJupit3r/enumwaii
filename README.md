@@ -7,8 +7,7 @@
 [![documentation](https://img.shields.io/badge/docs-GitHub%20Pages-c8f45d)](https://catofjupit3r.github.io/enumwaii/)
 [![license](https://img.shields.io/github/license/CatOfJupit3r/enumwaii)](LICENSE)
 
-String enums that are difficult for humans—and especially code-generating
-agents—to misuse.
+String enums that know where they belong.
 
 Enumwaii keeps values as ordinary strings at runtime while TypeScript tracks the
 declaration that owns them. It adds boundary parsing, Standard Schema support,
@@ -49,10 +48,33 @@ known limitations are documented in [Branding and identity](https://catofjupit3r
 npm install enumwaii
 ```
 
-Node.js 18 or newer is the npm engine. The package publishes ESM and CommonJS
-entry points with declarations and source maps. Its ESM entry is also tested
-under Bun 1.4, Deno 2.9, and Cloudflare Workers without Node compatibility
-flags.
+OR
+
+```sh
+pnpm add enumwaii
+```
+
+OR
+
+```sh
+yarn add enumwaii
+```
+
+OR
+
+```sh
+bun add enumwaii
+```
+
+OR
+
+```sh
+deno add npm:enumwaii
+```
+
+The package publishes ESM and CommonJS entry points with declarations and source
+maps. Node.js 18 or newer is supported. Its ESM entry is also tested under Bun,
+Deno, and Cloudflare Workers without Node compatibility flags.
 
 ## Parse at boundaries
 
@@ -178,6 +200,9 @@ services. See the complete [ESLint setup](https://catofjupit3r.github.io/enumwai
 - [Core API guide](https://catofjupit3r.github.io/enumwaii/docs/core-api/)
 - [Generated API reference](https://catofjupit3r.github.io/enumwaii/docs/api/)
 - [Design decisions and limitations](https://catofjupit3r.github.io/enumwaii/docs/)
+- [AI agent skill and prompts](https://catofjupit3r.github.io/enumwaii/docs/agents/)
+- [Agent discovery index (`llms.txt`)](https://catofjupit3r.github.io/enumwaii/llms.txt)
+- [Agent-ready library brief](https://catofjupit3r.github.io/enumwaii/llms.md)
 - [Runnable example applications](examples/README.md)
 
 The examples cover Next.js, TanStack Start with Solid, Vue, React Native with

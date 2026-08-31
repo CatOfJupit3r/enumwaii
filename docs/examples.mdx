@@ -1,0 +1,123 @@
+---
+title: Runnable examples
+description: Full applications covering mobile, frontend, server, forms, tables, databases, and framework integrations.
+---
+
+The repository examples are independent applications rather than artificial
+snippets. Each has a package manifest, runnable commands, tests, type contracts,
+and a README explaining its boundary and failure cases.
+
+<Callout type="warn" title="Hosted demos exercise the portable slice">
+  StackBlitz runs the browser or Node.js path inside a WebContainer. It cannot
+  prove Expo's native Android/iOS behavior, Hono's Bun, Deno, or workerd paths,
+  or NestJS's Docker-backed MongoDB service. Use the checked-in runtime commands
+  for those environments.
+</Callout>
+
+The hosted links import the complete repository so the unpublished
+`workspace:*` copy of enumwaii remains available. They install only the selected
+example and its dependencies, then build the local library before starting.
+
+<Cards>
+  <Card
+    title="Next.js"
+    description="App Router, Server Components, Server Actions, route handlers, TanStack Table, reducer cases, defaults, and fallbacks."
+  >
+    [Open in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Anextjs&file=examples%2Fnextjs%2Fcomponents%2Fboundary-lab.tsx) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/nextjs)
+
+    `pnpm --filter @enumwaii/example-nextjs dev`
+
+  </Card>
+  <Card
+    title="TanStack Start + Solid"
+    description="SSR loaders, typed search, TanStack Form, server functions, Standard Schema, Zod objects, and RPC branding boundaries."
+  >
+    [Open in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Atanstack-start-solid&file=examples%2Ftanstack-start-solid%2Fsrc%2Froutes%2Fvalidation.tsx) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/tanstack-start-solid)
+
+    `pnpm --filter @enumwaii/example-tanstack-start-solid dev`
+
+  </Card>
+  <Card
+    title="Vue"
+    description="Composition API, native forms, typed events, URL/localStorage hydration, and deriveTo."
+  >
+    [Open in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Avue&file=examples%2Fvue%2Fsrc%2Fcomponents%2FBoundaryPlayground.vue) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/vue)
+
+    `pnpm --filter @enumwaii/example-vue dev`
+
+  </Card>
+  <Card
+    title="React Native + Expo"
+    description="Expo Router, native forms, AsyncStorage, deep-link and repeated-query boundaries, array derivation, and Android/iOS/web."
+  >
+    [Try the web target in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Areact-native-web&file=examples%2Freact-native%2Fsrc%2Fapp%2Fboundary.tsx) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/react-native)
+
+    `pnpm --filter @enumwaii/example-react-native start`
+
+  </Card>
+  <Card
+    title="Hono + Drizzle + PGlite"
+    description="Standard Schema, PostgreSQL metadata, hydration, transitions, and conflicts across Node, Bun, Deno, and workerd."
+  >
+    [Run the Node showcase in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Ahono&file=examples%2Fhono%2Fsrc%2Froutes%2Fapi.ts) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/hono)
+
+    `pnpm --filter @enumwaii/example-hono-drizzle dev`
+
+  </Card>
+  <Card
+    title="Elysia"
+    description="Native request/response validation, scalar and object boundaries, lifecycle errors, and content-type behavior."
+  >
+    [Open in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Aelysia&file=examples%2Felysia%2Fsrc%2Fhttp%2Ftheme-plugin.ts) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/elysia)
+
+    `pnpm --filter @enumwaii/example-elysia dev`
+
+  </Card>
+  <Card
+    title="oRPC"
+    description="Native contracts and procedures, direct scalar schemas, Zod objects, typed errors, and real HTTP calls."
+  >
+    [Open in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Aorpc&file=examples%2Forpc%2Fsrc%2Frouter.ts) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/orpc)
+
+    `pnpm --filter @enumwaii/example-orpc dev`
+
+  </Card>
+  <Card
+    title="Effect"
+    description="Context, Layer, Ref, tagged failures, exhaustive workflow derivation, and external input decoding."
+  >
+    [Run the CLI in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Aeffect&file=examples%2Feffect%2Fsrc%2Fjob-workflow.ts&view=editor&terminalHeight=50) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/effect)
+
+    `pnpm --filter @enumwaii/example-effect dev`
+
+  </Card>
+  <Card
+    title="NestJS + Mongoose"
+    description="Modules, controllers, pipes, injected models, Mongo enum/default metadata, document hydration, and versioned writes."
+  >
+    [Open a GitHub Codespace](https://codespaces.new/CatOfJupit3r/enumwaii?quickstart=1) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/nestjs)
+
+    `pnpm --filter @enumwaii/example-nestjs-mongoose dev`
+
+  </Card>
+</Cards>
+
+## Everyday development seams
+
+- Forms use TanStack Form in the Solid application and dependency-free native
+  approaches in Vue and React Native.
+- TanStack Table drives a searchable and sortable operations grid in Next.js.
+- Next.js, TanStack Start, Vue, and Expo all parse URL or persistence state
+  rather than asserting it. Expo includes repeated deep-link values and stale
+  AsyncStorage data.
+- Hono uses Drizzle with embedded PGlite on Node, Bun, and Deno; its shared
+  database-free status routes also run in Cloudflare workerd with Node
+  compatibility disabled. NestJS uses Mongoose with a checked-in MongoDB
+  Compose service.
+- Server examples cover JSON, form data, route parameters, request/response
+  schemas, error mapping, and serialized branded strings.
+- The Hono runtime suite keeps one status-boundary contract constant across
+  native Bun and Deno servers and Cloudflare workerd.
+
+Every application exposes invalid and ambiguous inputs instead of demonstrating
+only its happy path.

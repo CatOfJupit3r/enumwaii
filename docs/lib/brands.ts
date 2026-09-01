@@ -21,12 +21,6 @@ export const brandAssets = {
     needsLightSurface: true,
     src: "/brands/elysia.svg",
   },
-  expo: {
-    href: "https://expo.dev/",
-    label: "Expo",
-    needsLightSurface: true,
-    src: "/brands/expo.svg",
-  },
   hono: {
     href: "https://hono.dev/",
     label: "Hono",

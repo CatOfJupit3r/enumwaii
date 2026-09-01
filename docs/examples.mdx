@@ -1,15 +1,14 @@
 ---
 title: Runnable examples
-description: Full applications covering mobile, frontend, server, forms, tables, databases, and framework integrations.
+description: Full applications covering frontend, server, forms, tables, databases, and framework integrations.
 ---
 
 The repository examples are independent applications with package manifests, runnable commands, tests, type contracts, and READMEs explaining their boundary and recovery paths.
 
 <Callout type="warn" title="Hosted demos exercise the portable slice">
   StackBlitz runs the browser or Node.js path inside a WebContainer. It cannot
-  prove Expo's native Android/iOS behavior, Hono's Bun, Deno, or workerd paths,
-  or NestJS's Docker-backed MongoDB service. Use the checked-in runtime commands
-  for those environments.
+  prove Hono's Bun, Deno, or workerd paths or NestJS's Docker-backed MongoDB
+  service. Use the checked-in runtime commands for those environments.
 </Callout>
 
 The hosted links import the complete repository so the unpublished `workspace:*` copy of enumwaii remains available. They install only the selected example and its dependencies, then build the local library before starting.
@@ -43,16 +42,6 @@ The hosted links import the complete repository so the unpublished `workspace:*`
     [Open in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Avue&file=examples%2Fvue%2Fsrc%2Fcomponents%2FBoundaryPlayground.vue) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/vue)
 
     `pnpm --filter @enumwaii/example-vue dev`
-
-  </ExampleCard>
-  <ExampleCard
-    brands={["expo"]}
-    title="React Native + Expo"
-    description="Expo Router, native forms, AsyncStorage, deep-link and repeated-query boundaries, array derivation, and Android/iOS/web."
-  >
-    [Try the web target in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Areact-native-web&file=examples%2Freact-native%2Fsrc%2Fapp%2Fboundary.tsx) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/react-native)
-
-    `pnpm --filter @enumwaii/example-react-native start`
 
   </ExampleCard>
   <ExampleCard
@@ -111,9 +100,9 @@ Third-party marks identify technologies exercised by the runnable examples and l
 
 ## Everyday development seams
 
-- Forms use TanStack Form in the Solid application and dependency-free native approaches in Vue and React Native.
+- Forms use TanStack Form in the Solid application and a dependency-free native approach in Vue.
 - TanStack Table drives a searchable and sortable operations grid in Next.js.
-- Next.js, TanStack Start, Vue, and Expo parse URL or persistence state. Expo includes repeated deep-link values and stale AsyncStorage data.
+- Next.js, TanStack Start, and Vue parse URL or persistence state.
 - Hono uses Drizzle with embedded PGlite on Node, Bun, and Deno; its shared database-free status routes also run in Cloudflare workerd with Node compatibility disabled. NestJS uses Mongoose with a checked-in MongoDB Compose service.
 - Server examples cover JSON, form data, route parameters, request/response schemas, error mapping, and serialized branded strings.
 - The Hono runtime suite keeps one status-boundary contract constant across native Bun and Deno servers and Cloudflare workerd.

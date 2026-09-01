@@ -150,7 +150,6 @@ The `flat/recommended-type-checked` preset additionally catches direct member vi
 | Area | Checked-in examples |
 | --- | --- |
 | Web applications | [Next.js](examples/nextjs), [TanStack Start + Solid](examples/tanstack-start-solid), and [Vue](examples/vue) |
-| Mobile | [React Native + Expo](examples/react-native) across Android, iOS, and web |
 | Servers | [Hono](examples/hono), [Elysia](examples/elysia), [oRPC](examples/orpc), [Effect](examples/effect), and [NestJS](examples/nestjs) |
 | Runtimes | Node.js, Bun, Deno, and Cloudflare Workers through the shared [Hono](examples/hono) boundary contract |
 | Data and everyday UI | Drizzle + PGlite, Mongoose, TanStack Form, native forms, TanStack Table, URL state, persistence hydration, request validation, and visible failure paths across the examples above |

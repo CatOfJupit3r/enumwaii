@@ -29,8 +29,6 @@ A public logo file by itself is not treated as permission. When an owner says or
 | TanStack Start | Official TanStack mark | TanStack publishes the mark and its spacing, proportion, and contrast rules in the [TanStack brand guide](https://tanstack.com/brand-guide). |
 | Solid | Official project mark | The unmodified SVG comes from the official [Solid documentation source](https://github.com/solidjs/solid-docs/blob/main/public/images/logos/solid.svg). Solid also distributes its project artwork with the MIT-licensed [Solid repository](https://github.com/solidjs/solid/blob/main/LICENSE). No contrary project trademark rule was located. |
 | Vue | Official mark | Vue's [artwork repository](https://github.com/vuejs/art) expressly permits use in Vue-related open-source projects and to illustrate integrations. |
-| React Native | **Text only** | Meta lists React Native as a trademark and says its marks may be used only with permission or applicable published guidance. No React Native logo rule covering this gallery was located. See [Meta's trademark register and rules](https://www.meta.com/brand/resources/meta/our-trademarks/). |
-| Expo | Official mark | Expo's official [logo repository](https://github.com/expo/logos) and [brand page](https://expo.dev/brand) allow the unmodified, subordinate mark to describe an Expo integration without implying endorsement. Expo and React Native are identified separately, so the Expo mark represents Expo only. |
 | Hono | Official flame mark | The unmodified SVG is from Hono's [official website source](https://github.com/honojs/website/blob/main/public/images/logo.svg), which is [MIT licensed](https://github.com/honojs/website/blob/main/LICENSE). No separate rule prohibiting a factual integration reference was located. |
 | Elysia | Official project mark | The unmodified SVG is from Elysia's [official documentation source](https://github.com/elysiajs/documentation/blob/main/docs/public/assets/elysia.svg), which is [MIT licensed](https://github.com/elysiajs/documentation/blob/main/LICENSE). No separate rule prohibiting this factual reference was located. |
 | NestJS | Official cat mark | The unmodified SVG is from the official [NestJS documentation source](https://github.com/nestjs/docs.nestjs.com/blob/master/src/assets/logo-small.svg), which is [MIT licensed](https://github.com/nestjs/docs.nestjs.com/blob/master/LICENSE). No separate rule prohibiting this factual reference was located. |
@@ -46,7 +44,7 @@ A public logo file by itself is not treated as permission. When an owner says or
 - Marks are shown at the same small size, beside the complete product name, and below enumwaii's own identity.
 - Artwork is not recolored, redrawn, cropped, animated, or combined into a new logo.
 - Each page carrying a mark includes owner-specific attribution where published guidance requires it, plus a general non-endorsement statement.
-- Cloudflare Workers, React Native, and Drizzle ORM remain text-only.
+- Cloudflare Workers and Drizzle ORM remain text-only.
 - If an owner changes its guidance or asks for removal, remove the corresponding local asset and keep the truthful text reference.
 
 Brand rules change independently of this repository. Re-check the primary sources above before reusing these assets elsewhere or changing their visual treatment.

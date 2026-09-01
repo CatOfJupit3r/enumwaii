@@ -86,15 +86,6 @@ const ecosystem: readonly EcosystemGroup[] = [
         href: `${exampleRoot}/vue`,
         icons: ["vue"],
       },
-      {
-        label: "React Native",
-        href: `${exampleRoot}/react-native`,
-      },
-      {
-        label: "Expo",
-        href: `${exampleRoot}/react-native`,
-        icons: ["expo"],
-      },
     ],
   },
   {
@@ -252,14 +243,13 @@ export default function HomePage() {
           </dl>
           <p className="brand-note">
             Third-party marks identify tested integrations and do not imply
-            endorsement. Cloudflare Workers and React Native remain text-only
-            under their published trademark rules. Vercel, the Vercel design,
-            Next.js and related marks, designs and logos are trademarks or
-            registered trademarks of Vercel, Inc. or its affiliates in the US
-            and other countries. Node.js is a trademark of the OpenJS
-            Foundation. Cloudflare and Cloudflare Workers are trademarks and/or
-            registered trademarks of Cloudflare, Inc. React Native is a
-            trademark of Meta Platforms, Inc.{" "}
+            endorsement. Cloudflare Workers remains text-only under its
+            published trademark rules. Vercel, the Vercel design, Next.js and
+            related marks, designs and logos are trademarks or registered
+            trademarks of Vercel, Inc. or its affiliates in the US and other
+            countries. Node.js is a trademark of the OpenJS Foundation.
+            Cloudflare and Cloudflare Workers are trademarks and/or registered
+            trademarks of Cloudflare, Inc.{" "}
             <Link href="/docs/brand-assets">Review the asset audit</Link>.
           </p>
         </div>

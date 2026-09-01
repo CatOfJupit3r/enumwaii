@@ -108,7 +108,7 @@
     "@types/react": "19.2.18",
     "react": "19.2.8",
     "valibot": "1.4.2",
-    "zod": "4.4.3"
+    "zod": "4.5.2"
   },
   "dependencies": {
     "@standard-schema/spec": "1.1.0"

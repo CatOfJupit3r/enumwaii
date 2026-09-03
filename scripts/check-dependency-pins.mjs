@@ -2,7 +2,7 @@ import { glob, readFile } from "node:fs/promises";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { dependencyPinViolations } from "./dependency-pin-policy.mjs";
+import { dependencyVersionViolations } from "./dependency-pin-policy.mjs";
 
 const workspaceRoot = fileURLToPath(new URL("../", import.meta.url));
 
@@ -95,25 +95,22 @@ const violations = [];
 
 for (const path of paths) {
   const manifest = await readManifest(path);
-  violations.push(...dependencyPinViolations(manifest, path));
+  violations.push(...dependencyVersionViolations(manifest, path));
 }
 
 if (violations.length > 0) {
-  console.error(
-    "Dependencies, devDependencies, and optionalDependencies must use exact SemVer versions or workspace:*.",
-  );
-  console.error(
-    "Peer dependency ranges are intentionally exempt because they describe consumer compatibility.",
-  );
+  console.error("Dependency version policy violations:");
 
   for (const violation of violations) {
     const path = relative(workspaceRoot, violation.path);
     console.error(
-      `- ${path}: ${violation.section}.${violation.name} = ${JSON.stringify(violation.specifier)}`,
+      `- ${path}: ${violation.section}.${violation.name} = ${JSON.stringify(violation.specifier)}; expected ${violation.expected}`,
     );
   }
 
   process.exitCode = 1;
 } else {
-  console.log(`Dependency pins valid in ${paths.length} workspace manifests.`);
+  console.log(
+    `Dependency version policy valid in ${paths.length} workspace manifests.`,
+  );
 }

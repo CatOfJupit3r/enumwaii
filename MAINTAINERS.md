@@ -4,7 +4,7 @@ This runbook covers the repository controls that cannot be inferred from package
 
 ## Pull request gates
 
-Every pull request receives the automatic **Core validation** check. It installs only the root and publishable-package dependency graph, then checks formatting, dependency pins, lint, runtime and type tests, package skills, builds, JSDoc coverage, package contents, and type resolution.
+Every pull request receives the automatic **Core validation** check. It installs only the root and publishable-package dependency graph, then checks formatting, dependency version policy, lint, runtime and type tests, package skills, builds, JSDoc coverage, package contents, and type resolution.
 
 Approve the expensive suite after the change is ready for final review:
 
@@ -25,13 +25,13 @@ GitHub requires successful checks on the latest commit. Concurrency cancels an o
 
 ## Local hooks
 
-The root `prepare` lifecycle lets Husky configure the tracked `.husky/pre-commit` hook after installation. The hook runs only checks that provide quick, actionable feedback: Git whitespace validation, Prettier on staged files, and exact dependency-version validation when a manifest or workspace policy is staged.
+The root `prepare` lifecycle lets Husky configure the tracked `.husky/pre-commit` hook after installation. The hook runs only checks that provide quick, actionable feedback: Git whitespace validation, Prettier on staged files, and dependency-version policy validation when a manifest or workspace policy is staged.
 
 Use `pnpm hooks:install` to restore the configuration and `pnpm hooks:check` to run the staged-file checks directly. Hooks are a convenience boundary, not a security boundary; CI repeats the policies from a clean checkout.
 
 ## Dependency maintenance
 
-Dependabot opens one grouped monthly pull request for exact minor and patch npm updates and one grouped monthly pull request for GitHub Actions. Major npm upgrades remain deliberate maintainer work because the workspace contains many framework examples with distinct compatibility contracts.
+Dependabot opens one grouped monthly pull request for compatible npm updates and one grouped monthly pull request for GitHub Actions. Major npm upgrades remain deliberate maintainer work because the workspace contains many framework examples with distinct compatibility contracts.
 
 Example applications are excluded from routine Dependabot version-update scans. They are compatibility fixtures whose framework, runtime, adapter, and build-tool versions often form coordinated support sets, so independent updates can produce a valid lockfile for an unsupported stack. Refresh an example deliberately when reviewing that integration, follow its framework's migration guidance, retain exact pins, and run its dependency, type, test, and build checks before extended validation. Dependabot security alerts and dependency review continue to inspect the shared lockfile.
 

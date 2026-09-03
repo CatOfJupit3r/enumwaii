@@ -26,7 +26,7 @@ The published `enumwaii` package has one runtime dependency, and the ESLint plug
 
 Repository policy is enforced as follows:
 
-- `dependencies`, `devDependencies`, and `optionalDependencies` must be exact SemVer versions or `workspace:*`. `pnpm test:pins` checks every workspace manifest. Peer dependency ranges remain ranges because they describe the consumer versions supported by a published package.
+- Private workspace packages and every `devDependencies` entry use exact SemVer versions or `workspace:*` for reproducible development. Published `dependencies` and `optionalDependencies` use caret ranges or `workspace:^` so consumers can deduplicate compatible releases. Peer dependencies use compatibility ranges and never exact versions. `pnpm test:pins` checks every workspace manifest.
 - The lockfile is committed and frozen in CI. Transitive Git and tarball dependencies are blocked.
 - Dependency lifecycle scripts fail closed. Only the exact reviewed versions listed under `allowBuilds` in `pnpm-workspace.yaml` may run install scripts.
 - New package versions are quarantined for 24 hours.

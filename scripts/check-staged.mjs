@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { format, getFileInfo, resolveConfig } from "prettier";
 
-import { dependencyPinViolations } from "./dependency-pin-policy.mjs";
+import { dependencyVersionViolations } from "./dependency-pin-policy.mjs";
 
 const workspaceRoot = fileURLToPath(new URL("../", import.meta.url));
 const manifestPattern = /(?:^|\/)package\.json$/;
@@ -106,20 +106,15 @@ if (unformatted.length > 0) {
 
 const stagedManifests = files.filter((file) => manifestPattern.test(file));
 const pinViolations = stagedManifests.flatMap((file) =>
-  dependencyPinViolations(JSON.parse(readStagedFile(file)), file),
+  dependencyVersionViolations(JSON.parse(readStagedFile(file)), file),
 );
 
 if (pinViolations.length > 0) {
-  console.error(
-    "Dependencies, devDependencies, and optionalDependencies must use exact SemVer versions or workspace:*.",
-  );
-  console.error(
-    "Peer dependency ranges are intentionally exempt because they describe consumer compatibility.",
-  );
+  console.error("Dependency version policy violations:");
 
   for (const violation of pinViolations) {
     console.error(
-      `- ${violation.path}: ${violation.section}.${violation.name} = ${JSON.stringify(violation.specifier)}`,
+      `- ${violation.path}: ${violation.section}.${violation.name} = ${JSON.stringify(violation.specifier)}; expected ${violation.expected}`,
     );
   }
 

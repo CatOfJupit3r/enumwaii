@@ -438,7 +438,7 @@ importers:
   packages/enumwaii:
     dependencies:
       '@standard-schema/spec':
-        specifier: 1.1.0
+        specifier: ^1.1.0
         version: 1.1.0
     devDependencies:
       '@tanstack/intent':
@@ -460,7 +460,7 @@ importers:
   packages/eslint-plugin-enumwaii:
     dependencies:
       '@typescript-eslint/utils':
-        specifier: 8.69.0
+        specifier: ^8.69.0
         version: 8.69.0(eslint@10.9.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
     devDependencies:
       '@typescript-eslint/parser':

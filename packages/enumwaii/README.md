@@ -1,6 +1,10 @@
-# enumwaii
+<p align="center">
+  <img src="https://catofjupit3r.github.io/enumwaii/icon.svg" alt="enumwaii" width="128" height="128">
+</p>
 
-String enums that know where they belong.
+<h1 align="center">enumwaii</h1>
+
+<p align="center"><strong>String enums that know where they belong.</strong></p>
 
 [Documentation](https://catofjupit3r.github.io/enumwaii/) · [API reference](https://catofjupit3r.github.io/enumwaii/docs/api/enumwaii/) · [Examples](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples)
 

@@ -1,8 +1,12 @@
-# eslint-plugin-enumwaii
+<p align="center">
+  <img src="https://catofjupit3r.github.io/enumwaii/icon.svg" alt="enumwaii" width="112" height="112">
+</p>
+
+<h1 align="center">eslint-plugin-enumwaii</h1>
 
 Syntax-only and type-aware ESLint rules for [`enumwaii`](https://www.npmjs.com/package/enumwaii).
 
-[Setup guide](https://catofjupit3r.github.io/enumwaii/docs/eslint-plugin/) · [Rules reference](https://catofjupit3r.github.io/enumwaii/docs/api/eslint-plugin-enumwaii/) · [Design boundaries](https://catofjupit3r.github.io/enumwaii/docs/linting/)
+[Setup and rules](https://catofjupit3r.github.io/enumwaii/docs/eslint-plugin/) · [Design boundaries](https://catofjupit3r.github.io/enumwaii/docs/linting/)
 
 ## Install
 

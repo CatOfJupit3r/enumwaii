@@ -4,6 +4,7 @@ import {
   InstallCommand,
   LandingPlayground,
 } from "@/components/landing-playground";
+import { ProjectMark } from "@/components/project-mark";
 import { brandAssetPath, brandAssets, type BrandAssetName } from "@/lib/brands";
 
 const guarantees = [
@@ -144,7 +145,7 @@ export default function HomePage() {
     <main className="home-shell">
       <nav aria-label="Primary" className="home-nav">
         <Link className="enumwaii-wordmark" href="/">
-          <span aria-hidden="true">em</span>
+          <ProjectMark />
           <strong>enumwaii</strong>
         </Link>
         <div className="home-nav-links">

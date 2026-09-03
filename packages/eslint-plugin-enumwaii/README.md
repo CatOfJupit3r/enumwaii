@@ -1,4 +1,8 @@
-# eslint-plugin-enumwaii
+<p align="center">
+  <img src="https://catofjupit3r.github.io/enumwaii/icon.png" alt="enumwaii" width="112" height="112">
+</p>
+
+<h1 align="center">eslint-plugin-enumwaii</h1>
 
 Syntax-only and type-aware ESLint rules for [`enumwaii`](https://www.npmjs.com/package/enumwaii).
 

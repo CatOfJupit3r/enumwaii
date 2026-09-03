@@ -1,5 +1,7 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 
+import { ProjectMark } from "@/components/project-mark";
+
 /** Shared navigation options for every documentation route. */
 export function baseOptions(): BaseLayoutProps {
   return {
@@ -19,7 +21,7 @@ export function baseOptions(): BaseLayoutProps {
     nav: {
       title: (
         <span className="enumwaii-wordmark">
-          <span aria-hidden="true">em</span>
+          <ProjectMark />
           <strong>enumwaii</strong>
         </span>
       ),

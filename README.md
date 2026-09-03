@@ -1,8 +1,12 @@
-# enumwaii
+<p align="center">
+  <img src="./assets/enumwaii-icon.png" alt="enumwaii" width="160" height="160">
+</p>
 
-> String enums that know where they belong.
+<h1 align="center">enumwaii</h1>
 
-[![npm package](https://img.shields.io/badge/npm-enumwaii-cb3837?logo=npm)](https://www.npmjs.com/package/enumwaii) [![CI](https://github.com/CatOfJupit3r/enumwaii/actions/workflows/ci.yml/badge.svg)](https://github.com/CatOfJupit3r/enumwaii/actions/workflows/ci.yml) [![extended validation](https://github.com/CatOfJupit3r/enumwaii/actions/workflows/extended-validation.yml/badge.svg)](https://github.com/CatOfJupit3r/enumwaii/actions/workflows/extended-validation.yml) [![documentation](https://img.shields.io/badge/docs-GitHub%20Pages-c8f45d)](https://catofjupit3r.github.io/enumwaii/) [![license](https://img.shields.io/github/license/CatOfJupit3r/enumwaii)](LICENSE)
+<p align="center"><strong>String enums that know where they belong.</strong></p>
+
+[![npm package](https://img.shields.io/npm/v/enumwaii)](https://www.npmjs.com/package/enumwaii) [![CI](https://github.com/CatOfJupit3r/enumwaii/actions/workflows/ci.yml/badge.svg)](https://github.com/CatOfJupit3r/enumwaii/actions/workflows/ci.yml) [![documentation](https://img.shields.io/badge/docs-GitHub%20Pages-c8f45d)](https://catofjupit3r.github.io/enumwaii/) [![license](https://img.shields.io/github/license/CatOfJupit3r/enumwaii)](LICENSE)
 
 [Documentation](https://catofjupit3r.github.io/enumwaii/) · [Getting started](https://catofjupit3r.github.io/enumwaii/docs/getting-started/) · [API reference](https://catofjupit3r.github.io/enumwaii/docs/api/) · [Examples](https://catofjupit3r.github.io/enumwaii/docs/examples/) · [ESLint](https://catofjupit3r.github.io/enumwaii/docs/eslint-plugin/)
 

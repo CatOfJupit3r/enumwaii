@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://catofjupit3r.github.io/enumwaii/icon.svg" alt="enumwaii" width="128" height="128">
+  <img src="https://raw.githubusercontent.com/CatOfJupit3r/enumwaii/6562b1b79844f0963677d1118ae5f4a9f2c7af8e/assets/enumwaii-icon.png" alt="enumwaii" width="128" height="128">
 </p>
 
 <h1 align="center">enumwaii</h1>

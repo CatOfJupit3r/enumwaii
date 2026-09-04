@@ -1,32 +1,42 @@
+import { em, type InferEnumwaii } from "enumwaii";
 import { computed, ref, watch, type ComputedRef, type Ref } from "vue";
 
 import {
-  ACCESS_POLICY,
   ACCESS_LEVELS,
+  ACCESS_POLICY,
+  describeAccessLevel,
+  parseAccessLevel,
   type AccessLevel,
   type AccessLevelParseResult,
-  parseAccessLevel,
-  type AccessPolicy,
 } from "../domain/access-control";
 
-const QUERY_KEY = "level";
-const STORAGE_KEY = "enumwaii-console-level";
+const persistenceOutcomes = em([
+  "ACCEPTED",
+  "DEFAULTED",
+  "FALLBACK",
+  "RESET",
+  "REJECTED",
+]);
+export const PERSISTENCE_OUTCOME = persistenceOutcomes.enum;
+export type PersistenceOutcome = InferEnumwaii<typeof persistenceOutcomes>;
 
-export type PersistenceSource = "url" | "localStorage" | "default" | "external";
-export type PersistenceOutcome = "accepted" | "rejected";
+const persistenceSources = em(["URL", "LOCAL_STORAGE", "DEFAULT", "EXTERNAL"]);
+export const PERSISTENCE_SOURCE = persistenceSources.enum;
+export type PersistenceSource = InferEnumwaii<typeof persistenceSources>;
+
+const QUERY_KEY = "as";
+const STORAGE_KEY = "crewboard-view-as";
 
 export interface AccessLevelPersistenceOptions {
-  readonly policy?: AccessPolicy;
   readonly initial?: AccessLevel;
 }
 
 export interface AccessLevelPersistence {
   readonly level: Ref<AccessLevel>;
-  readonly policy: Ref<AccessPolicy>;
   readonly rawInput: Ref<unknown>;
   readonly source: Ref<PersistenceSource>;
   readonly outcome: Ref<PersistenceOutcome>;
-  readonly errorMessage: Ref<string | null>;
+  readonly message: Ref<string | null>;
   readonly serializedLevel: ComputedRef<AccessLevel>;
   readonly load: () => AccessLevelParseResult;
   readonly setFromExternal: (input: unknown) => AccessLevelParseResult;
@@ -40,17 +50,18 @@ interface PersistedInput {
 
 function readPersistedInput(): PersistedInput {
   if (typeof window === "undefined") {
-    return { raw: undefined, source: "default" };
+    return { raw: undefined, source: PERSISTENCE_SOURCE.DEFAULT };
   }
 
   const urlValue = new URL(window.location.href).searchParams.get(QUERY_KEY);
-  if (urlValue !== null) return { raw: urlValue, source: "url" };
+  if (urlValue !== null)
+    return { raw: urlValue, source: PERSISTENCE_SOURCE.URL };
 
   const storedValue = window.localStorage.getItem(STORAGE_KEY);
   if (storedValue !== null) {
-    return { raw: storedValue, source: "localStorage" };
+    return { raw: storedValue, source: PERSISTENCE_SOURCE.LOCAL_STORAGE };
   }
-  return { raw: undefined, source: "default" };
+  return { raw: undefined, source: PERSISTENCE_SOURCE.DEFAULT };
 }
 
 function persistLevel(level: AccessLevel): void {
@@ -62,7 +73,7 @@ function persistLevel(level: AccessLevel): void {
   window.history.replaceState({}, "", url);
 }
 
-function removePersistedLevel(): void {
+function removePersistence(): void {
   if (typeof window === "undefined") return;
 
   window.localStorage.removeItem(STORAGE_KEY);
@@ -75,65 +86,95 @@ export function useAccessLevelPersistence(
   options: AccessLevelPersistenceOptions = {},
 ): AccessLevelPersistence {
   const level = ref<AccessLevel>(options.initial ?? ACCESS_LEVELS.VIEWER);
-  const policy = ref<AccessPolicy>(options.policy ?? ACCESS_POLICY.NIL_DEFAULT);
   const rawInput = ref<unknown>(undefined);
-  const source = ref<PersistenceSource>("default");
-  const outcome = ref<PersistenceOutcome>("accepted");
-  const errorMessage = ref<string | null>(null);
+  const source = ref<PersistenceSource>(PERSISTENCE_SOURCE.DEFAULT);
+  const outcome = ref<PersistenceOutcome>(PERSISTENCE_OUTCOME.DEFAULTED);
+  const message = ref<string | null>(null);
   const serializedLevel = computed(() => level.value);
   let loading = false;
 
-  function applyResult(
-    input: unknown,
-    inputSource: PersistenceSource,
+  function accept(
+    result: AccessLevelParseResult,
+    nextOutcome: PersistenceOutcome,
+    nextMessage: string | null,
   ): AccessLevelParseResult {
-    rawInput.value = input;
-    source.value = inputSource;
-    const result = parseAccessLevel(input, policy.value);
-    if (result.success) {
-      level.value = result.value;
-      outcome.value = "accepted";
-      errorMessage.value = null;
-    } else {
-      outcome.value = "rejected";
-      errorMessage.value = result.error.message;
-    }
+    if (result.success) level.value = result.value;
+    outcome.value = nextOutcome;
+    message.value = nextMessage;
     return result;
   }
 
   function load(): AccessLevelParseResult {
     const persisted = readPersistedInput();
+    rawInput.value = persisted.raw;
+    source.value = persisted.source;
     loading = true;
-    const result = applyResult(persisted.raw, persisted.source);
+
+    let result: AccessLevelParseResult;
+    if (persisted.source === PERSISTENCE_SOURCE.DEFAULT) {
+      result = accept(
+        parseAccessLevel(persisted.raw, ACCESS_POLICY.NIL_DEFAULT),
+        PERSISTENCE_OUTCOME.DEFAULTED,
+        null,
+      );
+    } else {
+      const strict = parseAccessLevel(persisted.raw, ACCESS_POLICY.STRICT);
+      if (strict.success) {
+        result = accept(strict, PERSISTENCE_OUTCOME.ACCEPTED, null);
+      } else if (persisted.source === PERSISTENCE_SOURCE.URL) {
+        result = accept(
+          parseAccessLevel(persisted.raw, ACCESS_POLICY.FALLBACK),
+          PERSISTENCE_OUTCOME.FALLBACK,
+          `Unknown role ${strict.error.receivedText}; showing as ${describeAccessLevel(ACCESS_LEVELS.VIEWER).label}.`,
+        );
+      } else {
+        window.localStorage.removeItem(STORAGE_KEY);
+        result = accept(
+          parseAccessLevel(undefined, ACCESS_POLICY.NIL_DEFAULT),
+          PERSISTENCE_OUTCOME.RESET,
+          "The saved viewing role was corrupt, so Crewboard reset it.",
+        );
+      }
+    }
+
     loading = false;
     return result;
   }
 
   function setFromExternal(input: unknown): AccessLevelParseResult {
-    return applyResult(input, "external");
+    rawInput.value = input;
+    source.value = PERSISTENCE_SOURCE.EXTERNAL;
+    const result = parseAccessLevel(input, ACCESS_POLICY.STRICT);
+    return accept(
+      result,
+      result.success
+        ? PERSISTENCE_OUTCOME.ACCEPTED
+        : PERSISTENCE_OUTCOME.REJECTED,
+      result.success ? null : result.error.message,
+    );
   }
 
   function clearPersistence(): void {
-    removePersistedLevel();
+    removePersistence();
     load();
   }
 
-  watch(level, (next, previous) => {
-    if (!loading && next !== previous) persistLevel(next);
-  });
-  watch(policy, () => {
-    load();
-  });
+  watch(
+    level,
+    (next, previous) => {
+      if (!loading && next !== previous) persistLevel(next);
+    },
+    { flush: "sync" },
+  );
 
   load();
 
   return {
     level,
-    policy,
     rawInput,
     source,
     outcome,
-    errorMessage,
+    message,
     serializedLevel,
     load,
     setFromExternal,

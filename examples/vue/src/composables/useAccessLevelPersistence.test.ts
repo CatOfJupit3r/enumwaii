@@ -1,7 +1,7 @@
 import { nextTick } from "vue";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { ACCESS_LEVELS, ACCESS_POLICY } from "../domain/access-control";
+import { ACCESS_LEVELS } from "../domain/access-control";
 import { useAccessLevelPersistence } from "./useAccessLevelPersistence";
 
 beforeEach(() => {
@@ -10,49 +10,73 @@ beforeEach(() => {
 });
 
 describe("useAccessLevelPersistence", () => {
-  it("starts with the explicit nil default when storage is missing", () => {
-    const state = useAccessLevelPersistence({
-      policy: ACCESS_POLICY.NIL_DEFAULT,
-    });
+  it("defaults a fresh visit to Viewer", () => {
+    const state = useAccessLevelPersistence();
 
     expect(state.level.value).toBe(ACCESS_LEVELS.VIEWER);
-    expect(state.source.value).toBe("default");
-    expect(state.outcome.value).toBe("accepted");
+    expect(state.source.value).toBe("DEFAULT");
+    expect(state.outcome.value).toBe("DEFAULTED");
+    expect(state.message.value).toBeNull();
   });
 
-  it("does not admit malformed URL input under strict policy", () => {
-    window.history.replaceState({}, "", "/?level=ARCHIVED");
-    const state = useAccessLevelPersistence({ policy: ACCESS_POLICY.STRICT });
+  it("falls back visibly when a tampered URL contains an unknown role", () => {
+    window.history.replaceState({}, "", "/?as=SUPERADMIN");
+    const state = useAccessLevelPersistence();
 
     expect(state.level.value).toBe(ACCESS_LEVELS.VIEWER);
-    expect(state.source.value).toBe("url");
-    expect(state.outcome.value).toBe("rejected");
-    expect(state.errorMessage.value).toContain("Cannot parse");
+    expect(state.source.value).toBe("URL");
+    expect(state.outcome.value).toBe("FALLBACK");
+    expect(state.message.value).toContain("Unknown role");
+    expect(state.message.value).toContain("showing as Viewer");
   });
 
-  it("accepts a valid external value and syncs it to both persistence channels", async () => {
-    const state = useAccessLevelPersistence({ policy: ACCESS_POLICY.STRICT });
+  it("strictly rejects and removes corrupt localStorage", () => {
+    window.localStorage.setItem("crewboard-view-as", "ARCHIVED");
+    const state = useAccessLevelPersistence();
+
+    expect(state.level.value).toBe(ACCESS_LEVELS.VIEWER);
+    expect(state.source.value).toBe("LOCAL_STORAGE");
+    expect(state.outcome.value).toBe("RESET");
+    expect(window.localStorage.getItem("crewboard-view-as")).toBeNull();
+  });
+
+  it("accepts a valid role and syncs both persistence channels", async () => {
+    const state = useAccessLevelPersistence();
 
     const result = state.setFromExternal(ACCESS_LEVELS.EDITOR);
     await nextTick();
 
     expect(result).toEqual({ success: true, value: ACCESS_LEVELS.EDITOR });
     expect(state.level.value).toBe(ACCESS_LEVELS.EDITOR);
-    expect(window.localStorage.getItem("enumwaii-console-level")).toBe(
-      "EDITOR",
-    );
-    expect(new URL(window.location.href).searchParams.get("level")).toBe(
-      "EDITOR",
-    );
+    expect(window.localStorage.getItem("crewboard-view-as")).toBe("editor");
+    expect(new URL(window.location.href).searchParams.get("as")).toBe("editor");
   });
 
-  it("keeps a wrong-shaped object out of state even when it looks close", () => {
-    const state = useAccessLevelPersistence({ policy: ACCESS_POLICY.STRICT });
+  it("keeps a wrong-shaped object out of state", () => {
+    const state = useAccessLevelPersistence();
 
-    const result = state.setFromExternal({ level: "EDITOR" });
+    const result = state.setFromExternal({ level: "editor" });
 
     expect(result.success).toBe(false);
     expect(state.level.value).toBe(ACCESS_LEVELS.VIEWER);
-    expect(state.outcome.value).toBe("rejected");
+    expect(state.outcome.value).toBe("REJECTED");
   });
+});
+
+it("clears an edited role without the hydration watcher restoring persistence", async () => {
+  const state = useAccessLevelPersistence();
+  state.setFromExternal(ACCESS_LEVELS.EDITOR);
+  await nextTick();
+  state.clearPersistence();
+  await nextTick();
+  expect(state.level.value).toBe(ACCESS_LEVELS.VIEWER);
+  expect(window.localStorage.getItem("crewboard-view-as")).toBeNull();
+  expect(new URL(window.location.href).searchParams.has("as")).toBe(false);
+});
+
+it("rejects uppercase role keys in URLs and accepts canonical wire values", () => {
+  window.history.replaceState({}, "", "/?as=EDITOR");
+  expect(useAccessLevelPersistence().outcome.value).toBe("FALLBACK");
+  window.history.replaceState({}, "", "/?as=editor");
+  expect(useAccessLevelPersistence().level.value).toBe(ACCESS_LEVELS.EDITOR);
 });

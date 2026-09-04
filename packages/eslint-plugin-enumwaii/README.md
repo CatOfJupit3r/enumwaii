@@ -44,6 +44,8 @@ This preset enables `enforce-enum-casing` and `no-object-em` and requires no Typ
 
 ## Type-aware flat config
 
+The type-checked presets include `no-manual-enum`: declare string vocabularies with enumwaii instead of manual literal unions, raw discriminated tags, or const-container type extraction. Property selection and canonical derived types remain allowed. Its `ignore` list accepts documented name exceptions using the same matchers as `no-object-em`. The rule has no autofix; migrations must preserve existing values. See the linked rule documentation for coverage boundaries.
+
 ```js
 import tsParser from "@typescript-eslint/parser";
 import enumwaii from "eslint-plugin-enumwaii";

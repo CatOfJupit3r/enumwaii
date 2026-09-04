@@ -14,6 +14,7 @@ import packageMetadata from "../package.json" with { type: "json" };
 import { enforceEnumCasingRule } from "./rules/enforce-enum-casing";
 import { noDirectEnumwaiiReferenceRule } from "./rules/no-direct-enumwaii-reference";
 import { noEnumwaiiCaseMisuseRule } from "./rules/no-enumwaii-case-misuse";
+import { noManualEnumRule } from "./rules/no-manual-enum";
 import { noObjectEmRule } from "./rules/no-object-em";
 import { noRawEnumComparisonRule } from "./rules/no-raw-enum-comparison";
 import { noRawEnumMemberRule } from "./rules/no-raw-enum-member";
@@ -23,7 +24,7 @@ import { noUnionPropertyInRule } from "./rules/no-union-property-in";
  * Rule implementations published by `eslint-plugin-enumwaii`, keyed by the
  * names used after the `enumwaii/` configuration prefix.
  *
- * `enforce-enum-casing` and `no-object-em` use syntax-only analysis. The other five rules inspect
+ * `enforce-enum-casing` and `no-object-em` use syntax-only analysis. The other rules inspect
  * type and declaration provenance through a type-aware `typescript-eslint`
  * parser configuration. Configure these implementations directly when
  * composing a custom eslintrc or flat config, or use one of the presets exposed
@@ -37,6 +38,8 @@ export const rules = {
   "enforce-enum-casing": enforceEnumCasingRule,
   /** Prefer array identities, reserving object inputs for documented contracts. */
   "no-object-em": noObjectEmRule,
+  /** Require enumwaii ownership of manually assembled string vocabularies. */
+  "no-manual-enum": noManualEnumRule,
   /** Type-aware rule requiring extracted `.enum`, `.rawEnum`, or `.cases` views. */
   "no-direct-enumwaii-reference": noDirectEnumwaiiReferenceRule,
   /** Type-aware rule limiting raw `.cases` use to discriminated-union flows. */
@@ -61,6 +64,8 @@ const syntaxRules = {
 const typeCheckedRules = {
   /** Enable the parser-independent CONSTANT_CASE convention in this preset too. */
   ...syntaxRules,
+  /** Require canonical declarations for string vocabularies. */
+  "enumwaii/no-manual-enum": "error",
   /** Require extracted member views before member references. */
   "enumwaii/no-direct-enumwaii-reference": "error",
   /** Keep raw cases limited to discriminated-union declarations and narrowing. */
@@ -192,6 +197,7 @@ export {
   noDirectEnumwaiiReferenceRule,
   noEnumwaiiCaseMisuseRule,
   noObjectEmRule,
+  noManualEnumRule,
   noRawEnumComparisonRule,
   noRawEnumMemberRule,
   noUnionPropertyInRule,

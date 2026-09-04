@@ -5,15 +5,16 @@ import {
 } from "@typescript-eslint/utils";
 import type { TSESTree } from "@typescript-eslint/utils";
 import ts from "typescript";
+import {
+  createNameMatchers,
+  nameExceptionSchema,
+  type NameExceptionOptions,
+} from "../utils/name-exceptions";
 
 const RULE = { NAME: "no-object-em", TYPE: "suggestion" } as const;
 const MESSAGE_ID = {
   OBJECT_INPUT: "objectInput",
   REDUNDANT_OBJECT: "redundantObject",
-} as const;
-const EXCEPTION_REASON = {
-  EXTERNAL_CONTRACT: "external-contract",
-  COMPATIBILITY: "compatibility",
 } as const;
 const VALUE_TYPE = {
   OBJECT: "object",
@@ -31,43 +32,12 @@ const ENUMWAII = {
   FACTORY: "em",
   CONSTRUCTOR: "Enumwaii",
 } as const;
-const MATCHER_KEY = {
-  STARTS_WITH: "startsWith",
-  ENDS_WITH: "endsWith",
-  CONTAINS: "contains",
-  REGEX: "regex",
-} as const;
-const OPTION_KEY = {
-  NAME: "name",
-  REASON: "reason",
-  JUSTIFICATION: "justification",
-} as const;
-const REGEX = { UNICODE: "u", NONBLANK: "\\S" } as const;
-
 const createRule = ESLintUtils.RuleCreator(
   (name) =>
     `https://catofjupit3r.github.io/enumwaii/docs/eslint-plugin/#${name}`,
 );
 
-type StringMatcher = {
-  startsWith?: string;
-  endsWith?: string;
-  contains?: string;
-} & ({ startsWith: string } | { endsWith: string } | { contains: string });
-type Matcher =
-  | (StringMatcher & { regex?: never })
-  | {
-      regex: string;
-      startsWith?: never;
-      endsWith?: never;
-      contains?: never;
-    };
-type Exception = {
-  name: Matcher;
-  reason: (typeof EXCEPTION_REASON)[keyof typeof EXCEPTION_REASON];
-  justification: string;
-};
-type Options = [{ ignore?: Exception[] }];
+type Options = NameExceptionOptions;
 type MessageIds = (typeof MESSAGE_ID)[keyof typeof MESSAGE_ID];
 type Declaration = TSESTree.CallExpression | TSESTree.NewExpression;
 
@@ -121,89 +91,13 @@ export const noObjectEmRule = createRule<Options, MessageIds>({
       [MESSAGE_ID.REDUNDANT_OBJECT]:
         "This object repeats its keys as values. Use em([...]) with those CONSTANT_CASE members instead; even external-contract and compatibility exceptions do not justify redundant mappings.",
     },
-    schema: [
-      {
-        type: VALUE_TYPE.OBJECT,
-        additionalProperties: false,
-        properties: {
-          ignore: {
-            type: VALUE_TYPE.ARRAY,
-            items: {
-              type: VALUE_TYPE.OBJECT,
-              additionalProperties: false,
-              required: Object.values(OPTION_KEY),
-              properties: {
-                name: {
-                  oneOf: [
-                    {
-                      type: VALUE_TYPE.OBJECT,
-                      additionalProperties: false,
-                      minProperties: 1,
-                      properties: {
-                        [MATCHER_KEY.STARTS_WITH]: {
-                          type: VALUE_TYPE.STRING,
-                          minLength: 1,
-                        },
-                        [MATCHER_KEY.ENDS_WITH]: {
-                          type: VALUE_TYPE.STRING,
-                          minLength: 1,
-                        },
-                        [MATCHER_KEY.CONTAINS]: {
-                          type: VALUE_TYPE.STRING,
-                          minLength: 1,
-                        },
-                      },
-                    },
-                    {
-                      type: VALUE_TYPE.OBJECT,
-                      additionalProperties: false,
-                      required: [MATCHER_KEY.REGEX],
-                      properties: {
-                        [MATCHER_KEY.REGEX]: {
-                          type: VALUE_TYPE.STRING,
-                          minLength: 1,
-                        },
-                      },
-                    },
-                  ],
-                },
-                reason: {
-                  type: VALUE_TYPE.STRING,
-                  enum: Object.values(EXCEPTION_REASON),
-                },
-                justification: {
-                  type: VALUE_TYPE.STRING,
-                  pattern: REGEX.NONBLANK,
-                  minLength: 1,
-                },
-              },
-            },
-          },
-        },
-      },
-    ],
+    schema: nameExceptionSchema,
   },
   defaultOptions: [{ ignore: [] }],
   create(context, [options]) {
     const services = context.sourceCode.parserServices;
     const checker = services?.program?.getTypeChecker();
-    const matchers = (options.ignore ?? []).map(({ name }) => {
-      if (name.regex === undefined)
-        return (value: string) =>
-          (name.startsWith === undefined ||
-            value.startsWith(name.startsWith)) &&
-          (name.endsWith === undefined || value.endsWith(name.endsWith)) &&
-          (name.contains === undefined || value.includes(name.contains));
-      let pattern: RegExp;
-      try {
-        pattern = new RegExp(name.regex, REGEX.UNICODE);
-      } catch {
-        throw new Error(
-          `${RULE.NAME}: invalid ignore regex ${JSON.stringify(name.regex)}`,
-        );
-      }
-      return (value: string) => pattern.test(value);
-    });
+    const matchers = createNameMatchers(options, RULE.NAME);
 
     function variable(node: TSESTree.Identifier) {
       return ASTUtils.findVariable(

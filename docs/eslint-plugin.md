@@ -74,13 +74,58 @@ For eslintrc configuration, use the `recommended` and `recommended-type-checked`
 | --- | --- | --- | --- |
 | `enforce-enum-casing` | Both | No | Enforce declaration-key and configurable value casing. |
 | `no-object-em` | Both | Optional | Prefer arrays; reserve object inputs for documented external contracts or compatibility. |
+| `no-manual-enum` | Type-aware | Yes | Declare string vocabularies through enumwaii. |
 | `no-direct-enumwaii-reference` | Type-aware | Yes | Extract `.enum`, `.rawEnum`, and `.cases` before referencing members. |
 | `no-enumwaii-case-misuse` | Type-aware | Yes | Keep raw case values inside discriminated-union declarations and narrowing. |
 | `no-raw-enum-comparison` | Type-aware | Yes | Replace raw comparison and `switch` literals with owned members. |
 | `no-raw-enum-member` | Type-aware | Yes | Use owned members and composition APIs for subsets and targeted mappings. |
 | `no-union-property-in` | Type-aware | Yes | Prefer an enumwaii case discriminant to structural `in` narrowing. |
 
-`enforce-enum-casing` and `no-object-em` have options; the other rules have no options. The rules do not autofix, so provenance-sensitive changes remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
+`enforce-enum-casing`, `no-object-em`, and `no-manual-enum` have options; the other rules have no options. The rules do not autofix, so provenance-sensitive changes remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
+
+### `no-manual-enum`
+
+Enabled in both type-checked presets. Reports unions of two or more distinct raw string literals, including inline annotations, constraints, containers, nullable unions, branded wrappers, and assembly from single-literal aliases (including imports). Adding even one raw literal to a branded enumwaii type is also reported. References to an already assembled vocabulary are not reported again.
+
+The rule also reports string-valued const arrays and objects when indexed access extracts a multi-value domain, and unions whose branches share a required property with distinct raw string tags. Ordinary const data is allowed until used as a type vocabulary. Diagnostics distinguish unions, const containers, and discriminants.
+
+```ts
+import { em } from "enumwaii";
+
+const states = em(["LOADING", "SUCCESS", "ERROR"]);
+type State = (typeof states)["~type"];
+const STATE = states.cases;
+type RequestState =
+  | { state: typeof STATE.LOADING }
+  | { state: typeof STATE.SUCCESS; data: string }
+  | { state: typeof STATE.ERROR; error: Error };
+```
+
+Use `.cases` for TypeScript's native discriminant narrowing and exhaustiveness, consistent with the other enumwaii rules. Use `.enum` for ordinary branded values.
+
+`keyof`, indexed property selection, built-in `Pick`/`Omit` keys, open template formats, and existing external type references remain allowed. No blanket exemption applies to `.d.ts` files or DTO names. Exclude generated files explicitly through ESLint `ignores`.
+
+Use `ignore` for explicit declaration exceptions, with the same matchers and required rationale as `no-object-em`:
+
+```js
+{
+  rules: {
+    "enumwaii/no-manual-enum": ["error", {
+      ignore: [{
+        name: { startsWith: "Provider", endsWith: "Status" },
+        reason: "external-contract",
+        justification: "Provider schema requires a separately declared wire type.",
+      }],
+    }],
+  },
+}
+```
+
+A name matcher supports `startsWith`, `endsWith`, and `contains` together (all must match), or a standalone `regex` string. Any matching entry exempts the declaration. Matching is case-sensitive; regexes use Unicode mode. Each entry requires `reason: "external-contract" | "compatibility"` and a nonblank `justification`. Invalid options and regexes fail configuration.
+
+Names come from the nearest enclosing type alias, interface, function, method, or variable declaration. This includes inline annotations within that declaration. For const extraction, match the derived type name, not the source container. Matching stops at the nearest declaration, so ignoring a function does not exempt a separately named local type. Unnamed declarations are not matched. Exceptions neither propagate through references nor disable other rules; generated-file exclusions still belong in ESLint `ignores`.
+
+There are no automatic fixes. Preserve existing wire and persisted values when migrating; `no-object-em` representation exceptions do not disable this rule. Coverage is deliberately bounded: it does not evaluate finite template expansions, arbitrary generic transformations, native TypeScript enum declarations, or const containers hidden behind value aliases or non-const assertions. It recognizes branded ownership through enumwaii's declaration source, not a local function named `em` or a property named `~type`.
 
 ### `no-object-em`
 

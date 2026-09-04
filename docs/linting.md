@@ -15,6 +15,7 @@ The syntax-only preset checks declaration casing and restricts object inputs to 
 
 The lint package covers:
 
+- manual string vocabularies assembled through unions, discriminants, or const-container type extraction;
 - `CONSTANT_CASE` conventions for internal declarations;
 - comparisons and `switch` cases that use raw literals instead of owned members;
 - direct member access through `roles.enum`, `roles.rawEnum`, or `roles.cases` instead of an extracted constant;

@@ -254,17 +254,17 @@ h1 em {
   border-bottom: 1px solid var(--line);
 }
 
-.jobs-panel,
-.lab {
+.reservations-panel,
+.host-actions {
   padding: 64px 0 72px;
 }
 
-.jobs-panel {
+.reservations-panel {
   padding-right: 42px;
   border-right: 1px solid var(--line);
 }
 
-.lab {
+.host-actions {
   padding-left: 52px;
 }
 
@@ -293,7 +293,7 @@ h1 em {
   text-transform: uppercase;
 }
 
-.lab-heading > p {
+.reservation-composer-heading > p {
   max-width: 240px;
   margin: 7px 0 0;
   color: var(--muted);
@@ -302,7 +302,7 @@ h1 em {
   text-align: right;
 }
 
-.lab-heading code {
+.reservation-composer-heading code {
   color: var(--signal);
 }
 
@@ -327,24 +327,24 @@ h1 em {
   background: rgba(255, 255, 255, 0.035);
 }
 
-.jobs-list {
+.reservations-list {
   display: grid;
   gap: 11px;
 }
 
-.job-card,
-.job-skeleton {
+.reservation-card,
+.reservation-skeleton {
   min-height: 128px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--panel);
 }
 
-.job-card {
+.reservation-card {
   padding: 18px;
 }
 
-.job-skeleton {
+.reservation-skeleton {
   background: linear-gradient(100deg, #14191a 20%, #1b2122 45%, #14191a 70%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite linear;
@@ -356,23 +356,23 @@ h1 em {
   }
 }
 
-.job-top,
-.job-bottom {
+.reservation-top,
+.reservation-bottom {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.job-id {
+.reservation-id {
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 13px;
   font-weight: 700;
 }
 
-.job-owner,
-.job-version,
-.job-next {
+.reservation-owner,
+.reservation-version,
+.reservation-next {
   color: var(--muted);
   font-size: 11px;
 }
@@ -415,12 +415,12 @@ h1 em {
   background: rgba(244, 207, 101, 0.08);
 }
 
-.job-bottom {
+.reservation-bottom {
   padding-top: 12px;
   border-top: 1px solid var(--line);
 }
 
-.job-next {
+.reservation-next {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -699,17 +699,17 @@ footer code {
     grid-template-columns: 1fr;
   }
 
-  .jobs-panel {
+  .reservations-panel {
     padding-right: 0;
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
 
-  .jobs-list {
+  .reservations-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .lab {
+  .host-actions {
     padding-left: 0;
   }
 
@@ -751,13 +751,13 @@ footer code {
     font-size: 16px;
   }
 
-  .jobs-panel,
-  .lab,
+  .reservations-panel,
+  .host-actions,
   .response-panel {
     padding-block: 48px;
   }
 
-  .jobs-list,
+  .reservations-list,
   .scenario-grid,
   .scenario-grid-three,
   .scenario-grid-two,
@@ -765,12 +765,12 @@ footer code {
     grid-template-columns: 1fr;
   }
 
-  .job-card,
-  .job-skeleton {
+  .reservation-card,
+  .reservation-skeleton {
     min-height: 112px;
   }
 
-  .lab-heading > p {
+  .reservation-composer-heading > p {
     display: none;
   }
 

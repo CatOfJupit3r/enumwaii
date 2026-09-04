@@ -2,84 +2,110 @@ import { oc } from "@orpc/contract";
 import { em } from "enumwaii";
 import { zodSchema } from "enumwaii/zod";
 import { z } from "zod";
+import {
+  reservationStatuses,
+  reservationServices,
+} from "./domain/reservations";
 
-import { jobStatuses } from "./domain/jobs";
-
-const errorKinds = em(["NOT_FOUND", "ILLEGAL_TRANSITION", "VERSION_CONFLICT"]);
+const errorKinds = em([
+  "NOT_FOUND",
+  "DOUBLE_BOOKED",
+  "ILLEGAL_TRANSITION",
+  "VERSION_CONFLICT",
+]);
 export const ERROR_KIND = errorKinds.enum;
-
-const statusFieldSchema = zodSchema(jobStatuses);
+const statusFieldSchema = zodSchema(reservationStatuses);
 const errorKindSchema = zodSchema(errorKinds);
 
-export const jobSchema = z.strictObject({
+export const reservationSchema = z.strictObject({
   id: z.string().min(1),
   owner: z.string().min(1),
+  service: zodSchema(reservationServices),
+  partySize: z.int().min(1).max(12),
   status: statusFieldSchema,
   version: z.int().nonnegative(),
 });
-
-export const jobSummarySchema = jobSchema.extend({
+export const reservationSummarySchema = reservationSchema.extend({
   availableTransitions: z.array(statusFieldSchema),
 });
-
 export const transitionInputSchema = z.strictObject({
-  jobId: z.string().min(1),
+  reservationId: z.string().min(1),
   to: statusFieldSchema,
   expectedVersion: z.int().nonnegative(),
 });
-
+export const requestInputSchema = z.strictObject({
+  owner: z.string().min(1),
+  partySize: z.int().min(1).max(12),
+  service: zodSchema(reservationServices),
+});
 export const transitionResultSchema = z.strictObject({
-  job: jobSummarySchema,
+  reservation: reservationSummarySchema,
   audit: z.strictObject({
     actor: z.string().min(1),
     requestId: z.string().min(1),
   }),
 });
-
-export const jobErrorDataSchema = z.strictObject({
+export const reservationErrorDataSchema = z.strictObject({
   kind: errorKindSchema,
-  jobId: z.string().min(1),
+  reservationId: z.string().min(1),
   currentStatus: statusFieldSchema.optional(),
   requestedStatus: statusFieldSchema.optional(),
   expectedVersion: z.int().nonnegative().optional(),
   actualVersion: z.int().nonnegative().optional(),
 });
-
 const businessErrors = {
   NOT_FOUND: {
     status: 404,
-    message: "Job not found",
-    data: jobErrorDataSchema,
+    message: "Reservation not found",
+    data: reservationErrorDataSchema,
   },
-  CONFLICT: {
+  DOUBLE_BOOKED: {
     status: 409,
-    message: "Job transition conflict",
-    data: jobErrorDataSchema,
+    message: "Reservation already exists for this service",
+    data: reservationErrorDataSchema,
+  },
+  ILLEGAL_TRANSITION: {
+    status: 409,
+    message: "Illegal reservation transition",
+    data: reservationErrorDataSchema,
+  },
+  VERSION_CONFLICT: {
+    status: 409,
+    message: "Reservation version conflict",
+    data: reservationErrorDataSchema,
   },
 };
-
 const procedures = {
   status: oc
     .route({
       method: "POST",
-      path: "/jobs/status",
-      summary: "Validate and echo one job status",
+      path: "/reservations/availability",
+      summary: "Validate and echo an availability status",
     })
-    .input(jobStatuses)
-    .output(jobStatuses),
+    .input(reservationStatuses)
+    .output(reservationStatuses),
   list: oc
     .route({
       method: "GET",
-      path: "/jobs",
-      summary: "List the process-local demo jobs",
+      path: "/reservations",
+      summary: "List reservations for the host stand",
     })
     .input(z.strictObject({}))
-    .output(z.array(jobSummarySchema)),
+    .output(z.array(reservationSummarySchema)),
+  request: oc
+    .route({
+      method: "POST",
+      path: "/reservations",
+      summary: "Request a restaurant reservation",
+    })
+    .input(requestInputSchema)
+    .output(reservationSummarySchema)
+    .errors(businessErrors),
   transition: oc
     .route({
       method: "POST",
-      path: "/jobs/{jobId}/transitions",
-      summary: "Apply an optimistic-concurrency job transition",
+      path: "/reservations/{reservationId}/transitions",
+      summary: "Apply a host action with optimistic concurrency",
     })
     .input(transitionInputSchema)
     .output(transitionResultSchema)
@@ -87,17 +113,17 @@ const procedures = {
   reset: oc
     .route({
       method: "POST",
-      path: "/jobs/reset",
-      summary: "Restore the demo jobs to their seed state",
+      path: "/reservations/reset",
+      summary: "Restore the seeded reservations",
     })
     .input(z.strictObject({}))
-    .output(z.array(jobSummarySchema)),
+    .output(z.array(reservationSummarySchema)),
 };
-
-export const contract = oc.prefix("/v1").tag("jobs").router(procedures);
-
-export type Job = z.infer<typeof jobSchema>;
-export type JobSummary = z.infer<typeof jobSummarySchema>;
-export type TransitionInput = z.infer<typeof transitionInputSchema>;
-export type TransitionResult = z.infer<typeof transitionResultSchema>;
-export type JobErrorData = z.infer<typeof jobErrorDataSchema>;
+export const contract = oc.prefix("/v1").tag("reservations").router(procedures);
+export type Reservation = z.infer<typeof reservationSchema>;
+export type ReservationSummary = z.infer<typeof reservationSummarySchema>;
+export type ReservationTransitionInput = z.infer<typeof transitionInputSchema>;
+export type ReservationTransitionResult = z.infer<
+  typeof transitionResultSchema
+>;
+export type ReservationErrorData = z.infer<typeof reservationErrorDataSchema>;

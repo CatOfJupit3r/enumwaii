@@ -1,10 +1,15 @@
+import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 import { serveStatic } from "@hono/node-server/serve-static";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { Hono } from "hono";
 
-import { JobStore } from "./domain/jobs";
+import {
+  ReservationStore,
+  reservationServices,
+  RESERVATION_STATUS,
+} from "./domain/reservations";
 import {
   createCallCounters,
   type AppContext,
@@ -14,12 +19,12 @@ import {
 
 export interface AppOptions {
   readonly calls?: CallCounters;
-  readonly store?: JobStore;
+  readonly store?: ReservationStore;
 }
 
 function contextFromRequest(
   request: Request,
-  store: JobStore,
+  store: ReservationStore,
   calls: CallCounters,
 ): AppContext {
   return {
@@ -33,10 +38,37 @@ function contextFromRequest(
 
 export function createApp(options: AppOptions = {}): Hono {
   const app = new Hono();
-  const store = options.store ?? new JobStore();
+  const store = options.store ?? new ReservationStore();
   const calls = options.calls ?? createCallCounters();
   const handler = new OpenAPIHandler(router);
   const publicDirectory = fileURLToPath(new URL("../public", import.meta.url));
+
+  app.get("/", async (context) => {
+    const template = await readFile(
+      new URL("index.html", new URL("../public/", import.meta.url)),
+      "utf8",
+    );
+    const services = reservationServices.values
+      .map(
+        (service) =>
+          `<option value="${service}">${service.toLowerCase()}</option>`,
+      )
+      .join("");
+    const availability = [
+      RESERVATION_STATUS.CONFIRMED,
+      RESERVATION_STATUS.NO_SHOW,
+    ]
+      .map(
+        (status) =>
+          `<button class="scenario-card" data-status="${status}" type="button">${status.replaceAll("_", " ")}</button>`,
+      )
+      .join("");
+    return context.html(
+      template
+        .replace("<!-- service-options -->", services)
+        .replace("<!-- availability-options -->", availability),
+    );
+  });
 
   app.get("/health", (context) => context.json({ status: "ok" }));
 

@@ -15,7 +15,7 @@ Deno.serve(
     port,
     onListen({ hostname, port: listeningPort }) {
       console.log(
-        `Orderline on Deno is running at http://${hostname}:${listeningPort}`,
+        `Counter on Deno is running at http://${hostname}:${listeningPort}`,
       );
       console.log(
         "PGlite and Drizzle are using the same PostgreSQL schema as Node.",

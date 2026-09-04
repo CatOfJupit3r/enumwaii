@@ -11,5 +11,5 @@ const app = createApp({ orders: database.repository });
 const port = Number(Bun.env.PORT ?? "3000");
 const server = Bun.serve({ port, fetch: app.fetch });
 
-console.log(`Orderline on Bun is running at ${server.url.toString()}`);
+console.log(`Counter on Bun is running at ${server.url.toString()}`);
 console.log("PGlite and Drizzle are using the same PostgreSQL schema as Node.");

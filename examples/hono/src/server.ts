@@ -17,7 +17,7 @@ await database.repository.seed();
 const app = createApp({ orders: database.repository });
 const server = serve({ fetch: app.fetch, port });
 
-console.log(`Orderline is running at http://localhost:${port}`);
+console.log(`Counter is running at http://localhost:${port}`);
 console.log("PGlite is ready; no external PostgreSQL server is required.");
 
 let shuttingDown = false;

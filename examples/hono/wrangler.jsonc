@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "enumwaii-orderline-boundaries",
+  "name": "enumwaii-counter-menu",
   "main": "runtime/cloudflare.ts",
   "compatibility_date": "2026-08-30",
   "compatibility_flags": ["no_nodejs_compat", "no_nodejs_compat_v2"],

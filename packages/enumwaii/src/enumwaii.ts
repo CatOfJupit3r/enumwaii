@@ -10,6 +10,7 @@ import type {
   EnumwaiiDerived,
   EnumwaiiDeriveToEntry,
   EnumwaiiIdentity,
+  EnumwaiiIdentityKeyMap,
   EnumwaiiParseOptions,
   EnumwaiiRawValue,
   EnumwaiiSafeParseResult,
@@ -18,6 +19,24 @@ import type {
   EnumwaiiValues,
 } from "./types/enumwaii";
 
+type EnumwaiiKeysForValues<
+  TKeys extends Readonly<Record<string, string>>,
+  TValues extends string,
+> = {
+  readonly [K in keyof TKeys as TKeys[K] extends TValues ? K : never]: Extract<
+    TKeys[K],
+    TValues
+  >;
+};
+
+type EnumwaiiExtendedKeys<
+  TRaw extends string,
+  TKeys extends Readonly<Record<string, string>>,
+  TExtra extends string,
+> = TKeys & {
+  readonly [K in Exclude<TExtra, TRaw>]: K;
+};
+
 /**
  * A closed, nominally branded vocabulary of string members.
  *
@@ -25,9 +44,11 @@ import type {
  * application values and `parse`/`safeParse`/`is` when strings enter from an
  * untrusted boundary. Members are ordinary strings at runtime, while their
  * TypeScript brand retains the declaration identity. The declaration owns a
- * copied, de-duplicated member set and exposes frozen member objects and
- * tuples. Composition methods preserve or intentionally create identity as
- * described by their individual comments.
+ * copied member set and exposes frozen member objects and tuples. Tuple
+ * declarations de-duplicate values, while object declarations retain
+ * developer-facing keys and reject duplicate mapped values. Composition
+ * methods preserve or intentionally create identity as described by their
+ * individual comments.
  *
  * @example
  * ```ts
@@ -42,10 +63,11 @@ import type {
 export class Enumwaii<
   TRaw extends string,
   TIdentity extends string = EnumwaiiIdentity<TRaw>,
+  TKeys extends Readonly<Record<string, string>> = EnumwaiiIdentityKeyMap<TRaw>,
 > implements StandardSchemaV1<unknown, EnumwaiiValue<TRaw, TIdentity>> {
   /**
-   * The default application surface: a frozen object mapping each raw member
-   * to its branded {@link EnumwaiiValue}.
+   * The default application surface: a frozen object mapping each declaration
+   * key to its branded {@link EnumwaiiValue}.
    *
    * Use this view for function arguments, comparisons, defaults, fixtures, and
    * derivation. It is the same plain runtime object as {@link rawEnum} and
@@ -61,7 +83,7 @@ export class Enumwaii<
    * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/member-surfaces.md#enum-the-default
    */
   public readonly enum: {
-    readonly [K in TRaw]: EnumwaiiValue<K, TIdentity>;
+    readonly [K in keyof TKeys]: EnumwaiiValue<TKeys[K], TIdentity>;
   };
 
   /**
@@ -82,7 +104,7 @@ export class Enumwaii<
    * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/member-surfaces.md#rawenum-and-rawvalues-integration-escapes
    */
   public readonly rawEnum: {
-    readonly [K in TRaw]: K;
+    readonly [K in keyof TKeys]: TKeys[K];
   };
 
   /**
@@ -104,7 +126,7 @@ export class Enumwaii<
    *
    * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/member-surfaces.md#cases-native-discriminated-union-narrowing
    */
-  public readonly cases: EnumwaiiCases<TRaw, TIdentity>;
+  public readonly cases: EnumwaiiCases<TRaw, TIdentity, TKeys>;
 
   /**
    * The frozen tuple of branded members in first-seen declaration order.
@@ -226,29 +248,49 @@ export class Enumwaii<
   private readonly memberSet: ReadonlySet<string>;
 
   /**
-   * Creates a declaration from a non-empty tuple of raw members.
+   * Creates a declaration from a non-empty tuple or key-to-value object.
    *
    * Prefer calling `em`; direct construction is useful when a generic
    * wrapper already has the `Enumwaii` type. The input is copied immediately,
-   * duplicate values are removed in first-seen order, and all exposed member
-   * objects and tuples are frozen.
+   * tuple duplicates are removed in first-seen order, and all exposed member
+   * objects and tuples are frozen. Object keys become the developer-facing
+   * member names while parsing and identity remain driven by their values.
+   * Object values must be unique so no member name is silently discarded.
    *
-   * @param rawValues Non-empty raw member tuple to own.
-   * @throws {@link EnumwaiiError} If the runtime tuple is empty.
+   * @param members Non-empty raw member tuple or key-to-value object to own.
+   * @throws {@link EnumwaiiError} If the input is empty or an object maps
+   * multiple keys to the same raw value.
    *
    * @example
    * ```ts
    * const roles = new Enumwaii(["ADMIN", "USER"]);
+   * const statuses = new Enumwaii({ ORDER_PAID: "order-paid" });
    * ```
    */
-  public constructor(rawValues: readonly [TRaw, ...TRaw[]]) {
-    if (rawValues.length === 0) {
+  public constructor(
+    members:
+      | readonly [TRaw, ...TRaw[]]
+      | (TKeys & { readonly [K in keyof TKeys]: TRaw }),
+  ) {
+    const isTuple = Array.isArray(members);
+    const entries = isTuple
+      ? [...new Set(members)].map((value) => [value, value] as const)
+      : (Object.entries(members) as [string, TRaw][]);
+
+    if (entries.length === 0) {
       throw new EnumwaiiError("An enum must have at least one member");
     }
 
-    const ownedRawValues = Object.freeze([
-      ...new Set(rawValues),
-    ]) as unknown as EnumwaiiValues<TRaw, TIdentity>;
+    const rawValues = entries.map(([, value]) => value);
+    if (!isTuple && new Set(rawValues).size !== rawValues.length) {
+      throw new EnumwaiiError(
+        "An enum object cannot map multiple keys to the same value",
+      );
+    }
+
+    const ownedRawValues = Object.freeze(
+      rawValues,
+    ) as unknown as EnumwaiiValues<TRaw, TIdentity>;
     const memberSet = new Set<string>(ownedRawValues);
 
     this.rawValues = ownedRawValues;
@@ -257,14 +299,14 @@ export class Enumwaii<
       EnumwaiiValue<TRaw, TIdentity>,
       TIdentity
     >;
-    const members = Object.freeze(
-      Object.fromEntries(ownedRawValues.map((value) => [value, value])),
-    );
-    this.enum = members as {
-      readonly [K in TRaw]: EnumwaiiValue<K, TIdentity>;
+    const memberObject = Object.freeze(Object.fromEntries(entries));
+    this.enum = memberObject as {
+      readonly [K in keyof TKeys]: EnumwaiiValue<TKeys[K], TIdentity>;
     };
-    this.rawEnum = members as { readonly [K in TRaw]: K };
-    this.cases = members as EnumwaiiCases<TRaw, TIdentity>;
+    this.rawEnum = memberObject as {
+      readonly [K in keyof TKeys]: TKeys[K];
+    };
+    this.cases = memberObject as EnumwaiiCases<TRaw, TIdentity, TKeys>;
     this["~standard"] = createStandardSchemaProps(this);
   }
 
@@ -370,15 +412,19 @@ export class Enumwaii<
   }
 
   /**
-   * Adds members while retaining this declaration's identity.
+   * Adds identity-keyed members while retaining this declaration's identity.
    *
    * The source members stay compatible with the original declaration and
-   * extra duplicates are removed in first-seen order. Use this for an intentional
-   * superset; use `em` for an independently identified declaration.
+   * extra duplicates are removed in first-seen order. Every genuinely new
+   * value receives a key equal to that value; existing aliases are preserved.
+   * Use this for an intentional superset; use `em` for an independently
+   * identified declaration.
    *
    * @param extraValues Non-empty raw literals to add.
    * @returns A new declaration with the source identity, extended raw domain,
    * and frozen public member surfaces.
+   * @throws {@link EnumwaiiError} If a new identity key already names a
+   * different existing member.
    *
    * @example
    * ```ts
@@ -389,19 +435,43 @@ export class Enumwaii<
    */
   public extend<TExtra extends string>(
     extraValues: readonly [TExtra, ...TExtra[]],
-  ): Enumwaii<TRaw | TExtra, TIdentity> {
-    return new Enumwaii([...this.rawValues, ...extraValues] as [
+  ): Enumwaii<
+    TRaw | TExtra,
+    TIdentity,
+    EnumwaiiExtendedKeys<TRaw, TKeys, TExtra>
+  > {
+    const entries = Object.entries(this.rawEnum) as [string, TRaw | TExtra][];
+    const keys = new Set(entries.map(([key]) => key));
+    const values = new Set<string>(this.rawValues);
+
+    for (const value of extraValues) {
+      if (values.has(value)) continue;
+      if (keys.has(value)) {
+        throw new EnumwaiiError(
+          `Cannot add identity key "${value}" because that key already maps to another member`,
+        );
+      }
+      entries.push([value, value]);
+      keys.add(value);
+      values.add(value);
+    }
+
+    return new Enumwaii(
+      Object.fromEntries(entries) as never,
+    ) as unknown as Enumwaii<
       TRaw | TExtra,
-      ...(TRaw | TExtra)[],
-    ]) as unknown as Enumwaii<TRaw | TExtra, TIdentity>;
+      TIdentity,
+      EnumwaiiExtendedKeys<TRaw, TKeys, TExtra>
+    >;
   }
 
   /**
    * Creates a non-empty subset while retaining this declaration's identity.
    *
-   * Pass branded members from this declaration in the desired order. Unknown
-   * members fail at runtime, and an empty selection is rejected by the
-   * constructor; duplicate selections are de-duplicated by the new declaration.
+   * Pass branded members from this declaration in the desired order. Surviving
+   * developer-facing keys are retained. Unknown members fail at runtime, and an
+   * empty selection is rejected by the constructor; duplicate selections are
+   * de-duplicated by the new declaration.
    *
    * @param pickedValues Non-empty owned members to keep.
    * @returns A subset declaration with the source identity and frozen public
@@ -424,15 +494,31 @@ export class Enumwaii<
     ],
   >(
     pickedValues: TPicked,
-  ): Enumwaii<EnumwaiiRawValue<TPicked[number], TIdentity>, TIdentity> {
+  ): Enumwaii<
+    EnumwaiiRawValue<TPicked[number], TIdentity>,
+    TIdentity,
+    EnumwaiiKeysForValues<TKeys, EnumwaiiRawValue<TPicked[number], TIdentity>>
+  > {
     for (const value of pickedValues) {
       if (!this.memberSet.has(value)) {
         throw new EnumwaiiError(`Cannot pick unknown member "${value}"`);
       }
     }
-    return new Enumwaii(pickedValues as never) as unknown as Enumwaii<
+    const entryByValue = new Map<string, readonly [string, TRaw]>(
+      (Object.entries(this.rawEnum) as [string, TRaw][]).map(
+        ([key, value]) => [value, [key, value] as const] as const,
+      ),
+    );
+    const entries = [...new Set<string>(pickedValues)].map((value) =>
+      entryByValue.get(value)!,
+    );
+
+    return new Enumwaii(
+      Object.fromEntries(entries) as never,
+    ) as unknown as Enumwaii<
       EnumwaiiRawValue<TPicked[number], TIdentity>,
-      TIdentity
+      TIdentity,
+      EnumwaiiKeysForValues<TKeys, EnumwaiiRawValue<TPicked[number], TIdentity>>
     >;
   }
 
@@ -441,7 +527,8 @@ export class Enumwaii<
    * identity.
    *
    * Every omitted member must belong to this declaration, and at least one
-   * source member must remain. The returned values preserve source order.
+   * source member must remain. The returned values preserve source order and
+   * the surviving developer-facing keys.
    *
    * @param omittedValues Non-empty owned members to remove.
    * @returns A subset declaration with the source identity and frozen public
@@ -466,7 +553,11 @@ export class Enumwaii<
     omittedValues: TOmitted,
   ): Enumwaii<
     Exclude<TRaw, EnumwaiiRawValue<TOmitted[number], TIdentity>>,
-    TIdentity
+    TIdentity,
+    EnumwaiiKeysForValues<
+      TKeys,
+      Exclude<TRaw, EnumwaiiRawValue<TOmitted[number], TIdentity>>
+    >
   > {
     const omittedSet = new Set<string>(omittedValues);
     for (const value of omittedValues) {
@@ -475,13 +566,21 @@ export class Enumwaii<
       }
     }
 
-    const remaining = this.rawValues.filter((value) => !omittedSet.has(value));
-    if (remaining.length === 0) {
+    const remainingEntries = (
+      Object.entries(this.rawEnum) as [string, TRaw][]
+    ).filter(([, value]) => !omittedSet.has(value));
+    if (remainingEntries.length === 0) {
       throw new EnumwaiiError("Cannot omit every member");
     }
-    return new Enumwaii(remaining as never) as unknown as Enumwaii<
+    return new Enumwaii(
+      Object.fromEntries(remainingEntries) as never,
+    ) as unknown as Enumwaii<
       Exclude<TRaw, EnumwaiiRawValue<TOmitted[number], TIdentity>>,
-      TIdentity
+      TIdentity,
+      EnumwaiiKeysForValues<
+        TKeys,
+        Exclude<TRaw, EnumwaiiRawValue<TOmitted[number], TIdentity>>
+      >
     >;
   }
 
@@ -641,12 +740,13 @@ export class Enumwaii<
   public deriveTo<
     TTargetRaw extends string,
     TTargetIdentity extends string,
+    TTargetKeys extends Readonly<Record<string, string>>,
     const TEntries extends readonly [
       EnumwaiiDeriveToEntry<TRaw, TIdentity, TTargetRaw, TTargetIdentity>,
       ...EnumwaiiDeriveToEntry<TRaw, TIdentity, TTargetRaw, TTargetIdentity>[],
     ],
   >(
-    target: Enumwaii<TTargetRaw, TTargetIdentity>,
+    target: Enumwaii<TTargetRaw, TTargetIdentity, TTargetKeys>,
     ...entries: TEntries &
       EnumwaiiValidateDeriveEntries<TRaw, TIdentity, TEntries>
   ): EnumwaiiDerived<TRaw, TIdentity, TEntries[number][1]> {

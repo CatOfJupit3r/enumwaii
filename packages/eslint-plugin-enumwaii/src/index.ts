@@ -32,7 +32,7 @@ import { noUnionPropertyInRule } from "./rules/no-union-property-in";
  * @see https://eslint.org/docs/latest/extend/custom-rules
  */
 export const rules = {
-  /** Syntax-only rule requiring CONSTANT_CASE declaration members. */
+  /** Syntax-only rule enforcing declaration-key and configurable value casing. */
   "enforce-enum-casing": enforceEnumCasingRule,
   /** Type-aware rule requiring extracted `.enum`, `.rawEnum`, or `.cases` views. */
   "no-direct-enumwaii-reference": noDirectEnumwaiiReferenceRule,

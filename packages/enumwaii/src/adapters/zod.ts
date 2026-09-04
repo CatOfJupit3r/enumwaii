@@ -8,7 +8,7 @@
 import { z } from "zod";
 
 import type { Enumwaii } from "../enumwaii";
-import type { EnumwaiiValue } from "../types/enumwaii";
+import type { EnumwaiiIdentityKeyMap, EnumwaiiValue } from "../types/enumwaii";
 
 /**
  * Adapts an enumwaii declaration to a Zod schema for integrations that require
@@ -33,8 +33,12 @@ import type { EnumwaiiValue } from "../types/enumwaii";
  * @see https://zod.dev/
  * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/runtime-boundaries.md#standard-schema
  */
-export function zodSchema<TRaw extends string, TIdentity extends string>(
-  enumeration: Enumwaii<TRaw, TIdentity>,
+export function zodSchema<
+  TRaw extends string,
+  TIdentity extends string,
+  TKeys extends Readonly<Record<string, string>> = EnumwaiiIdentityKeyMap<TRaw>,
+>(
+  enumeration: Enumwaii<TRaw, TIdentity, TKeys>,
 ): z.ZodType<EnumwaiiValue<TRaw, TIdentity>> {
   return z.custom<EnumwaiiValue<TRaw, TIdentity>>(
     enumeration.is.bind(enumeration),

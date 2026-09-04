@@ -64,7 +64,7 @@ The ESLint package therefore complements the brand instead of replacing it. See 
 
 An instance-local `unique symbol` would distinguish every declaration, but another module could reproduce that identity only by sharing an explicit token. That coordination would make independently declared equivalent sets incompatible.
 
-Set-derived identity keeps the values-only `em([...])` API while still rejecting members from overlapping but different sets.
+Set-derived identity keeps declarations lightweight while still rejecting members from overlapping but different value sets. For `em({...})`, developer-facing keys are deliberately excluded from identity.
 
 ### Why members are not wrapper objects
 
@@ -74,7 +74,7 @@ The trade-off is explicit: runtime code cannot recover erased provenance, and so
 
 ## How identity is chosen
 
-`em()` derives identity from the complete union of declared members:
+`em()` derives identity from the complete union of declared raw values:
 
 ```ts
 import { em } from "enumwaii";
@@ -86,7 +86,18 @@ const FIRST = first.enum;
 const value: (typeof second)["~type"] = FIRST.ON; // valid
 ```
 
-Declarations with the same complete member set are intentionally compatible, regardless of order. Declarations with different sets are distinct, even when an individual raw value overlaps:
+Declarations with the same complete value set are intentionally compatible, regardless of order. Object declarations follow the same rule. Their keys are cosmetic, so equal value sets remain compatible even when every key differs:
+
+```ts
+import { em } from "enumwaii";
+
+const first = em({ ORDER_PAID: "order-paid" });
+const second = em({ PAID: "order-paid" });
+
+const value: (typeof first)["~type"] = second.enum.PAID; // valid
+```
+
+Declarations with different value sets are distinct, even when an individual raw value overlaps:
 
 ```ts
 // @noErrors: false
@@ -101,16 +112,16 @@ const SYSTEM_ACTOR = systemActors.enum;
 const role: (typeof workspaceRoles)["~type"] = SYSTEM_ACTOR.ADMIN;
 ```
 
-This is set identity, not instance identity. Distinguishing separately created declarations with exactly the same members would require an additional nominal token. Values-only declarations are easier to keep synchronized, and independently declared equivalent sets should interoperate.
+This is value-set identity, not key or instance identity. Distinguishing separately created declarations with exactly the same values would require an additional nominal token. Independently declared equivalent value sets should interoperate.
 
 ## Composition and identity
 
 Composition preserves or deliberately creates identity as follows:
 
-- `pick` and `omit` retain the source declaration's identity. Their members remain a subset of the original domain.
-- `extend` retains the source identity while adding members to that domain.
-- `em.combine` creates an identity from the combined member set.
-- Duplicate runtime values are removed in first-seen order.
+- `pick` and `omit` retain the source declaration's identity and the aliases for surviving values.
+- `extend` retains the source identity while adding members to that domain. New values receive identity keys where key equals value; adding one whose identity key conflicts with an existing alias throws.
+- `em.combine` creates an identity from the combined value set and normalizes its object views to identity keys.
+- Tuple declarations and combinations remove duplicate runtime values in first-seen order. Object declarations reject duplicate values because silently removing one would discard its key.
 
 Use these operations instead of reconstructing declarations from `.rawValues`; reconstruction creates identity from the new complete set and discards the relationship TypeScript knew about the source.
 

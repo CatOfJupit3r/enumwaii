@@ -3,6 +3,7 @@ import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 import {
   em,
+  Enumwaii,
   type EnumwaiiIdentity,
   type EnumwaiiValue,
   type InferEnumwaii,
@@ -29,6 +30,70 @@ expectTypeOf<(typeof roles)["~type"]>().toEqualTypeOf<Role>();
 expectTypeOf<(typeof roles)["~keys"]>().toEqualTypeOf<"ADMIN" | "USER">();
 expectTypeOf<(typeof roles)["~safeParseResult"]>().toEqualTypeOf<
   ReturnType<typeof roles.safeParse>
+>();
+
+const orderStatuses = em({
+  ORDER_PAID: "order-paid",
+  ORDER_PENDING: "order-pending",
+});
+const ORDER_STATUS = orderStatuses.enum;
+const RAW_ORDER_STATUS = orderStatuses.rawEnum;
+const ORDER_STATUS_CASE = orderStatuses.cases;
+type OrderStatus = InferEnumwaii<typeof orderStatuses>;
+
+expectTypeOf(ORDER_STATUS.ORDER_PAID).toEqualTypeOf<
+  EnumwaiiValue<"order-paid", EnumwaiiIdentity<"order-paid" | "order-pending">>
+>();
+expectTypeOf(RAW_ORDER_STATUS.ORDER_PENDING).toEqualTypeOf<"order-pending">();
+expectTypeOf(ORDER_STATUS_CASE.ORDER_PAID).toEqualTypeOf<"order-paid">();
+expectTypeOf<keyof typeof ORDER_STATUS>().toEqualTypeOf<
+  "ORDER_PAID" | "ORDER_PENDING"
+>();
+expectTypeOf<(typeof orderStatuses)["~keys"]>().toEqualTypeOf<
+  "order-paid" | "order-pending"
+>();
+expectTypeOf<(typeof orderStatuses)["~type"]>().toEqualTypeOf<OrderStatus>();
+
+const constructedStatuses = new Enumwaii<
+  "paid",
+  EnumwaiiIdentity<"paid">,
+  { readonly PAID: "paid" }
+>({ PAID: "paid" });
+expectTypeOf(constructedStatuses.enum.PAID).toEqualTypeOf<
+  EnumwaiiValue<"paid", EnumwaiiIdentity<"paid">>
+>();
+
+const equivalentOrderStatuses = em({
+  PAID: "order-paid",
+  PENDING: "order-pending",
+});
+const EQUIVALENT_ORDER_STATUS = equivalentOrderStatuses.enum;
+const compatibleOrderStatus: OrderStatus = EQUIVALENT_ORDER_STATUS.PAID;
+void compatibleOrderStatus;
+
+const foreignOrderStatuses = em({ PAID: "paid" });
+// @ts-expect-error identity is derived from values, and this value set differs
+const foreignOrderStatus: OrderStatus = foreignOrderStatuses.enum.PAID;
+void foreignOrderStatus;
+
+const pickedOrderStatuses = orderStatuses.pick([ORDER_STATUS.ORDER_PAID]);
+expectTypeOf(pickedOrderStatuses.rawEnum).toEqualTypeOf<{
+  readonly ORDER_PAID: "order-paid";
+}>();
+const omittedOrderStatuses = orderStatuses.omit([ORDER_STATUS.ORDER_PENDING]);
+expectTypeOf(omittedOrderStatuses.rawEnum).toEqualTypeOf<{
+  readonly ORDER_PAID: "order-paid";
+}>();
+const extendedOrderStatuses = orderStatuses.extend(["order-refunded"]);
+expectTypeOf(
+  extendedOrderStatuses.rawEnum["order-refunded"],
+).toEqualTypeOf<"order-refunded">();
+const combinedOrderStatuses = em.combine([
+  orderStatuses,
+  em({ REFUNDED: "order-refunded" }),
+]);
+expectTypeOf<keyof typeof combinedOrderStatuses.rawEnum>().toEqualTypeOf<
+  "order-paid" | "order-pending" | "order-refunded"
 >();
 
 const labels = {

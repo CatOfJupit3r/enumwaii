@@ -62,11 +62,70 @@ describe("eslint-plugin-enumwaii", () => {
       },
     });
     const [result] = await eslint.lintText(
-      "import { em } from 'enumwaii'; em(['READY', 'in-progress']);",
+      "import { em } from 'enumwaii'; em(['READY', 'in-progress']); em({ READY: 'READY', BAD: 'not-constant' });",
     );
     expect(result?.messages.map((message) => message.messageId)).toEqual([
       "invalidInternalMember",
+      "invalidInternalMember",
     ]);
+  });
+
+  it("checks object keys as CONSTANT_CASE and values with configured casing", async () => {
+    const eslint = new ESLint({
+      overrideConfigFile: true,
+      overrideConfig: {
+        plugins: { enumwaii: plugin as unknown as ESLint.Plugin },
+        rules: {
+          "enumwaii/enforce-enum-casing": ["error", { valueCasing: "kebab" }],
+        },
+      },
+    });
+    const [result] = await eslint.lintText(`
+      import { em } from "enumwaii";
+      em({
+        ORDER_PAID: "order-paid",
+        badKey: "still-valid",
+        INVALID_VALUE: "NOT-KEBAB",
+      });
+    `);
+
+    expect(result?.messages.map((message) => message.messageId)).toEqual([
+      "invalidInternalMember",
+      "invalidInternalMember",
+    ]);
+    expect(result?.messages.map((message) => message.message)).toEqual([
+      "Enumwaii declaration string badKey must use CONSTANT_CASE.",
+      'Enumwaii declaration string "NOT-KEBAB" must use kebab-case.',
+    ]);
+  });
+
+  it("allows configured kebab and snake values in tuple and object declarations", async () => {
+    async function messagesFor(valueCasing: "kebab" | "snake", source: string) {
+      const eslint = new ESLint({
+        overrideConfigFile: true,
+        overrideConfig: {
+          plugins: { enumwaii: plugin as unknown as ESLint.Plugin },
+          rules: {
+            "enumwaii/enforce-enum-casing": ["error", { valueCasing }],
+          },
+        },
+      });
+      const [result] = await eslint.lintText(source);
+      return result?.messages ?? [];
+    }
+
+    await expect(
+      messagesFor(
+        "kebab",
+        'em(["in-progress"]); new Enumwaii({ IN_PROGRESS: "in-progress" });',
+      ),
+    ).resolves.toEqual([]);
+    await expect(
+      messagesFor(
+        "snake",
+        'em(["in_progress"]); new Enumwaii({ IN_PROGRESS: "in_progress" });',
+      ),
+    ).resolves.toEqual([]);
   });
 
   it("ignores declarations whose names match configured patterns", async () => {
@@ -84,7 +143,7 @@ describe("eslint-plugin-enumwaii", () => {
     });
     const [result] = await eslint.lintText(`
       import { em, Enumwaii } from "enumwaii";
-      const wireStatus = em(["in-progress"]);
+      const wireStatus = em({ badKey: "in-progress" });
       const Legacy1 = new Enumwaii(["legacy-value"]);
       const status = em(["not-constant"]);
     `);

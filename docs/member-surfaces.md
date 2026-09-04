@@ -41,6 +41,24 @@ acceptRole("ADMIN"); // TypeScript error
 
 `.enum` is the standard surface for trusted application code.
 
+For the object overload, property names and canonical values may differ:
+
+```ts
+import { em } from "enumwaii";
+
+const statuses = em({
+  ORDER_PAID: "order-paid",
+  ORDER_PENDING: "order-pending",
+});
+const STATUS = statuses.enum;
+
+STATUS.ORDER_PAID; // branded "order-paid"
+statuses.parse("order-paid"); // valid
+statuses.parse("ORDER_PAID"); // throws
+```
+
+The keys are only the developer-facing object surface. `.values`, `.rawValues`, parsing, schemas, adapters, and derivation all use the mapped values.
+
 Extract member views once and reference members through the extracted constant:
 
 ```ts
@@ -75,7 +93,7 @@ The tuple carries declaration provenance. Do not pass it back into `em()` to rec
 
 ## `.rawEnum` and `.rawValues`: integration escapes
 
-Some APIs require literal strings or literal arrays and cannot preserve enumwaii's brand. `.rawEnum` and `.rawValues` provide canonical unbranded values without making raw literals the normal authoring style.
+Some APIs require literal strings or literal arrays and cannot preserve enumwaii's brand. `.rawEnum` and `.rawValues` provide canonical unbranded values without making raw literals the normal authoring style. With an object declaration, `.rawEnum` retains the supplied developer-facing keys while `.rawValues` contains only the mapped values.
 
 ```ts
 import { em } from "enumwaii";
@@ -155,7 +173,7 @@ type RoleParseResult = (typeof roles)["~safeParseResult"];
 ```
 
 - `~type` is the branded member union.
-- `~keys` is the raw member union, useful for external records with `satisfies`.
+- `~keys` is the raw value union, useful for external value-keyed records with `satisfies`. Despite its historical name, it does not become the object-overload's developer-facing property-key union.
 - `~safeParseResult` is the exact discriminated result returned by this declaration's `safeParse` method.
 
 ```ts

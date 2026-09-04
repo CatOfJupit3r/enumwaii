@@ -7,12 +7,24 @@ const createRule = ESLintUtils.RuleCreator(
 );
 
 const INTERNAL_MEMBER_PATTERN = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/u;
+const VALUE_CASING_PATTERNS = {
+  constant: INTERNAL_MEMBER_PATTERN,
+  kebab: /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/u,
+  snake: /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/u,
+} as const;
+const VALUE_CASING_LABELS = {
+  constant: "CONSTANT_CASE",
+  kebab: "kebab-case",
+  snake: "snake_case",
+} as const;
 
 type MessageIds = "invalidInternalMember";
+type ValueCasing = keyof typeof VALUE_CASING_PATTERNS;
 type Options = [
   {
     ignoredFilePatterns?: string[];
     ignoredNamePatterns?: string[];
+    valueCasing?: ValueCasing;
   },
 ];
 
@@ -72,22 +84,20 @@ function declarationName(
 }
 
 /**
- * Require `CONSTANT_CASE` string members in direct enumwaii declarations.
+ * Enforce key and value casing in direct enumwaii declarations.
  *
- * This syntax-only rule checks the first array argument of a direct `em([...])`
- * call or `new Enumwaii([...])` expression. It does not need TypeScript parser
- * services, so it can run in a parser-only or syntax-only configuration. The
- * convention keeps internal member names predictable while leaving the runtime
- * API free to represent external wire formats. Deliberate lowercase,
- * kebab-case, or otherwise fixed external names can be excluded by declaration
- * name or normalized file path.
+ * This syntax-only rule checks the first array or object argument of a direct
+ * `em(...)` call or `new Enumwaii(...)` expression. Object keys always use
+ * `CONSTANT_CASE`; tuple members and object values use the configured
+ * `valueCasing`, which defaults to `constant` and also supports `kebab` and
+ * `snake`. It does not need TypeScript parser services.
  *
  * `ignoredNamePatterns` matches wildcard patterns against identifiers directly
  * bound to a declaration, such as `wireStatus` in
  * `const wireStatus = em([...])`. `ignoredFilePatterns` matches normalized
  * forward-slash file paths. `*` matches within one path segment, `**` crosses
- * path separators, and `?` matches one non-separator character. The rule
- * provides no autofix.
+ * path separators, and `?` matches one non-separator character. Ignored
+ * declarations skip both key and value checks. The rule provides no autofix.
  *
  * @example Incorrect member casing
  * The declaration contains an internal member that is not `CONSTANT_CASE`.
@@ -96,14 +106,14 @@ function declarationName(
  * const status = em(["READY", "in-progress"]);
  * ```
  *
- * @example Correct internal names and an intentional wire value
- * Internal names use `CONSTANT_CASE`; an intentional wire name can opt out at
- * its declaration site.
+ * @example Correct aliased wire values
+ * Object keys use `CONSTANT_CASE`, while values follow `valueCasing`.
  * ```ts
  * import { em } from "enumwaii";
- * const status = em(["READY", "IN_PROGRESS"]);
- * // eslint-disable-next-line enumwaii/enforce-enum-casing -- external wire value
- * const wireStatus = em(["in-progress"]);
+ * const status = em({
+ *   IN_PROGRESS: "in-progress",
+ *   COMPLETE: "complete",
+ * });
  * ```
  *
  * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/linting.md
@@ -114,11 +124,11 @@ export const enforceEnumCasingRule = createRule<Options, MessageIds>({
   meta: {
     type: "problem",
     docs: {
-      description: "Require CONSTANT_CASE members in enumwaii declarations",
+      description: "Enforce key and value casing in enumwaii declarations",
     },
     messages: {
       invalidInternalMember:
-        "Enumwaii member {{member}} must use CONSTANT_CASE. Disable this rule locally for an intentional external wire value.",
+        "Enumwaii declaration string {{member}} must use {{casing}}.",
     },
     schema: [
       {
@@ -135,6 +145,10 @@ export const enforceEnumCasingRule = createRule<Options, MessageIds>({
             items: { type: "string" },
             uniqueItems: true,
           },
+          valueCasing: {
+            type: "string",
+            enum: ["constant", "kebab", "snake"],
+          },
         },
       },
     ],
@@ -143,6 +157,7 @@ export const enforceEnumCasingRule = createRule<Options, MessageIds>({
     {
       ignoredFilePatterns: [],
       ignoredNamePatterns: [],
+      valueCasing: "constant",
     },
   ],
   create(context, [options]) {
@@ -152,6 +167,8 @@ export const enforceEnumCasingRule = createRule<Options, MessageIds>({
     const ignoredNamePatterns = (options.ignoredNamePatterns ?? []).map(
       wildcardPattern,
     );
+    const valueCasing = options.valueCasing ?? "constant";
+    const valuePattern = VALUE_CASING_PATTERNS[valueCasing];
     const filename = context.physicalFilename.replaceAll("\\", "/");
 
     if (matchesAnyPattern(filename, ignoredFilePatterns)) {
@@ -169,28 +186,69 @@ export const enforceEnumCasingRule = createRule<Options, MessageIds>({
         node.type === AST_NODE_TYPES.NewExpression &&
         node.callee.type === AST_NODE_TYPES.Identifier &&
         node.callee.name === "Enumwaii";
-      const values = node.arguments[0];
-      if (
-        (!isEmCall && !isEnumwaiiConstructor) ||
-        values?.type !== AST_NODE_TYPES.ArrayExpression
-      )
-        return;
+      if (!isEmCall && !isEnumwaiiConstructor) return;
 
       const name = declarationName(node);
       if (name !== undefined && matchesAnyPattern(name, ignoredNamePatterns)) {
         return;
       }
 
-      for (const member of values.elements) {
+      const members = node.arguments[0];
+      if (members?.type === AST_NODE_TYPES.ArrayExpression) {
+        for (const member of members.elements) {
+          if (
+            member?.type === AST_NODE_TYPES.Literal &&
+            typeof member.value === "string" &&
+            !valuePattern.test(member.value)
+          ) {
+            context.report({
+              node: member,
+              messageId: "invalidInternalMember",
+              data: {
+                member: context.sourceCode.getText(member),
+                casing: VALUE_CASING_LABELS[valueCasing],
+              },
+            });
+          }
+        }
+        return;
+      }
+
+      if (members?.type !== AST_NODE_TYPES.ObjectExpression) return;
+
+      for (const member of members.properties) {
+        if (member.type !== AST_NODE_TYPES.Property) continue;
+
+        const key =
+          !member.computed && member.key.type === AST_NODE_TYPES.Identifier
+            ? member.key.name
+            : member.key.type === AST_NODE_TYPES.Literal
+              ? String(member.key.value)
+              : undefined;
+
+        if (key !== undefined && !INTERNAL_MEMBER_PATTERN.test(key)) {
+          context.report({
+            node: member.key,
+            messageId: "invalidInternalMember",
+            data: {
+              member: context.sourceCode.getText(member.key),
+              casing: VALUE_CASING_LABELS.constant,
+            },
+          });
+        }
+
         if (
-          member?.type === AST_NODE_TYPES.Literal &&
-          typeof member.value === "string" &&
-          !INTERNAL_MEMBER_PATTERN.test(member.value)
+          member.value.type === AST_NODE_TYPES.Literal &&
+          typeof member.value.value === "string" &&
+          !valuePattern.test(member.value.value)
         ) {
           context.report({
-            node: member,
+            node: member.value,
             messageId: "invalidInternalMember",
-            data: { member: context.sourceCode.getText(member) },
+            data: {
+              member: context.sourceCode.getText(member.value),
+              casing: VALUE_CASING_LABELS[valueCasing],
+            },
           });
         }
       }

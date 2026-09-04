@@ -72,7 +72,7 @@ For eslintrc configuration, use the `recommended` and `recommended-type-checked`
 
 | Rule | Recommended | Type information | Purpose |
 | --- | --- | --- | --- |
-| `enforce-enum-casing` | Both | No | Require `CONSTANT_CASE` members in direct internal declarations. |
+| `enforce-enum-casing` | Both | No | Enforce declaration-key and configurable value casing. |
 | `no-direct-enumwaii-reference` | Type-aware | Yes | Extract `.enum`, `.rawEnum`, and `.cases` before referencing members. |
 | `no-enumwaii-case-misuse` | Type-aware | Yes | Keep raw case values inside discriminated-union declarations and narrowing. |
 | `no-raw-enum-comparison` | Type-aware | Yes | Replace raw comparison and `switch` literals with owned members. |
@@ -83,11 +83,11 @@ Only `enforce-enum-casing` has options; the other rules have no options. The rul
 
 ### `enforce-enum-casing`
 
-Requires `CONSTANT_CASE` string literals in the first array passed directly to `em([...])` or `new Enumwaii([...])`. This is the only syntax-only rule: it does not need TypeScript parser services. Non-literal array elements and declarations whose first argument is not an array are outside its scope.
+Checks string literals in the first array or object passed directly to `em(...)` or `new Enumwaii(...)`. This is the only syntax-only rule: it does not need TypeScript parser services. Object keys always require `CONSTANT_CASE`. Tuple members and object values follow `valueCasing`: `"constant"` (the default), `"kebab"`, or `"snake"`. Non-literal values are outside its scope.
 
-Intentional lowercase, kebab-case, or otherwise fixed external wire values are valid enumwaii members. Disable the rule locally at one declaration, or configure `ignoredNamePatterns` and `ignoredFilePatterns` when a naming convention or generated-file boundary identifies a group of declarations.
+Use `valueCasing` for consistent lowercase wire formats. Disable the rule locally at one declaration, or configure `ignoredNamePatterns` and `ignoredFilePatterns` when a naming convention or generated-file boundary should bypass casing checks entirely.
 
-Both options accept wildcard patterns. `*` matches within one path segment, `**` crosses path separators, and `?` matches one non-separator character. Name patterns match identifiers directly bound to a declaration, such as `wireStatus` in `const wireStatus = em([...])`. File patterns match normalized forward-slash paths, so `**/generated/**` works on every operating system.
+The ignore options accept wildcard patterns. `*` matches within one path segment, `**` crosses path separators, and `?` matches one non-separator character. Name patterns match identifiers directly bound to a declaration, such as `wireStatus` in `const wireStatus = em([...])`. File patterns match normalized forward-slash paths, so `**/generated/**` works on every operating system. A matched declaration skips both key and value checks.
 
 ```js
 {
@@ -95,6 +95,7 @@ Both options accept wildcard patterns. `*` matches within one path segment, `**`
     "enumwaii/enforce-enum-casing": [
       "error",
       {
+        valueCasing: "kebab",
         ignoredNamePatterns: ["wire*", "*Payload"],
         ignoredFilePatterns: ["**/generated/**", "**/*.generated.ts"],
       },
@@ -111,7 +112,7 @@ Reports: `invalidInternalMember`.
 // @noErrors
 import { em } from "enumwaii";
 
-const status = em(["READY", "in-progress"]);
+const status = em({ inProgress: "IN_PROGRESS" });
 // @error: enumwaii/enforce-enum-casing (invalidInternalMember) — internal members use CONSTANT_CASE.
 ```
 
@@ -120,10 +121,11 @@ const status = em(["READY", "in-progress"]);
 ```ts
 import { em } from "enumwaii";
 
-const status = em(["READY", "IN_PROGRESS"]);
-
-// eslint-disable-next-line enumwaii/enforce-enum-casing -- external wire value
-const wireStatus = em(["in-progress"]);
+// With valueCasing: "kebab"
+const status = em({
+  READY: "ready",
+  IN_PROGRESS: "in-progress",
+});
 ```
 
 ### `no-direct-enumwaii-reference`

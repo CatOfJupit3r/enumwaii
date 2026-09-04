@@ -71,14 +71,14 @@ Legacy presets are available as `recommended` and `recommended-type-checked`.
 
 | Rule | Type-aware | Purpose |
 | --- | --- | --- |
-| `enforce-enum-casing` | No | Require `CONSTANT_CASE` declaration members. |
+| `enforce-enum-casing` | No | Enforce declaration-key and configurable value casing. |
 | `no-direct-enumwaii-reference` | Yes | Extract `.enum`, `.rawEnum`, or `.cases` before member use. |
 | `no-enumwaii-case-misuse` | Yes | Reserve raw cases for discriminated-union flows. |
 | `no-raw-enum-comparison` | Yes | Replace raw comparison and `switch` literals with owned members. |
 | `no-raw-enum-member` | Yes | Use owned members and composition APIs in subsets and mappings. |
 | `no-union-property-in` | Yes | Prefer enumwaii discriminants to structural `in` narrowing. |
 
-Only `enforce-enum-casing` has options. Use `ignoredNamePatterns` or `ignoredFilePatterns` with `*`, `**`, and `?` wildcards to exclude intentional wire-format or generated declarations. The other rules have no options, and none of the rules autofix provenance-sensitive code.
+Only `enforce-enum-casing` has options. Set `valueCasing` to `"constant"` (the default), `"kebab"`, or `"snake"`; object keys always remain `CONSTANT_CASE`. Use `ignoredNamePatterns` or `ignoredFilePatterns` with `*`, `**`, and `?` wildcards to skip both checks for selected declarations. The other rules have no options, and none of the rules autofix provenance-sensitive code.
 
 ```js
 {
@@ -86,6 +86,7 @@ Only `enforce-enum-casing` has options. Use `ignoredNamePatterns` or `ignoredFil
     "enumwaii/enforce-enum-casing": [
       "error",
       {
+        valueCasing: "kebab",
         ignoredNamePatterns: ["wire*"],
         ignoredFilePatterns: ["**/generated/**"],
       },

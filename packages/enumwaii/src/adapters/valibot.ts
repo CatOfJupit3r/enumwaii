@@ -8,7 +8,7 @@
 import * as v from "valibot";
 
 import type { Enumwaii } from "../enumwaii";
-import type { EnumwaiiValue } from "../types/enumwaii";
+import type { EnumwaiiIdentityKeyMap, EnumwaiiValue } from "../types/enumwaii";
 
 /**
  * Adapts an enumwaii declaration to a Valibot schema for integrations that
@@ -36,9 +36,11 @@ import type { EnumwaiiValue } from "../types/enumwaii";
  * @see https://valibot.dev/api/
  * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/runtime-boundaries.md#standard-schema
  */
-export function valibotSchema<TRaw extends string, TIdentity extends string>(
-  enumeration: Enumwaii<TRaw, TIdentity>,
-) {
+export function valibotSchema<
+  TRaw extends string,
+  TIdentity extends string,
+  TKeys extends Readonly<Record<string, string>> = EnumwaiiIdentityKeyMap<TRaw>,
+>(enumeration: Enumwaii<TRaw, TIdentity, TKeys>) {
   return v.custom<EnumwaiiValue<TRaw, TIdentity>>(
     enumeration.is.bind(enumeration),
     `Expected one of: ${enumeration.rawValues.join(", ")}`,

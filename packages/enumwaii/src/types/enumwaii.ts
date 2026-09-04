@@ -96,6 +96,23 @@ export type EnumwaiiValue<
  */
 export type EnumwaiiIdentity<TRaw extends string> = `enumwaii:${TRaw}`;
 
+/**
+ * The default public-key mapping for an enumwaii declaration.
+ *
+ * Tuple declarations use each raw value as its own property key. Object
+ * declarations supply a different key map while retaining value-derived
+ * identity.
+ *
+ * @example
+ * ```ts
+ * type StatusKeys = EnumwaiiIdentityKeyMap<"OPEN" | "CLOSED">;
+ * // { readonly OPEN: "OPEN"; readonly CLOSED: "CLOSED" }
+ * ```
+ */
+export type EnumwaiiIdentityKeyMap<TRaw extends string> = {
+  readonly [K in TRaw]: K;
+};
+
 interface EnumwaiiCasesBrand<TIdentity extends string> {
   readonly [ENUMWAII_CASES_BRAND]: TIdentity;
 }
@@ -107,11 +124,11 @@ interface EnumwaiiValuesBrand<TIdentity extends string> {
 /**
  * Raw-literal object view used for native discriminated-union narrowing.
  *
- * Each property remains an unbranded literal so `switch` and equality checks
- * narrow reliably. Use a declaration's `.enum` view for application values;
- * this type's identity marker exists only for static relationships and linting.
- * The runtime object is a frozen plain object shared with `.enum` and
- * `.rawEnum`.
+ * Each property retains its declaration key and exposes an unbranded raw
+ * literal so `switch` and equality checks narrow reliably. Use a declaration's
+ * `.enum` view for application values; this type's identity marker exists only
+ * for static relationships and linting. The runtime object is a frozen plain
+ * object shared with `.enum` and `.rawEnum`.
  *
  * @example
  * ```ts
@@ -121,8 +138,12 @@ interface EnumwaiiValuesBrand<TIdentity extends string> {
  *
  * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/member-surfaces.md#cases-native-discriminated-union-narrowing
  */
-export type EnumwaiiCases<TRaw extends string, TIdentity extends string> = {
-  readonly [K in TRaw]: K;
+export type EnumwaiiCases<
+  TRaw extends string,
+  TIdentity extends string,
+  TKeys extends Readonly<Record<string, string>> = EnumwaiiIdentityKeyMap<TRaw>,
+> = {
+  readonly [K in keyof TKeys]: TKeys[K];
 } & EnumwaiiCasesBrand<TIdentity>;
 
 /**

@@ -22,6 +22,7 @@ export type {
   EnumwaiiDerived,
   EnumwaiiDeriveToEntry,
   EnumwaiiIdentity,
+  EnumwaiiIdentityKeyMap,
   EnumwaiiParseOptions,
   EnumwaiiSafeParseResult,
   EnumwaiiSource,

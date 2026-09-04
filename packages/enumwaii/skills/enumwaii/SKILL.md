@@ -29,6 +29,20 @@ export const modeSchema = modes;
 
 Pass only the closed set of values to `em`. Enumwaii derives its type identity from that complete set; declarations with identical members are intentionally type-compatible.
 
+Prefer keys and values that are identical. When a fixed external protocol needs different wire casing, use the object overload as an escape hatch:
+
+```ts
+const orderStatuses = em({
+  ORDER_PAID: "order-paid",
+  ORDER_PENDING: "order-pending",
+});
+
+export const ORDER_STATUS = orderStatuses.enum;
+orderStatuses.parse("order-paid");
+```
+
+The object keys are developer-facing names only. Values remain canonical for identity, parsing, schemas, adapters, iteration, and derivation. Equal value sets are type-compatible even when their object keys differ.
+
 ## Use owned members
 
 Use `MODE.REGULAR` for known values, defaults, comparisons, fixtures, and object construction. A raw literal is not a branded enumwaii value.
@@ -80,4 +94,4 @@ Keep branded enum members on both sides of `deriveTo`; TypeScript checks them ag
 
 ## Lint boundary
 
-Install `eslint-plugin-enumwaii`. Internal values normally use `CONSTANT_CASE`, enforced by lint rather than runtime because external wire formats may be lowercase or kebab-case. Extract `.enum`, `.rawEnum`, and `.cases` once before referencing their members. The type-aware config also catches direct member-view references, raw comparisons, raw derived keys, `.cases` misuse, and structural object-union narrowing.
+Install `eslint-plugin-enumwaii`. Internal values normally use `CONSTANT_CASE`, enforced by lint rather than runtime. For aliased external wire formats, keep object keys in `CONSTANT_CASE` and configure `enforce-enum-casing` with `valueCasing: "kebab"` or `"snake"`. Extract `.enum`, `.rawEnum`, and `.cases` once before referencing their members. The type-aware config also catches direct member-view references, raw comparisons, raw derived keys, `.cases` misuse, and structural object-union narrowing.

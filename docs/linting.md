@@ -23,7 +23,21 @@ The lint package covers:
 - misuse of `.cases` outside discriminated-union flows;
 - structural `in` narrowing patterns that undermine enum-driven unions.
 
-`CONSTANT_CASE` is an authoring convention for internal declarations. External protocols can retain lowercase, kebab-case, or another fixed wire format with a local rule override or the casing rule's `ignoredNamePatterns` and `ignoredFilePatterns` options.
+`CONSTANT_CASE` is the default authoring convention. The casing rule's `valueCasing` option can instead require `"kebab"` or `"snake"` values in tuple and object declarations. Object-overload keys always remain `CONSTANT_CASE`, letting application code use names such as `ORDER_PAID` while canonical URL or protocol values stay `"order-paid"`. Use `ignoredNamePatterns` and `ignoredFilePatterns` only when a declaration or generated-file boundary should skip both checks entirely.
+
+```js
+{
+  rules: {
+    "enumwaii/enforce-enum-casing": [
+      "error",
+      {
+        valueCasing: "kebab",
+        ignoredFilePatterns: ["**/generated/**"],
+      },
+    ],
+  },
+}
+```
 
 ## Branding and lint together
 

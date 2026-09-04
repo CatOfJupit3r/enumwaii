@@ -13,12 +13,13 @@ import {
   tableFeatures,
   useTable,
   type SortingState,
+  type Column,
 } from "@tanstack/react-table";
 import { em } from "enumwaii";
 
-import { statusMetadata, type OperationTask } from "../lib/operations";
+import { statusMetadata, type Article } from "../lib/articles";
 
-const operationTableFeatures = tableFeatures({
+const articleTableFeatures = tableFeatures({
   columnFilteringFeature,
   globalFilteringFeature,
   rowSortingFeature,
@@ -26,51 +27,51 @@ const operationTableFeatures = tableFeatures({
   sortedRowModel: createSortedRowModel(),
 });
 
-const operationColumns = em([
+const articleColumns = em([
   "ID",
   "TITLE",
-  "ACCOUNT",
+  "AUTHOR",
   "STATUS",
-  "OWNER",
-  "WINDOW",
+  "EDITOR",
+  "WORD_COUNT",
   "NOTE",
 ]);
-const OPERATION_COLUMN = operationColumns.enum;
+const ARTICLE_COLUMN = articleColumns.enum;
 
-const operationColumnLabels = operationColumns.derive<string>()(
-  [OPERATION_COLUMN.ID, "ID"],
-  [OPERATION_COLUMN.TITLE, "Work item"],
-  [OPERATION_COLUMN.ACCOUNT, "Account"],
-  [OPERATION_COLUMN.STATUS, "Status"],
-  [OPERATION_COLUMN.OWNER, "Owner"],
-  [OPERATION_COLUMN.WINDOW, "Window"],
-  [OPERATION_COLUMN.NOTE, "Signal note"],
+const articleColumnLabels = articleColumns.derive<string>()(
+  [ARTICLE_COLUMN.ID, "ID"],
+  [ARTICLE_COLUMN.TITLE, "Headline"],
+  [ARTICLE_COLUMN.AUTHOR, "Author"],
+  [ARTICLE_COLUMN.STATUS, "Status"],
+  [ARTICLE_COLUMN.EDITOR, "Editor"],
+  [ARTICLE_COLUMN.WORD_COUNT, "Words"],
+  [ARTICLE_COLUMN.NOTE, "Desk note"],
 );
 
-const operationColumnHelper = createColumnHelper<
-  typeof operationTableFeatures,
-  OperationTask
+const articleColumnHelper = createColumnHelper<
+  typeof articleTableFeatures,
+  Article
 >();
 
-const operationTableColumns = operationColumnHelper.columns([
-  operationColumnHelper.accessor("id", {
-    id: OPERATION_COLUMN.ID,
-    header: operationColumnLabels.get(OPERATION_COLUMN.ID),
+const articleTableColumns = articleColumnHelper.columns([
+  articleColumnHelper.accessor("id", {
+    id: ARTICLE_COLUMN.ID,
+    header: articleColumnLabels.get(ARTICLE_COLUMN.ID),
     sortFn: sortFn_alphanumeric,
   }),
-  operationColumnHelper.accessor("title", {
-    id: OPERATION_COLUMN.TITLE,
-    header: operationColumnLabels.get(OPERATION_COLUMN.TITLE),
+  articleColumnHelper.accessor("title", {
+    id: ARTICLE_COLUMN.TITLE,
+    header: articleColumnLabels.get(ARTICLE_COLUMN.TITLE),
     sortFn: sortFn_alphanumeric,
   }),
-  operationColumnHelper.accessor("account", {
-    id: OPERATION_COLUMN.ACCOUNT,
-    header: operationColumnLabels.get(OPERATION_COLUMN.ACCOUNT),
+  articleColumnHelper.accessor("author", {
+    id: ARTICLE_COLUMN.AUTHOR,
+    header: articleColumnLabels.get(ARTICLE_COLUMN.AUTHOR),
     sortFn: sortFn_alphanumeric,
   }),
-  operationColumnHelper.accessor("status", {
-    id: OPERATION_COLUMN.STATUS,
-    header: operationColumnLabels.get(OPERATION_COLUMN.STATUS),
+  articleColumnHelper.accessor("status", {
+    id: ARTICLE_COLUMN.STATUS,
+    header: articleColumnLabels.get(ARTICLE_COLUMN.STATUS),
     sortFn: sortFn_alphanumeric,
     cell: ({ getValue }) => {
       const metadata = statusMetadata(getValue());
@@ -85,37 +86,39 @@ const operationTableColumns = operationColumnHelper.columns([
       );
     },
   }),
-  operationColumnHelper.accessor("owner", {
-    id: OPERATION_COLUMN.OWNER,
-    header: operationColumnLabels.get(OPERATION_COLUMN.OWNER),
+  articleColumnHelper.accessor("editor", {
+    id: ARTICLE_COLUMN.EDITOR,
+    header: articleColumnLabels.get(ARTICLE_COLUMN.EDITOR),
     sortFn: sortFn_alphanumeric,
   }),
-  operationColumnHelper.accessor("window", {
-    id: OPERATION_COLUMN.WINDOW,
-    header: operationColumnLabels.get(OPERATION_COLUMN.WINDOW),
+  articleColumnHelper.accessor("wordCount", {
+    id: ARTICLE_COLUMN.WORD_COUNT,
+    header: articleColumnLabels.get(ARTICLE_COLUMN.WORD_COUNT),
     sortFn: sortFn_alphanumeric,
   }),
-  operationColumnHelper.accessor("note", {
-    id: OPERATION_COLUMN.NOTE,
-    header: operationColumnLabels.get(OPERATION_COLUMN.NOTE),
+  articleColumnHelper.accessor("note", {
+    id: ARTICLE_COLUMN.NOTE,
+    header: articleColumnLabels.get(ARTICLE_COLUMN.NOTE),
     enableSorting: false,
   }),
 ]);
 
-interface OperationsTableProps {
-  readonly tasks: readonly OperationTask[];
+interface ArticlesTableProps {
+  readonly articles: readonly Article[];
 }
 
 function columnHeaderLabel(columnId: string): string {
-  const parsedColumn = operationColumns.safeParse(columnId);
+  const parsedColumn = articleColumns.safeParse(columnId);
   return parsedColumn.success
-    ? operationColumnLabels.get(parsedColumn.value)
+    ? articleColumnLabels.get(parsedColumn.value)
     : columnId;
 }
 
 function sortAnnouncement(
   label: string,
-  direction: false | "asc" | "desc",
+  direction: ReturnType<
+    Column<typeof articleTableFeatures, Article>["getIsSorted"]
+  >,
 ): string {
   if (direction === "asc") {
     return `${label} sorted ascending. Activate to change the sort.`;
@@ -128,14 +131,14 @@ function sortAnnouncement(
   return `Sort by ${label}`;
 }
 
-export function OperationsTable({ tasks }: OperationsTableProps) {
+export function ArticlesTable({ articles }: ArticlesTableProps) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const table = useTable(
     {
-      features: operationTableFeatures,
-      columns: operationTableColumns,
-      data: tasks,
+      features: articleTableFeatures,
+      columns: articleTableColumns,
+      data: articles,
       globalFilterFn: filterFn_includesString,
       state: { globalFilter, sorting },
       onGlobalFilterChange: setGlobalFilter,
@@ -150,21 +153,21 @@ export function OperationsTable({ tasks }: OperationsTableProps) {
   const hasSearch = globalFilter.trim().length > 0;
 
   return (
-    <div className="operations-table-shell">
+    <div className="articles-table-shell">
       <div className="table-toolbar">
         <label className="table-search">
-          <span>Search queue</span>
+          <span>Search articles</span>
           <input
-            aria-label="Search operations queue"
+            aria-label="Search article desk"
             onChange={(event) => table.setGlobalFilter(event.target.value)}
-            placeholder="Search ID, account, owner, or note"
+            placeholder="Search headline, author, editor, or note"
             type="search"
             value={globalFilter}
           />
         </label>
         <div className="table-results" aria-live="polite">
           <strong>{rows.length}</strong>
-          <span>of {tasks.length} tasks visible</span>
+          <span>of {articles.length} articles visible</span>
         </div>
         <button
           className="table-clear"
@@ -176,8 +179,8 @@ export function OperationsTable({ tasks }: OperationsTableProps) {
         </button>
       </div>
 
-      <div className="operations-table-wrap">
-        <table className="operations-table" aria-label="Operations queue">
+      <div className="articles-table-wrap">
+        <table className="articles-table" aria-label="Article desk">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
@@ -238,18 +241,18 @@ export function OperationsTable({ tasks }: OperationsTableProps) {
               ))
             ) : (
               <tr>
-                <td colSpan={operationTableColumns.length}>
+                <td colSpan={articleTableColumns.length}>
                   <div className="table-empty-state">
                     <span aria-hidden="true">⌕</span>
                     <strong>
                       {hasSearch
-                        ? "No matching tasks"
-                        : "No tasks in this queue"}
+                        ? "No matching articles"
+                        : "No articles in this desk"}
                     </strong>
                     <p>
                       {hasSearch
-                        ? "Try a different task, account, owner, or status search."
-                        : "This status queue is clear for the moment."}
+                        ? "Try a different headline, author, editor, or status search."
+                        : "This editorial status is clear for the moment."}
                     </p>
                     {hasSearch ? (
                       <button

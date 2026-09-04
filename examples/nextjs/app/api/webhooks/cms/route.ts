@@ -1,4 +1,4 @@
-import { inspectStatusBoundary } from "../../../lib/boundary";
+import { inspectCmsWebhook } from "../../../../lib/cms-webhook";
 
 export async function POST(request: Request): Promise<Response> {
   let body: unknown;
@@ -29,5 +29,5 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  return Response.json(inspectStatusBoundary(Reflect.get(body, "status")));
+  return Response.json(inspectCmsWebhook(Reflect.get(body, "status")));
 }

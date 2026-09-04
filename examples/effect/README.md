@@ -1,63 +1,22 @@
-# Effect + enumwaii job control room
+# shipctl — Effect + enumwaii
 
-Run the operator console directly from the repository root:
-
-```sh
-pnpm --dir examples/effect dev
-```
-
-With no arguments it prints a control-room overview and executes a small, in-memory scenario:
-
-```text
-ENUMWAII / EFFECT JOB CONTROL ROOM
-State model: QUEUED → RUNNING → SUCCEEDED | FAILED → QUEUED
-  success       OK → RUNNING
-  malformed     ERROR / InvalidJobInput
-  illegal       ERROR / IllegalJobTransition
-  stale state   ERROR / JobStateConflict
-  missing job   RECOVERED / JobNotFound
-  persisted     RUNNING (terminal=false, retryable=false)
-```
-
-The console also accepts external command input so edge cases can be tried without changing source:
+A tiny deploy orchestrator CLI: a pocket ArgoCD for `checkout-api`, `email-worker`, and `web`.
 
 ```sh
-# accepted: exit 0
-pnpm --dir examples/effect dev -- --state QUEUED --command START
-
-# malformed enum input: exit 1
-pnpm --dir examples/effect dev -- --state WAITING --command START
-
-# valid command, but illegal from QUEUED: exit 1
-pnpm --dir examples/effect dev -- --state QUEUED --command RETRY
-
-# valid state/command, but stale versus the seeded QUEUED job: exit 1
-pnpm --dir examples/effect dev -- --state RUNNING --command START
-
-# JSON is decoded as unknown at the same boundary
-pnpm --dir examples/effect dev -- --json '{"state":"QUEUED","command":"START"}' --id build-42
+pnpm --dir examples/effect dev -- list
+pnpm --dir examples/effect dev -- deploy checkout-api
+pnpm --dir examples/effect dev -- retry email-worker
+pnpm --dir examples/effect dev -- promote checkout-api --version 2
 ```
 
-`--help` lists all options. Usage errors return exit code 2; malformed input, illegal transitions, stale state, and missing jobs return exit code 1. The default scenario catches and reports expected workflow failures so the overview itself completes successfully.
+Running `pnpm --dir examples/effect dev` starts a short story: it lists seeded services, deploys `checkout-api`, retries a failed worker, and surfaces a stale-version write. `deploy`, `promote`, `retry`, and `rollback` are real subcommands rather than flags pretending to be a CLI.
 
-## Architecture
+`src/deployment-pipeline.ts` owns branded `DeployStatus` and `DeployCommand` members. `safeParse` handles the untrusted CLI command boundary; `.derive()` creates the label, terminal/retryable state, glyph, and ANSI color for the table; `.deriveTo()` provides both the legal command graph and the command-to-status route. Illegal transitions, missing deploys, malformed input, and stale versions are distinct tagged Effect errors.
 
-- `src/job-workflow.ts` owns two enumwaii declarations: branded `JobStatus` values and branded `JobCommand` values. It extracts their member constants once, derives exhaustive status metadata, derives the allowed status-to-command capabilities, and derives command-to-status destinations.
-- `decodeJobCommand` treats external values as `unknown` and uses enumwaii's `safeParse` before transition logic. Invalid fields become the typed `InvalidJobInput` Effect error.
-- `JobRepository` is an Effect `Context` service. `JobRepositoryLive` builds a process-local `Ref<Map<string, Job>>` with a `Layer`, so branded jobs remain branded while they move through dependency injection and persistence.
-- `IllegalJobTransition`, `JobStateConflict`, and `JobNotFound` are separate tagged errors. The CLI and tests compose them with `Effect.either` and `Effect.catchTag` instead of conflating malformed input with domain rules.
-- `src/cli.ts` owns argv/JSON parsing and presentation. It is an application console, not a generic workflow wrapper or a replacement schema library.
-
-The repository is deliberately in-memory and synchronous. It does not include HTTP, queues, timers, a database adapter, tracing, or production persistence; those are integration choices for a real application.
-
-## Scripts and validation
+The `DeployRepository` Effect service uses a `Ref<Map<…>>`, keeping branded values in the workflow while making the CLI testable. It is intentionally in-memory: database and provider integration are outside this focused example.
 
 ```sh
-pnpm --dir examples/effect dev
 pnpm --dir examples/effect build
-pnpm --dir examples/effect start
 pnpm --dir examples/effect test
-pnpm --dir examples/effect run test:types
+pnpm --dir examples/effect test:types
 ```
-
-`build` uses tsdown to produce the Node ESM bundle in `dist/`. The full workspace may need its root install/build step first when workspace importers have changed; the package intentionally keeps its own manifest, TypeScript config, and build config.

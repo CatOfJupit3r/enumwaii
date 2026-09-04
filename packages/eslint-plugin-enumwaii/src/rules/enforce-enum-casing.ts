@@ -8,6 +8,69 @@ const createRule = ESLintUtils.RuleCreator(
 
 const INTERNAL_MEMBER_PATTERN = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/u;
 
+type MessageIds = "invalidInternalMember";
+type Options = [
+  {
+    ignoredFilePatterns?: string[];
+    ignoredNamePatterns?: string[];
+  },
+];
+
+function escapeRegularExpressionCharacter(character: string): string {
+  return /[\\^$.*+?()[\]{}|]/u.test(character) ? `\\${character}` : character;
+}
+
+function wildcardPattern(pattern: string): RegExp {
+  let source = "^";
+
+  for (let index = 0; index < pattern.length; index += 1) {
+    const character = pattern[index]!;
+
+    if (character === "*") {
+      if (pattern[index + 1] === "*") {
+        if (pattern[index + 2] === "/") {
+          source += "(?:.*/)?";
+          index += 2;
+        } else {
+          source += ".*";
+          index += 1;
+        }
+      } else {
+        source += "[^/]*";
+      }
+    } else if (character === "?") {
+      source += "[^/]";
+    } else {
+      source += escapeRegularExpressionCharacter(character);
+    }
+  }
+
+  return new RegExp(`${source}$`, "u");
+}
+
+function matchesAnyPattern(
+  value: string,
+  patterns: readonly RegExp[],
+): boolean {
+  return patterns.some((pattern) => pattern.test(value));
+}
+
+function declarationName(
+  node: TSESTree.CallExpression | TSESTree.NewExpression,
+): string | undefined {
+  const parent = node.parent;
+
+  if (
+    parent?.type === AST_NODE_TYPES.VariableDeclarator &&
+    parent.init === node &&
+    parent.id.type === AST_NODE_TYPES.Identifier
+  ) {
+    return parent.id.name;
+  }
+
+  return undefined;
+}
+
 /**
  * Require `CONSTANT_CASE` string members in direct enumwaii declarations.
  *
@@ -15,13 +78,16 @@ const INTERNAL_MEMBER_PATTERN = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/u;
  * call or `new Enumwaii([...])` expression. It does not need TypeScript parser
  * services, so it can run in a parser-only or syntax-only configuration. The
  * convention keeps internal member names predictable while leaving the runtime
- * API free to represent external wire formats. Disable this rule locally for a
- * deliberate lowercase, kebab-case, or otherwise fixed external name.
+ * API free to represent external wire formats. Deliberate lowercase,
+ * kebab-case, or otherwise fixed external names can be excluded by declaration
+ * name or normalized file path.
  *
- * The rule has no options and currently provides no autofix. It reports the
- * `invalidInternalMember` message ID for each string literal that is not
- * `CONSTANT_CASE`; non-literal elements and declarations whose first argument
- * is not an array are outside this rule's scope.
+ * `ignoredNamePatterns` matches wildcard patterns against identifiers directly
+ * bound to a declaration, such as `wireStatus` in
+ * `const wireStatus = em([...])`. `ignoredFilePatterns` matches normalized
+ * forward-slash file paths. `*` matches within one path segment, `**` crosses
+ * path separators, and `?` matches one non-separator character. The rule
+ * provides no autofix.
  *
  * @example Incorrect member casing
  * The declaration contains an internal member that is not `CONSTANT_CASE`.
@@ -43,7 +109,7 @@ const INTERNAL_MEMBER_PATTERN = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/u;
  * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/linting.md
  * @see https://eslint.org/docs/latest/extend/custom-rules
  */
-export const enforceEnumCasingRule = createRule({
+export const enforceEnumCasingRule = createRule<Options, MessageIds>({
   name: "enforce-enum-casing",
   meta: {
     type: "problem",
@@ -54,10 +120,44 @@ export const enforceEnumCasingRule = createRule({
       invalidInternalMember:
         "Enumwaii member {{member}} must use CONSTANT_CASE. Disable this rule locally for an intentional external wire value.",
     },
-    schema: [],
+    schema: [
+      {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          ignoredFilePatterns: {
+            type: "array",
+            items: { type: "string" },
+            uniqueItems: true,
+          },
+          ignoredNamePatterns: {
+            type: "array",
+            items: { type: "string" },
+            uniqueItems: true,
+          },
+        },
+      },
+    ],
   },
-  defaultOptions: [],
-  create(context) {
+  defaultOptions: [
+    {
+      ignoredFilePatterns: [],
+      ignoredNamePatterns: [],
+    },
+  ],
+  create(context, [options]) {
+    const ignoredFilePatterns = (options.ignoredFilePatterns ?? []).map(
+      wildcardPattern,
+    );
+    const ignoredNamePatterns = (options.ignoredNamePatterns ?? []).map(
+      wildcardPattern,
+    );
+    const filename = context.physicalFilename.replaceAll("\\", "/");
+
+    if (matchesAnyPattern(filename, ignoredFilePatterns)) {
+      return {};
+    }
+
     function checkDeclaration(
       node: TSESTree.CallExpression | TSESTree.NewExpression,
     ): void {
@@ -75,6 +175,11 @@ export const enforceEnumCasingRule = createRule({
         values?.type !== AST_NODE_TYPES.ArrayExpression
       )
         return;
+
+      const name = declarationName(node);
+      if (name !== undefined && matchesAnyPattern(name, ignoredNamePatterns)) {
+        return;
+      }
 
       for (const member of values.elements) {
         if (

@@ -69,6 +69,61 @@ describe("eslint-plugin-enumwaii", () => {
     ]);
   });
 
+  it("ignores declarations whose names match configured patterns", async () => {
+    const eslint = new ESLint({
+      overrideConfigFile: true,
+      overrideConfig: {
+        plugins: { enumwaii: plugin as unknown as ESLint.Plugin },
+        rules: {
+          "enumwaii/enforce-enum-casing": [
+            "error",
+            { ignoredNamePatterns: ["wire*", "Legacy?"] },
+          ],
+        },
+      },
+    });
+    const [result] = await eslint.lintText(`
+      import { em, Enumwaii } from "enumwaii";
+      const wireStatus = em(["in-progress"]);
+      const Legacy1 = new Enumwaii(["legacy-value"]);
+      const status = em(["not-constant"]);
+    `);
+
+    expect(result?.messages.map((message) => message.messageId)).toEqual([
+      "invalidInternalMember",
+    ]);
+  });
+
+  it("ignores declarations in files matching configured patterns", async () => {
+    const eslint = new ESLint({
+      cwd: packageRoot,
+      overrideConfigFile: true,
+      overrideConfig: {
+        plugins: { enumwaii: plugin as unknown as ESLint.Plugin },
+        rules: {
+          "enumwaii/enforce-enum-casing": [
+            "error",
+            {
+              ignoredFilePatterns: ["**/generated/**", "**/*.generated.js"],
+            },
+          ],
+        },
+      },
+    });
+    const source = "import { em } from 'enumwaii'; em(['wire-value']);";
+    const [generated, generatedSuffix, checked] = await Promise.all([
+      eslint.lintText(source, { filePath: "generated/status.js" }),
+      eslint.lintText(source, { filePath: "src/status.generated.js" }),
+      eslint.lintText(source, { filePath: "src/status.js" }),
+    ]);
+
+    expect(generated[0]?.messages).toEqual([]);
+    expect(generatedSuffix[0]?.messages).toEqual([]);
+    expect(checked[0]?.messages.map((message) => message.messageId)).toEqual([
+      "invalidInternalMember",
+    ]);
+  });
+
   it("rejects raw comparisons and switch cases", async () => {
     await expect(
       lintFixture("no-raw-enum-comparison", "raw-comparison"),

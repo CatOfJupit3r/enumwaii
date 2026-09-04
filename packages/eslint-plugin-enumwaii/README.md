@@ -78,7 +78,21 @@ Legacy presets are available as `recommended` and `recommended-type-checked`.
 | `no-raw-enum-member` | Yes | Use owned members and composition APIs in subsets and mappings. |
 | `no-union-property-in` | Yes | Prefer enumwaii discriminants to structural `in` narrowing. |
 
-The rules have no options and do not autofix provenance-sensitive code.
+Only `enforce-enum-casing` has options. Use `ignoredNamePatterns` or `ignoredFilePatterns` with `*`, `**`, and `?` wildcards to exclude intentional wire-format or generated declarations. The other rules have no options, and none of the rules autofix provenance-sensitive code.
+
+```js
+{
+  rules: {
+    "enumwaii/enforce-enum-casing": [
+      "error",
+      {
+        ignoredNamePatterns: ["wire*"],
+        ignoredFilePatterns: ["**/generated/**"],
+      },
+    ],
+  },
+}
+```
 
 ## Oxlint
 

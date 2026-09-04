@@ -79,13 +79,29 @@ For eslintrc configuration, use the `recommended` and `recommended-type-checked`
 | `no-raw-enum-member` | Type-aware | Yes | Use owned members and composition APIs for subsets and targeted mappings. |
 | `no-union-property-in` | Type-aware | Yes | Prefer an enumwaii case discriminant to structural `in` narrowing. |
 
-The rules have no options and do not autofix. Provenance-sensitive changes should remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
+Only `enforce-enum-casing` has options; the other rules have no options. The rules do not autofix, so provenance-sensitive changes remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
 
 ### `enforce-enum-casing`
 
 Requires `CONSTANT_CASE` string literals in the first array passed directly to `em([...])` or `new Enumwaii([...])`. This is the only syntax-only rule: it does not need TypeScript parser services. Non-literal array elements and declarations whose first argument is not an array are outside its scope.
 
-Intentional lowercase, kebab-case, or otherwise fixed external wire values are valid enumwaii members. Disable the rule locally at that declaration instead of changing the value at runtime.
+Intentional lowercase, kebab-case, or otherwise fixed external wire values are valid enumwaii members. Disable the rule locally at one declaration, or configure `ignoredNamePatterns` and `ignoredFilePatterns` when a naming convention or generated-file boundary identifies a group of declarations.
+
+Both options accept wildcard patterns. `*` matches within one path segment, `**` crosses path separators, and `?` matches one non-separator character. Name patterns match identifiers directly bound to a declaration, such as `wireStatus` in `const wireStatus = em([...])`. File patterns match normalized forward-slash paths, so `**/generated/**` works on every operating system.
+
+```js
+{
+  rules: {
+    "enumwaii/enforce-enum-casing": [
+      "error",
+      {
+        ignoredNamePatterns: ["wire*", "*Payload"],
+        ignoredFilePatterns: ["**/generated/**", "**/*.generated.ts"],
+      },
+    ],
+  },
+}
+```
 
 Reports: `invalidInternalMember`.
 

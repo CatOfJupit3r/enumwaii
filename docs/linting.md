@@ -23,7 +23,7 @@ The lint package covers:
 - misuse of `.cases` outside discriminated-union flows;
 - structural `in` narrowing patterns that undermine enum-driven unions.
 
-`CONSTANT_CASE` is an authoring convention for internal declarations. External protocols can retain lowercase, kebab-case, or another fixed wire format with a local rule override.
+`CONSTANT_CASE` is an authoring convention for internal declarations. External protocols can retain lowercase, kebab-case, or another fixed wire format with a local rule override or the casing rule's `ignoredNamePatterns` and `ignoredFilePatterns` options.
 
 ## Branding and lint together
 

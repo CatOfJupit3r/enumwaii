@@ -1,25 +1,20 @@
-import { Elysia } from "elysia";
+import { expectTypeOf } from "vitest";
+import {
+  describeParcelStatus,
+  COURIER,
+  courierSchema,
+  PARCEL_STATUS,
+  type Courier,
+  type ParcelStatus,
+} from "./src/domain/parcel";
 
-import { describeTheme, themeSchema } from "./src/domain/theme";
-
-new Elysia().post(
-  "/brand-bridge",
-  ({ body }) => {
-    // Elysia 1.4.30 maps the branded string through PrettifyIfObject.
-    // @ts-expect-error The mapped handler value is not assignable to Theme.
-    describeTheme(body);
-
-    return describeTheme(themeSchema.parse(body));
-  },
-  { body: themeSchema },
-);
-
-new Elysia().get(
-  "/invalid-output",
-  // @ts-expect-error The Standard Schema response rejects an unknown member.
-  () => "NEON",
-  { response: themeSchema },
-);
-
-// @ts-expect-error Raw strings cannot enter branded domain logic.
-describeTheme("DARK");
+expectTypeOf<Courier>().not.toEqualTypeOf<"express" | "standard" | "cargo">();
+expectTypeOf<ParcelStatus>().not.toEqualTypeOf<
+  "created" | "in-transit" | "out-for-delivery" | "delivered" | "returned"
+>();
+expectTypeOf(COURIER.EXPRESS).toMatchTypeOf<Courier>();
+expectTypeOf(PARCEL_STATUS.DELIVERED).toMatchTypeOf<ParcelStatus>();
+// @ts-expect-error Raw strings must be parsed before entering derived domain logic.
+describeParcelStatus("delivered");
+const parsed = courierSchema.parse("express");
+expectTypeOf(parsed).toMatchTypeOf<Courier>();

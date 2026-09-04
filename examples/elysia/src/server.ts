@@ -16,7 +16,5 @@ function resolvePort(input: string | undefined): number {
 const port = resolvePort(process.env.PORT);
 
 app.listen(port, ({ hostname, port: listeningPort }) => {
-  console.log(
-    `Theme Boundary Console running at http://${hostname}:${listeningPort}`,
-  );
+  console.log(`Waybill running at http://${hostname}:${listeningPort}`);
 });

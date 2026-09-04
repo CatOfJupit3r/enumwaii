@@ -7,7 +7,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsdown",
     "build:cloudflare": "wrangler deploy --dry-run --outdir dist-cloudflare",
-    "build:library": "pnpm --filter enumwaii build",
+    "build:library": "pnpm --dir ../../packages/enumwaii build",
     "start": "node dist/server.mjs",
     "test": "vitest run",
     "test:types": "tsc --noEmit",
@@ -28,7 +28,7 @@
     "@hono/node-server": "2.1.1",
     "@hono/standard-validator": "0.4.0",
     "drizzle-orm": "0.45.2",
-    "enumwaii": "workspace:*",
+    "enumwaii": "file:../../packages/enumwaii",
     "hono": "4.13.5"
   },
   "devDependencies": {

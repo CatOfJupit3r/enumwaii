@@ -14,6 +14,8 @@ import packageMetadata from "../package.json" with { type: "json" };
 import { enforceEnumCasingRule } from "./rules/enforce-enum-casing";
 import { noDirectEnumwaiiReferenceRule } from "./rules/no-direct-enumwaii-reference";
 import { noEnumwaiiCaseMisuseRule } from "./rules/no-enumwaii-case-misuse";
+import { noManualEnumRule } from "./rules/no-manual-enum";
+import { noObjectEmRule } from "./rules/no-object-em";
 import { noRawEnumComparisonRule } from "./rules/no-raw-enum-comparison";
 import { noRawEnumMemberRule } from "./rules/no-raw-enum-member";
 import { noUnionPropertyInRule } from "./rules/no-union-property-in";
@@ -22,7 +24,7 @@ import { noUnionPropertyInRule } from "./rules/no-union-property-in";
  * Rule implementations published by `eslint-plugin-enumwaii`, keyed by the
  * names used after the `enumwaii/` configuration prefix.
  *
- * `enforce-enum-casing` uses syntax-only analysis. The other five rules inspect
+ * `enforce-enum-casing` and `no-object-em` use syntax-only analysis. The other rules inspect
  * type and declaration provenance through a type-aware `typescript-eslint`
  * parser configuration. Configure these implementations directly when
  * composing a custom eslintrc or flat config, or use one of the presets exposed
@@ -32,8 +34,12 @@ import { noUnionPropertyInRule } from "./rules/no-union-property-in";
  * @see https://eslint.org/docs/latest/extend/custom-rules
  */
 export const rules = {
-  /** Syntax-only rule requiring CONSTANT_CASE declaration members. */
+  /** Syntax-only rule enforcing declaration-key and configurable value casing. */
   "enforce-enum-casing": enforceEnumCasingRule,
+  /** Prefer array identities, reserving object inputs for documented contracts. */
+  "no-object-em": noObjectEmRule,
+  /** Require enumwaii ownership of manually assembled string vocabularies. */
+  "no-manual-enum": noManualEnumRule,
   /** Type-aware rule requiring extracted `.enum`, `.rawEnum`, or `.cases` views. */
   "no-direct-enumwaii-reference": noDirectEnumwaiiReferenceRule,
   /** Type-aware rule limiting raw `.cases` use to discriminated-union flows. */
@@ -50,12 +56,16 @@ export const rules = {
 const syntaxRules = {
   /** Enable the parser-independent CONSTANT_CASE convention. */
   "enumwaii/enforce-enum-casing": "error",
+  /** Reserve object declarations for documented external or compatibility needs. */
+  "enumwaii/no-object-em": "error",
 } as const;
 
 /** Rule map containing every recommended type-aware eslintrc rule. */
 const typeCheckedRules = {
   /** Enable the parser-independent CONSTANT_CASE convention in this preset too. */
   ...syntaxRules,
+  /** Require canonical declarations for string vocabularies. */
+  "enumwaii/no-manual-enum": "error",
   /** Require extracted member views before member references. */
   "enumwaii/no-direct-enumwaii-reference": "error",
   /** Keep raw cases limited to discriminated-union declarations and narrowing. */
@@ -86,7 +96,7 @@ export interface EnumwaiiPlugin extends Omit<ESLint.Plugin, "rules"> {
   rules: typeof rules;
   /** Eslintrc and flat preset configurations supplied by the plugin. */
   configs: {
-    /** Eslintrc preset that enables the syntax-only casing rule. */
+    /** Eslintrc preset that enables the syntax-only declaration rules. */
     recommended: ESLint.ConfigData;
     /** Eslintrc preset that enables casing plus all parser-service rules. */
     "recommended-type-checked": ESLint.ConfigData;
@@ -159,7 +169,7 @@ const plugin = {
       plugins: ["enumwaii"],
       rules: typeCheckedRules,
     },
-    /** Flat-config preset for the parser-independent casing rule. */
+    /** Flat-config preset for the parser-independent declaration rules. */
     "flat/recommended": [
       {
         name: "enumwaii/recommended",
@@ -186,6 +196,8 @@ export {
   enforceEnumCasingRule,
   noDirectEnumwaiiReferenceRule,
   noEnumwaiiCaseMisuseRule,
+  noObjectEmRule,
+  noManualEnumRule,
   noRawEnumComparisonRule,
   noRawEnumMemberRule,
   noUnionPropertyInRule,

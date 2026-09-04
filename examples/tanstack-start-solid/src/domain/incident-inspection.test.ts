@@ -10,12 +10,12 @@ import { INCIDENT_STATE } from "./incidents";
 describe("TanStack Start incident-state serialization bridge", () => {
   it("returns a plain transport DTO after strict enumwaii validation", () => {
     const inspection = createIncidentStateInspection(
-      "MONITORING",
+      "monitoring",
       "2026-08-30T12:00:00.000Z",
     );
 
     expect(inspection).toEqual({
-      state: "MONITORING",
+      state: "monitoring",
       summary: "The fix is live while telemetry confirms recovery.",
       instruction: "Hold the release gate until the observation window ends.",
       validatedAt: "2026-08-30T12:00:00.000Z",
@@ -25,7 +25,7 @@ describe("TanStack Start incident-state serialization bridge", () => {
 
   it("re-parses transport strings before returning to the domain", () => {
     const inspection: IncidentStateInspectionDto = {
-      state: "MITIGATING",
+      state: "mitigating",
       summary: "Transport copy is not domain provenance.",
       instruction: "Re-parse at the receiving boundary.",
       validatedAt: "2026-08-30T12:00:00.000Z",

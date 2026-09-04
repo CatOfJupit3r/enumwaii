@@ -4,6 +4,7 @@ import {
   ACCESS_POLICY,
   ACCESS_POLICY_VALUES,
   ACCESS_LEVELS,
+  INVITABLE_ACCESS_LEVEL_VALUES,
   canAccess,
   parseAccessLevel,
   permissionsFor,
@@ -14,7 +15,7 @@ import {
 
 describe("access-control boundary", () => {
   it("returns the canonical branded member for a valid payload", () => {
-    const result = parseAccessLevel("EDITOR", ACCESS_POLICY.STRICT);
+    const result = parseAccessLevel("editor", ACCESS_POLICY.STRICT);
 
     expect(result).toEqual({ success: true, value: ACCESS_LEVELS.EDITOR });
   });
@@ -30,12 +31,12 @@ describe("access-control boundary", () => {
   it("uses fallback for malformed and wrong-shaped input", () => {
     const malformed = parseAccessLevel("ARCHIVED", ACCESS_POLICY.FALLBACK);
     const wrongShape = parseAccessLevel(
-      { level: "EDITOR" },
+      { level: "editor" },
       ACCESS_POLICY.FALLBACK,
     );
 
-    expect(malformed).toEqual({ success: true, value: ACCESS_LEVELS.GUEST });
-    expect(wrongShape).toEqual({ success: true, value: ACCESS_LEVELS.GUEST });
+    expect(malformed).toEqual({ success: true, value: ACCESS_LEVELS.VIEWER });
+    expect(wrongShape).toEqual({ success: true, value: ACCESS_LEVELS.VIEWER });
   });
 
   it("derives exhaustive policy metadata and behavior from owned members", () => {
@@ -50,12 +51,12 @@ describe("access-control boundary", () => {
     );
 
     const malformed = parseAccessLevel(
-      { level: "EDITOR" },
+      { level: "editor" },
       ACCESS_POLICY.STRICT,
     );
     expect(malformed.success).toBe(false);
     if (!malformed.success) {
-      expect(malformed.error.receivedText).toBe('{"level":"EDITOR"}');
+      expect(malformed.error.receivedText).toBe('{"level":"editor"}');
     }
   });
 
@@ -69,5 +70,10 @@ describe("access-control boundary", () => {
     expect(permissionsFor(ACCESS_LEVELS.VIEWER)).toEqual([PERMISSIONS.READ]);
     expect(canAccess(ACCESS_LEVELS.EDITOR, PERMISSIONS.INVITE)).toBe(true);
     expect(canAccess(ACCESS_LEVELS.GUEST, PERMISSIONS.WRITE)).toBe(false);
+    expect(INVITABLE_ACCESS_LEVEL_VALUES).toEqual([
+      ACCESS_LEVELS.EDITOR,
+      ACCESS_LEVELS.VIEWER,
+      ACCESS_LEVELS.GUEST,
+    ]);
   });
 });

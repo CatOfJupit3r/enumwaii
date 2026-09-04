@@ -33,7 +33,7 @@ The plugin is a Node-based development tool. Deno and Cloudflare applications ne
 
 ### Syntax-only flat config
 
-The lightweight preset uses syntax-only analysis to enforce declaration casing:
+The lightweight preset uses syntax-only analysis to enforce declaration casing and restrict object inputs:
 
 ```js
 import enumwaii from "eslint-plugin-enumwaii";
@@ -72,20 +72,117 @@ For eslintrc configuration, use the `recommended` and `recommended-type-checked`
 
 | Rule | Recommended | Type information | Purpose |
 | --- | --- | --- | --- |
-| `enforce-enum-casing` | Both | No | Require `CONSTANT_CASE` members in direct internal declarations. |
+| `enforce-enum-casing` | Both | No | Enforce declaration-key and configurable value casing. |
+| `no-object-em` | Both | Optional | Prefer arrays; reserve object inputs for documented external contracts or compatibility. |
+| `no-manual-enum` | Type-aware | Yes | Declare string vocabularies through enumwaii. |
 | `no-direct-enumwaii-reference` | Type-aware | Yes | Extract `.enum`, `.rawEnum`, and `.cases` before referencing members. |
 | `no-enumwaii-case-misuse` | Type-aware | Yes | Keep raw case values inside discriminated-union declarations and narrowing. |
 | `no-raw-enum-comparison` | Type-aware | Yes | Replace raw comparison and `switch` literals with owned members. |
 | `no-raw-enum-member` | Type-aware | Yes | Use owned members and composition APIs for subsets and targeted mappings. |
 | `no-union-property-in` | Type-aware | Yes | Prefer an enumwaii case discriminant to structural `in` narrowing. |
 
-The rules have no options and do not autofix. Provenance-sensitive changes should remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
+`enforce-enum-casing`, `no-object-em`, and `no-manual-enum` have options; the other rules have no options. The rules do not autofix, so provenance-sensitive changes remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
+
+### `no-manual-enum`
+
+Enabled in both type-checked presets. Reports unions of two or more distinct raw string literals, including inline annotations, constraints, containers, nullable unions, branded wrappers, and assembly from single-literal aliases (including imports). Adding even one raw literal to a branded enumwaii type is also reported. References to an already assembled vocabulary are not reported again.
+
+The rule also reports string-valued const arrays and objects when indexed access extracts a multi-value domain, and unions whose branches share a required property with distinct raw string tags. Ordinary const data is allowed until used as a type vocabulary. Diagnostics distinguish unions, const containers, and discriminants.
+
+```ts
+import { em } from "enumwaii";
+
+const states = em(["LOADING", "SUCCESS", "ERROR"]);
+type State = (typeof states)["~type"];
+const STATE = states.cases;
+type RequestState =
+  | { state: typeof STATE.LOADING }
+  | { state: typeof STATE.SUCCESS; data: string }
+  | { state: typeof STATE.ERROR; error: Error };
+```
+
+Use `.cases` for TypeScript's native discriminant narrowing and exhaustiveness, consistent with the other enumwaii rules. Use `.enum` for ordinary branded values.
+
+`keyof`, indexed property selection, built-in `Pick`/`Omit` keys, open template formats, and existing external type references remain allowed. No blanket exemption applies to `.d.ts` files or DTO names. Exclude generated files explicitly through ESLint `ignores`.
+
+Use `ignore` for explicit declaration exceptions, with the same matchers and required rationale as `no-object-em`:
+
+```js
+{
+  rules: {
+    "enumwaii/no-manual-enum": ["error", {
+      ignore: [{
+        name: { startsWith: "Provider", endsWith: "Status" },
+        reason: "external-contract",
+        justification: "Provider schema requires a separately declared wire type.",
+      }],
+    }],
+  },
+}
+```
+
+A name matcher supports `startsWith`, `endsWith`, and `contains` together (all must match), or a standalone `regex` string. Any matching entry exempts the declaration. Matching is case-sensitive; regexes use Unicode mode. Each entry requires `reason: "external-contract" | "compatibility"` and a nonblank `justification`. Invalid options and regexes fail configuration.
+
+Names come from the nearest enclosing type alias, interface, function, method, or variable declaration. This includes inline annotations within that declaration. For const extraction, match the derived type name, not the source container. Matching stops at the nearest declaration, so ignoring a function does not exempt a separately named local type. Unnamed declarations are not matched. Exceptions neither propagate through references nor disable other rules; generated-file exclusions still belong in ESLint `ignores`.
+
+There are no automatic fixes. Preserve existing wire and persisted values when migrating; `no-object-em` representation exceptions do not disable this rule. Coverage is deliberately bounded: it does not evaluate finite template expansions, arbitrary generic transformations, native TypeScript enum declarations, or const containers hidden behind value aliases or non-const assertions. It recognizes branded ownership through enumwaii's declaration source, not a local function named `em` or a property named `~type`.
+
+### `no-object-em`
+
+Enabled in every recommended preset. Use `em(["IN_PROGRESS", "COMPLETED"])` for internal identities and new public APIs, including `PROGRESS_TYPE`. Keep display labels in a separate map indexed by extracted enum members. For existing enum subsets and derivations, use `.pick()`, `.omit()`, `.deriveTo()`, and `em.combine()` with owned members.
+
+Reserve object inputs with distinct keys and values for **external-contract** constraints (AWS or other provider SDKs, provider events/scopes, protocol/media/browser/CSS/locale/runtime tokens) or **compatibility** constraints (existing database rows, saved files, historical messages, previously published values). A new public interface, URL, CLI/config choice, serialization, or lowercase spelling alone does not qualify. AI assistants should fix the representation or use composition, rather than disabling lint or renaming variables to fit an ignore pattern.
+
+```js
+{
+  rules: {
+    "enumwaii/no-object-em": ["error", {
+      ignore: [{
+        name: { startsWith: "aws", endsWith: "Status" },
+        reason: "external-contract",
+        justification: "AWS SDK values must retain the provider's exact spelling.",
+      }, {
+        name: { regex: "^legacyOrderStatus$" },
+        reason: "compatibility",
+        justification: "Existing orders.status rows use inProgress and done.",
+      }],
+    }],
+  },
+}
+```
+
+Each `name` accepts either one object containing any combination of `startsWith`, `endsWith`, and `contains` (at least one required), or a separate `{ regex: string }` object. All provided string conditions must match (AND); ignore entries are alternatives (OR). For example, `{ startsWith: "aws", endsWith: "Status", contains: "Wire" }` matches `awsWireStatus`. Regex cannot be mixed with the string conditions. Native JavaScript string methods implement the first three (`contains` uses `includes`); regex strings compile once per rule instance with the Unicode flag. Matching is case-sensitive against the receiving variable name, such as `awsStatus` in `const awsStatus = em(SdkStatus)`. Anonymous calls cannot match an exception. Patterns must be nonempty; `reason` and a nonblank `justification` are mandatory. No exceptions are built in, and matching a name cannot prove the stated contract.
+
+Recognizes direct factories, renamed named imports and namespace imports from `enumwaii`, TypeScript wrappers, local constant aliases, and local TypeScript enums. Without parser services, unknown imported values, parameters, and function results are outside its scope. Project-aware TypeScript parser services extend checking to those object inputs while allowing arrays and tuples. Unknown/`any` inputs remain unclassified.
+
+An exemption never permits a statically resolved redundant object literal such as `em({ GET: "GET", POST: "POST" })`: use `em(["GET", "POST"])`. The rule does not prove redundancy for imported or dynamic objects and does not autofix contract-sensitive values.
+
+Exceptions apply only to this rule: retain magic-string enforcement at use sites. Required external literal values may need a separate, narrowly scoped `enforce-enum-casing` name override; keep your keys `CONSTANT_CASE`. Directly importing the provider enum avoids duplicating its literal definitions.
+
+Reports: `objectInput`, `redundantObject`.
 
 ### `enforce-enum-casing`
 
-Requires `CONSTANT_CASE` string literals in the first array passed directly to `em([...])` or `new Enumwaii([...])`. This is the only syntax-only rule: it does not need TypeScript parser services. Non-literal array elements and declarations whose first argument is not an array are outside its scope.
+Checks string literals in the first array or object passed directly to `em(...)` or `new Enumwaii(...)`. It does not need TypeScript parser services. Object keys always require `CONSTANT_CASE`. Tuple members and object values follow `valueCasing`: `"constant"` (the default), `"kebab"`, or `"snake"`. Non-literal values are outside its scope.
 
-Intentional lowercase, kebab-case, or otherwise fixed external wire values are valid enumwaii members. Disable the rule locally at that declaration instead of changing the value at runtime.
+Use `valueCasing` for consistent lowercase wire formats. Disable the rule locally at one declaration, or configure `ignoredNamePatterns` and `ignoredFilePatterns` when a naming convention or generated-file boundary should bypass casing checks entirely.
+
+The ignore options accept wildcard patterns. `*` matches within one path segment, `**` crosses path separators, and `?` matches one non-separator character. Name patterns match identifiers directly bound to a declaration, such as `wireStatus` in `const wireStatus = em([...])`. File patterns match normalized forward-slash paths, so `**/generated/**` works on every operating system. A matched declaration skips both key and value checks.
+
+```js
+{
+  rules: {
+    "enumwaii/enforce-enum-casing": [
+      "error",
+      {
+        valueCasing: "kebab",
+        ignoredNamePatterns: ["wire*", "*Payload"],
+        ignoredFilePatterns: ["**/generated/**", "**/*.generated.ts"],
+      },
+    ],
+  },
+}
+```
 
 Reports: `invalidInternalMember`.
 
@@ -95,7 +192,7 @@ Reports: `invalidInternalMember`.
 // @noErrors
 import { em } from "enumwaii";
 
-const status = em(["READY", "in-progress"]);
+const status = em({ inProgress: "IN_PROGRESS" });
 // @error: enumwaii/enforce-enum-casing (invalidInternalMember) — internal members use CONSTANT_CASE.
 ```
 
@@ -104,10 +201,11 @@ const status = em(["READY", "in-progress"]);
 ```ts
 import { em } from "enumwaii";
 
-const status = em(["READY", "IN_PROGRESS"]);
-
-// eslint-disable-next-line enumwaii/enforce-enum-casing -- external wire value
-const wireStatus = em(["in-progress"]);
+// With valueCasing: "kebab"
+const status = em({
+  READY: "ready",
+  IN_PROGRESS: "in-progress",
+});
 ```
 
 ### `no-direct-enumwaii-reference`

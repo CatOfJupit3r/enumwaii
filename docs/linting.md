@@ -9,12 +9,13 @@ Enumwaii uses three cooperating enforcement layers: TypeScript owns assignabilit
 
 The runtime package contains declarations and validation. The ESLint package is a separate development dependency for repositories that want source-level guidance.
 
-The syntax-only preset checks declaration casing from source syntax. The type-checked preset uses `typescript-eslint` parser services for provenance-sensitive rules.
+The syntax-only preset checks declaration casing and restricts object inputs to documented external-contract or compatibility exceptions with `no-object-em`. The type-checked preset uses `typescript-eslint` parser services for provenance-sensitive rules and detects imported or dynamic object inputs too.
 
 ## Rule coverage
 
 The lint package covers:
 
+- manual string vocabularies assembled through unions, discriminants, or const-container type extraction;
 - `CONSTANT_CASE` conventions for internal declarations;
 - comparisons and `switch` cases that use raw literals instead of owned members;
 - direct member access through `roles.enum`, `roles.rawEnum`, or `roles.cases` instead of an extracted constant;
@@ -23,7 +24,21 @@ The lint package covers:
 - misuse of `.cases` outside discriminated-union flows;
 - structural `in` narrowing patterns that undermine enum-driven unions.
 
-`CONSTANT_CASE` is an authoring convention for internal declarations. External protocols can retain lowercase, kebab-case, or another fixed wire format with a local rule override.
+`CONSTANT_CASE` is the default authoring convention. The casing rule's `valueCasing` option can instead require `"kebab"` or `"snake"` values in tuple and object declarations. Object-overload keys always remain `CONSTANT_CASE`, letting application code use names such as `ORDER_PAID` while canonical URL or protocol values stay `"order-paid"`. Use `ignoredNamePatterns` and `ignoredFilePatterns` only when a declaration or generated-file boundary should skip both checks entirely.
+
+```js
+{
+  rules: {
+    "enumwaii/enforce-enum-casing": [
+      "error",
+      {
+        valueCasing: "kebab",
+        ignoredFilePatterns: ["**/generated/**"],
+      },
+    ],
+  },
+}
+```
 
 ## Branding and lint together
 

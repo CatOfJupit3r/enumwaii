@@ -16,9 +16,9 @@ import {
 const state: IncidentState = INCIDENT_STATE.TRIAGE;
 
 // @ts-expect-error External raw strings must cross the enumwaii parser boundary.
-const rawState: IncidentState = "TRIAGE";
+const rawState: IncidentState = "triage";
 
-const providerStates = em(["TRIAGE", "MITIGATING"]);
+const providerStates = em({ TRIAGE: "triage", MITIGATING: "mitigating" });
 const PROVIDER_STATE = providerStates.enum;
 
 // @ts-expect-error A similarly named member from another declaration is not owned here.
@@ -45,11 +45,11 @@ const cardProps: IncidentCardProps = {
 };
 
 // @ts-expect-error Transition targets cannot bypass ownership with raw members.
-transitionIncidentState(INCIDENT_STATE.TRIAGE, "MITIGATING");
+transitionIncidentState(INCIDENT_STATE.TRIAGE, "mitigating");
 
 const parsedInput = transitionIncidentInputSchema.parse({
   incidentId: "INC-9000",
-  to: "MITIGATING",
+  to: "mitigating",
   expectedVersion: 0,
 });
 

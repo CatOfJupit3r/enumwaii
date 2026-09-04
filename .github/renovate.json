@@ -16,13 +16,35 @@
   "ignorePresets": [":ignoreModulesAndTests"],
   "labels": ["dependencies"],
   "rangeStrategy": "bump",
-  "postUpdateOptions": ["pnpmDedupe"],
   "packageRules": [
     {
       "description": "Match the workspace's 24-hour npm release quarantine",
       "matchDatasources": ["npm"],
       "minimumReleaseAge": "1 day",
       "internalChecksFilter": "strict"
+    },
+    {
+      "description": "Dedupe updates to the committed root workspace lockfile",
+      "matchManagers": ["npm"],
+      "matchFileNames": [
+        "package.json",
+        "docs/package.json",
+        "packages/**/package.json"
+      ],
+      "postUpdateOptions": ["pnpmDedupe"]
+    },
+    {
+      "description": "Group lockfile-free example dependency updates",
+      "matchManagers": ["npm"],
+      "matchFileNames": ["examples/**/package.json"],
+      "groupName": "example dependencies"
+    },
+    {
+      "description": "Examples intentionally do not commit lockfiles",
+      "matchManagers": ["npm"],
+      "matchFileNames": ["examples/**/package.json"],
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "enabled": false
     }
   ],
   "ignoreDeps": ["@solid-primitives/utils"]

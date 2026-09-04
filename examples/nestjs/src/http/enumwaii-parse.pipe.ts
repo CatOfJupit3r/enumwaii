@@ -8,9 +8,10 @@ import {
 export class EnumwaiiParsePipe<
   TRaw extends string,
   TIdentity extends string,
+  TKeys extends Readonly<Record<string, string>>,
 > implements PipeTransform<unknown, EnumwaiiValue<TRaw, TIdentity>> {
   public constructor(
-    private readonly schema: Enumwaii<TRaw, TIdentity>,
+    private readonly schema: Enumwaii<TRaw, TIdentity, TKeys>,
     private readonly parseOptions: EnumwaiiParseOptions<
       EnumwaiiValue<TRaw, TIdentity>
     > = {},

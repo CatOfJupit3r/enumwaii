@@ -7,11 +7,15 @@ function violations(manifest) {
   return dependencyVersionViolations(manifest, "package.json");
 }
 
-test("private packages keep exact dependencies", () => {
+void test("private packages keep exact dependencies", () => {
   assert.deepEqual(
     violations({
       private: true,
-      dependencies: { external: "1.2.3", internal: "workspace:*" },
+      dependencies: {
+        external: "1.2.3",
+        internal: "workspace:*",
+        local: "file:../../packages/local",
+      },
       devDependencies: { tooling: "2.0.0" },
       optionalDependencies: { optional: "3.0.0" },
     }),
@@ -21,11 +25,18 @@ test("private packages keep exact dependencies", () => {
   assert.equal(
     violations({ private: true, dependencies: { external: "^1.2.3" } })[0]
       ?.expected,
-    "an exact SemVer version or workspace:*",
+    "an exact SemVer version, workspace:*, or a local file: dependency",
   );
 });
 
-test("published runtime dependencies use compatible ranges", () => {
+void test("published dependencies reject local file links", () => {
+  assert.equal(
+    violations({ dependencies: { local: "file:../local" } })[0]?.name,
+    "local",
+  );
+});
+
+void test("published runtime dependencies use compatible ranges", () => {
   assert.deepEqual(
     violations({
       dependencies: { external: "^1.2.3", internal: "workspace:^" },
@@ -42,7 +53,7 @@ test("published runtime dependencies use compatible ranges", () => {
   );
 });
 
-test("published development dependencies remain exact", () => {
+void test("published development dependencies remain exact", () => {
   assert.deepEqual(
     violations({
       devDependencies: { external: "1.2.3", internal: "workspace:*" },
@@ -56,7 +67,7 @@ test("published development dependencies remain exact", () => {
   );
 });
 
-test("peer dependencies describe consumer compatibility", () => {
+void test("peer dependencies describe consumer compatibility", () => {
   assert.deepEqual(
     violations({
       peerDependencies: {
@@ -76,7 +87,7 @@ test("peer dependencies describe consumer compatibility", () => {
   );
 });
 
-test("non-string dependency specifiers are rejected", () => {
+void test("non-string dependency specifiers are rejected", () => {
   assert.equal(
     violations({ private: true, dependencies: { invalid: 1 } })[0]?.name,
     "invalid",

@@ -35,16 +35,16 @@ test("runs the real PGlite and Drizzle order path under Bun", async () => {
   const response = await request("/api/orders", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ memo: "Created inside Bun" }),
+    body: JSON.stringify({ drink: "Created inside Bun" }),
   });
   const payload = (await response.json()) as {
     readonly defaulted: boolean;
-    readonly order: { readonly status: string; readonly memo: string | null };
+    readonly order: { readonly status: string; readonly drink: string };
   };
 
   expect(response.status).toBe(201);
   expect(payload).toMatchObject({
     defaulted: true,
-    order: { status: "PENDING", memo: "Created inside Bun" },
+    order: { status: "PLACED", drink: "Created inside Bun" },
   });
 });

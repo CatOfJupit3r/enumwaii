@@ -2,7 +2,16 @@ import { em, type InferEnumwaii } from "enumwaii";
 import { zodSchema } from "enumwaii/zod";
 import { z } from "zod";
 
-const incidentStates = em(["TRIAGE", "MITIGATING", "MONITORING", "RESOLVED"]);
+const tones = em(["CRITICAL", "ACTIVE", "WATCH", "CLEAR"]);
+export const INCIDENT_TONE = tones.enum;
+export type IncidentTone = InferEnumwaii<typeof tones>;
+
+const incidentStates = em({
+  TRIAGE: "triage",
+  MITIGATING: "mitigating",
+  MONITORING: "monitoring",
+  RESOLVED: "resolved",
+});
 
 export const INCIDENT_STATE = incidentStates.enum;
 export const incidentStateSchema = incidentStates;
@@ -13,7 +22,8 @@ export interface IncidentStatePresentation {
   readonly shortLabel: string;
   readonly summary: string;
   readonly instruction: string;
-  readonly tone: "critical" | "active" | "watch" | "clear";
+  readonly tone: IncidentTone;
+  readonly severity: number;
   readonly sequence: number;
 }
 
@@ -25,7 +35,8 @@ const incidentStatePresentation = incidentStates.derive(
       shortLabel: "Triage",
       summary: "Impact is confirmed; ownership and scope are still forming.",
       instruction: "Name an incident lead and establish the blast radius.",
-      tone: "critical",
+      tone: INCIDENT_TONE.CRITICAL,
+      severity: 4,
       sequence: 1,
     },
   ],
@@ -36,7 +47,8 @@ const incidentStatePresentation = incidentStates.derive(
       shortLabel: "Mitigate",
       summary: "The team is actively reducing customer-facing impact.",
       instruction: "Ship the safest reversible action and record evidence.",
-      tone: "active",
+      tone: INCIDENT_TONE.ACTIVE,
+      severity: 3,
       sequence: 2,
     },
   ],
@@ -47,7 +59,8 @@ const incidentStatePresentation = incidentStates.derive(
       shortLabel: "Monitor",
       summary: "The fix is live while telemetry confirms recovery.",
       instruction: "Hold the release gate until the observation window ends.",
-      tone: "watch",
+      tone: INCIDENT_TONE.WATCH,
+      severity: 2,
       sequence: 3,
     },
   ],
@@ -58,7 +71,8 @@ const incidentStatePresentation = incidentStates.derive(
       shortLabel: "Resolve",
       summary: "Customer impact has ended and the release gate can clear.",
       instruction: "Capture follow-ups before closing the control room.",
-      tone: "clear",
+      tone: INCIDENT_TONE.CLEAR,
+      severity: 0,
       sequence: 4,
     },
   ],
@@ -193,4 +207,47 @@ export function countIncidentsInState(
   state: IncidentState,
 ): number {
   return incidents.filter((incident) => incident.state === state).length;
+}
+
+export interface SystemStatusSummary {
+  readonly label: string;
+  readonly detail: string;
+  readonly tone: IncidentStatePresentation["tone"];
+  readonly state: IncidentState | null;
+}
+
+export function summarizeSystemStatus(
+  incidents: readonly IncidentRecord[],
+): SystemStatusSummary {
+  const active = incidents.filter(
+    (incident) => incident.state !== INCIDENT_STATE.RESOLVED,
+  );
+  if (active.length === 0) {
+    return {
+      label: "All systems operational",
+      detail: "No active incidents",
+      tone: INCIDENT_TONE.CLEAR,
+      state: null,
+    };
+  }
+
+  const mostSevere = active.reduce((current, incident) =>
+    describeIncidentState(incident.state).severity >
+    describeIncidentState(current.state).severity
+      ? incident
+      : current,
+  );
+  const presentation = describeIncidentState(mostSevere.state);
+
+  return {
+    label:
+      presentation.tone === INCIDENT_TONE.CRITICAL
+        ? "Major service disruption"
+        : presentation.tone === INCIDENT_TONE.ACTIVE
+          ? "Degraded performance"
+          : "Monitoring recovery",
+    detail: `${active.length} active ${active.length === 1 ? "incident" : "incidents"} · latest: ${mostSevere.service}`,
+    tone: presentation.tone,
+    state: mostSevere.state,
+  };
 }

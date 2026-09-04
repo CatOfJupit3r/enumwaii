@@ -8,19 +8,20 @@ import {
   describeIncidentState,
   getAllowedIncidentTransitions,
   incidentStateSchema,
+  summarizeSystemStatus,
   transitionIncidentInputSchema,
   transitionIncidentState,
 } from "./incidents";
 
 describe("incident state domain", () => {
   it("parses an external member into an owned value", () => {
-    const state = incidentStateSchema.parse("MONITORING");
+    const state = incidentStateSchema.parse("monitoring");
 
     expect(state).toBe(INCIDENT_STATE.MONITORING);
     expect(describeIncidentState(state)).toMatchObject({
       label: "Monitoring",
       sequence: 3,
-      tone: "watch",
+      tone: "WATCH",
     });
   });
 
@@ -68,7 +69,7 @@ describe("incident state domain", () => {
   it("validates object mutations through Zod and the official adapter", () => {
     const parsed = transitionIncidentInputSchema.parse({
       incidentId: "INC-2417",
-      to: "MONITORING",
+      to: "monitoring",
       expectedVersion: 3,
     });
 
@@ -88,7 +89,7 @@ describe("incident state domain", () => {
       title: "Elevated payment retries",
       owner: "Mira Chen",
       impact: "4.8% of checkout attempts",
-      state: "TRIAGE",
+      state: "triage",
     });
 
     expect(parsed.state).toBe(INCIDENT_STATE.TRIAGE);
@@ -101,5 +102,42 @@ describe("incident state domain", () => {
         state: "PAUSED",
       }),
     ).toThrow();
+  });
+
+  it("folds the derived state severity into a public system banner", () => {
+    expect(
+      summarizeSystemStatus([
+        {
+          id: "INC-1",
+          service: "Checkout",
+          title: "Retries elevated",
+          owner: "Mira",
+          openedAt: "now",
+          impact: "Partial",
+          state: INCIDENT_STATE.MONITORING,
+          version: 1,
+        },
+        {
+          id: "INC-2",
+          service: "Identity",
+          title: "Sign-in failures",
+          owner: "Ana",
+          openedAt: "now",
+          impact: "Major",
+          state: INCIDENT_STATE.TRIAGE,
+          version: 1,
+        },
+      ]),
+    ).toMatchObject({
+      label: "Major service disruption",
+      state: INCIDENT_STATE.TRIAGE,
+      tone: "CRITICAL",
+    });
+    expect(summarizeSystemStatus([])).toEqual({
+      label: "All systems operational",
+      detail: "No active incidents",
+      tone: "CLEAR",
+      state: null,
+    });
   });
 });

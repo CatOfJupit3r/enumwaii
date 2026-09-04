@@ -55,6 +55,21 @@ role === ROLE.ADMIN;
 
 Members remain strings at runtime, so they serialize without wrappers. Their required TypeScript brand stops raw strings and members from incompatible declarations from entering an enum-typed position.
 
+When developer-facing names need to differ from fixed wire values, use the object overload:
+
+```ts
+const orderStatuses = em({
+  ORDER_PAID: "order-paid",
+  ORDER_PENDING: "order-pending",
+});
+const ORDER_STATUS = orderStatuses.enum;
+
+ORDER_STATUS.ORDER_PAID; // branded "order-paid"
+orderStatuses.parse("order-paid");
+```
+
+Prefer the tuple form when keys and values can be identical. Object keys are cosmetic; mapped values drive identity, parsing, schemas, adapters, iteration, and derivation.
+
 ## Boundaries and recovery
 
 ```ts

@@ -1,25 +1,26 @@
 import {
-  TASK_STATUS,
+  ARTICLE_STATUS,
+  articlesForStatus,
+  publicStatuses,
   statusMetadata,
-  tasksForStatus,
-  type OperationTask,
-} from "./lib/operations";
+  type Article,
+} from "./lib/articles";
 
-tasksForStatus(TASK_STATUS.IN_PROGRESS);
-statusMetadata(TASK_STATUS.BLOCKED);
+articlesForStatus(ARTICLE_STATUS.IN_REVIEW);
+statusMetadata(ARTICLE_STATUS.PUBLISHED);
+publicStatuses.parse(ARTICLE_STATUS.PUBLISHED);
 
 // @ts-expect-error Domain selectors require an owned enumwaii member.
-tasksForStatus("IN_PROGRESS");
+articlesForStatus("in-review");
 
-const rawTask: OperationTask = {
-  id: "OPS-9999",
-  title: "Unsafe task",
-  account: "External",
-  owner: "Unknown",
-  window: "Unknown",
+const rawArticle: Article = {
+  id: "BYL-999",
+  title: "Unsafe story",
+  author: "External",
+  editor: "Unknown",
+  wordCount: 0,
   note: "This assignment is intentionally rejected by TypeScript.",
   // @ts-expect-error Hydrated domain records cannot carry an unparsed raw string.
-  status: "BLOCKED",
+  status: "draft",
 };
-
-void rawTask;
+void rawArticle;

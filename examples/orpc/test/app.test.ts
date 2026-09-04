@@ -1,256 +1,167 @@
 import { ORPCError, call, safe } from "@orpc/server";
 import { describe, expect, it } from "vitest";
-
 import { createApp } from "../src/app";
 import { ERROR_KIND } from "../src/contract";
-import { JOB_STATUS, JobStore } from "../src/domain/jobs";
+import {
+  ReservationStore,
+  RESERVATION_SERVICE,
+  RESERVATION_STATUS,
+} from "../src/domain/reservations";
 import {
   contextFor,
   createCallCounters,
-  type AppContext,
   local,
+  type AppContext,
 } from "../src/router";
 
-function httpHeaders(extra: Record<string, string> = {}): Headers {
+function headers(extra: Record<string, string> = {}): Headers {
   return new Headers({
     "content-type": "application/json",
-    "x-actor": "http-operator",
-    "x-request-id": "req-http",
+    "x-actor": "Mina",
+    "x-request-id": "host-http",
     ...extra,
   });
 }
 
-describe("local procedure calls", () => {
-  it("uses enumwaii directly for scalar input and output", async () => {
-    const context = contextFor(new JobStore());
-    const output = await call(local.status, JOB_STATUS.RUNNING, { context });
-
-    expect(output).toBe(JOB_STATUS.RUNNING);
+describe("Tablewaii reservation procedures", () => {
+  it("uses enumwaii directly for scalar availability input and output", async () => {
+    const context = contextFor(new ReservationStore());
+    await expect(
+      call(local.status, RESERVATION_STATUS.CONFIRMED, { context }),
+    ).resolves.toBe(RESERVATION_STATUS.CONFIRMED);
     expect(context.calls.status).toBe(1);
   });
-
-  it.each(["PAUSED", 42])(
-    "rejects invalid scalar input %j before the handler",
-    async (input) => {
-      const context = contextFor(new JobStore());
-      const result = await safe(call(local.status, input, { context }));
-
-      expect(result.isSuccess).toBe(false);
-      expect(result.error).toMatchObject({ code: "BAD_REQUEST" });
-      expect(context.calls.status).toBe(0);
-    },
-  );
-
-  it("applies a legal transition and exposes middleware context", async () => {
-    const context = contextFor(new JobStore(), {
-      actor: "local-operator",
-      requestId: "req-legal",
+  it("rejects invalid scalar availability before the handler", async () => {
+    const context = contextFor(new ReservationStore());
+    const result = await safe(call(local.status, "MAYBE", { context }));
+    expect(result.isSuccess).toBe(false);
+    expect(context.calls.status).toBe(0);
+  });
+  it("creates reservations and applies legal host transitions with audit data", async () => {
+    const context = contextFor(new ReservationStore(), {
+      actor: "Mina",
+      requestId: "host-local",
     });
+    const requested = await call(
+      local.request,
+      {
+        owner: "Avery Singh",
+        partySize: 3,
+        service: RESERVATION_SERVICE.DINNER,
+      },
+      { context },
+    );
+    expect(requested.status).toBe(RESERVATION_STATUS.REQUESTED);
     const output = await call(
       local.transition,
       {
-        jobId: "job-7",
-        to: JOB_STATUS.RUNNING,
+        reservationId: "res-olive",
+        to: RESERVATION_STATUS.SEATED,
         expectedVersion: 0,
       },
       { context },
     );
-
     expect(output).toMatchObject({
-      job: { id: "job-7", status: JOB_STATUS.RUNNING, version: 1 },
-      audit: {
-        actor: "local-operator",
-        requestId: "req-legal:middleware",
-      },
+      reservation: { status: RESERVATION_STATUS.SEATED, version: 1 },
+      audit: { actor: "Mina", requestId: "host-local:middleware" },
     });
   });
-
-  it("returns typed data for an illegal transition", async () => {
+  it("returns typed data for an illegal reservation transition", async () => {
     const result = await safe(
       call(
         local.transition,
         {
-          jobId: "job-7",
-          to: JOB_STATUS.SUCCEEDED,
+          reservationId: "res-olive",
+          to: RESERVATION_STATUS.COMPLETED,
           expectedVersion: 0,
         },
-        { context: contextFor(new JobStore()) },
+        { context: contextFor(new ReservationStore()) },
       ),
     );
-
     expect(result.isSuccess).toBe(false);
-    expect(result.isDefined).toBe(true);
     expect(result.error).toMatchObject({
-      code: "CONFLICT",
-      status: 409,
+      code: "ILLEGAL_TRANSITION",
       data: {
         kind: ERROR_KIND.ILLEGAL_TRANSITION,
-        currentStatus: JOB_STATUS.QUEUED,
-        requestedStatus: JOB_STATUS.SUCCEEDED,
+        currentStatus: RESERVATION_STATUS.CONFIRMED,
       },
     });
   });
-
-  it("distinguishes optimistic-concurrency conflict data", async () => {
+  it("returns a named double-booking error for an existing guest and service", async () => {
     const result = await safe(
       call(
-        local.transition,
+        local.request,
         {
-          jobId: "job-7",
-          to: JOB_STATUS.RUNNING,
-          expectedVersion: 12,
+          owner: "Lina & Mateo",
+          partySize: 2,
+          service: RESERVATION_SERVICE.DINNER,
         },
-        { context: contextFor(new JobStore()) },
+        { context: contextFor(new ReservationStore()) },
       ),
     );
 
     expect(result.isSuccess).toBe(false);
     expect(result.error).toMatchObject({
-      code: "CONFLICT",
+      code: "DOUBLE_BOOKED",
       data: {
-        kind: ERROR_KIND.VERSION_CONFLICT,
-        expectedVersion: 12,
-        actualVersion: 0,
+        kind: ERROR_KIND.DOUBLE_BOOKED,
+        reservationId: "res-olive",
       },
     });
   });
-
-  it("returns typed not-found data", async () => {
-    const result = await safe(
-      call(
-        local.transition,
-        {
-          jobId: "missing",
-          to: JOB_STATUS.RUNNING,
-          expectedVersion: 0,
-        },
-        { context: contextFor(new JobStore()) },
-      ),
-    );
-
-    expect(result.isSuccess).toBe(false);
-    expect(result.error).toMatchObject({
-      code: "NOT_FOUND",
-      status: 404,
-      data: { kind: ERROR_KIND.NOT_FOUND, jobId: "missing" },
+  it("requires the host identity middleware", async () => {
+    const context: AppContext = contextFor(new ReservationStore(), {
+      actor: "",
     });
-  });
-
-  it("rejects an empty actor in context middleware", async () => {
-    const context: AppContext = contextFor(new JobStore(), { actor: "" });
     const result = await safe(call(local.list, {}, { context }));
-
     expect(result.isSuccess).toBe(false);
     expect(result.error).toBeInstanceOf(ORPCError);
-    expect(result.error).toMatchObject({ code: "FORBIDDEN", status: 403 });
-    expect(context.calls.list).toBe(0);
-  });
-
-  it("validates handler output", async () => {
-    const context = contextFor(new JobStore(), { corruptOutput: true });
-    const result = await safe(
-      call(local.status, JOB_STATUS.QUEUED, { context }),
-    );
-
-    expect(result.isSuccess).toBe(false);
-    expect(result.error).toMatchObject({ code: "INTERNAL_SERVER_ERROR" });
-    expect(context.calls.status).toBe(1);
   });
 });
 
-describe("OpenAPI HTTP handler", () => {
-  it("serves the real UI and health endpoint", async () => {
+describe("Tablewaii HTTP handler", () => {
+  it("serves the host stand and health endpoint", async () => {
     const app = createApp();
-    const page = await app.request("/");
-    const health = await app.request("/health");
-
-    expect(page.status).toBe(200);
-    expect(await page.text()).toContain("Run a scenario");
-    expect(health.status).toBe(200);
-    await expect(health.json()).resolves.toEqual({ status: "ok" });
+    expect(await (await app.request("/")).text()).toContain("Tablewaii");
+    expect(await (await app.request("/app.js")).text()).toContain(
+      "function escapeHtml(value)",
+    );
+    await expect((await app.request("/health")).json()).resolves.toEqual({
+      status: "ok",
+    });
   });
-
-  it("validates scalar HTTP input before the procedure handler", async () => {
+  it("accepts a REST-shaped reservation transition", async () => {
+    const app = createApp();
+    const response = await app.request(
+      "/api/v1/reservations/res-olive/transitions",
+      {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify({ to: "SEATED", expectedVersion: 0 }),
+      },
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      reservation: { status: "SEATED" },
+    });
+  });
+  it("validates HTTP availability before its handler", async () => {
     const calls = createCallCounters();
     const app = createApp({ calls });
-    const response = await app.request("/api/v1/jobs/status", {
+    const response = await app.request("/api/v1/reservations/availability", {
       method: "POST",
-      headers: httpHeaders(),
-      body: JSON.stringify("PAUSED"),
+      headers: headers(),
+      body: JSON.stringify("UNKNOWN"),
     });
-
     expect(response.status).toBe(400);
     expect(calls.status).toBe(0);
   });
+});
 
-  it("accepts a legal REST-shaped transition and returns middleware audit", async () => {
-    const app = createApp();
-    const response = await app.request("/api/v1/jobs/job-7/transitions", {
-      method: "POST",
-      headers: httpHeaders(),
-      body: JSON.stringify({ to: "RUNNING", expectedVersion: 0 }),
-    });
-
-    expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({
-      job: { id: "job-7", status: "RUNNING", version: 1 },
-      audit: { actor: "http-operator", requestId: "req-http:middleware" },
-    });
-  });
-
-  it("validates the Zod object boundary before the transition handler", async () => {
-    const calls = createCallCounters();
-    const app = createApp({ calls });
-    const response = await app.request("/api/v1/jobs/job-7/transitions", {
-      method: "POST",
-      headers: httpHeaders(),
-      body: JSON.stringify({ to: 42, expectedVersion: 0 }),
-    });
-
-    expect(response.status).toBe(400);
-    expect(calls.transition).toBe(0);
-  });
-
-  it("serializes typed business conflicts over HTTP", async () => {
-    const app = createApp();
-    const response = await app.request("/api/v1/jobs/job-7/transitions", {
-      method: "POST",
-      headers: httpHeaders(),
-      body: JSON.stringify({ to: "SUCCEEDED", expectedVersion: 0 }),
-    });
-
-    expect(response.status).toBe(409);
-    expect(await response.json()).toMatchObject({
-      code: "CONFLICT",
-      data: {
-        kind: "ILLEGAL_TRANSITION",
-        jobId: "job-7",
-        currentStatus: "QUEUED",
-      },
-    });
-  });
-
-  it("runs context middleware on HTTP requests", async () => {
-    const calls = createCallCounters();
-    const app = createApp({ calls });
-    const response = await app.request("/api/v1/jobs", {
-      headers: { "x-request-id": "req-no-actor" },
-    });
-
-    expect(response.status).toBe(403);
-    expect(calls.list).toBe(0);
-  });
-
-  it("turns invalid handler output into an HTTP 500", async () => {
-    const calls = createCallCounters();
-    const app = createApp({ calls });
-    const response = await app.request("/api/v1/jobs/status", {
-      method: "POST",
-      headers: httpHeaders({ "x-demo-corrupt-output": "enabled" }),
-      body: JSON.stringify("QUEUED"),
-    });
-
-    expect(response.status).toBe(500);
-    expect(calls.status).toBe(1);
-  });
+it("renders public form values and availability actions from owned enums", async () => {
+  const html = await (await createApp().request("/")).text();
+  expect(html).toContain('<option value="LUNCH">');
+  expect(html).toContain('<option value="DINNER">');
+  expect(html).toContain('data-status="NO_SHOW"');
+  expect(html).not.toContain("<!-- service-options -->");
 });

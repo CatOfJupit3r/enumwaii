@@ -1,45 +1,26 @@
 export interface RuntimeContractReport {
-  readonly catalog: readonly string[];
-  readonly defaultSelection: {
+  readonly drinks: readonly string[];
+  readonly sizes: readonly { readonly size: string; readonly cents: number }[];
+  readonly tallPrice: {
     readonly statusCode: number;
-    readonly status: string;
-    readonly defaulted: boolean;
+    readonly size: string;
+    readonly cents: number;
   };
-  readonly invalidSelection: {
-    readonly statusCode: number;
-    readonly error: string;
-  };
-  readonly validInspection: {
-    readonly statusCode: number;
-    readonly status: string;
-    readonly terminal: boolean;
-  };
-  readonly invalidInspection: {
+  readonly invalidPrice: {
     readonly statusCode: number;
     readonly error: string;
   };
 }
 
 export const EXPECTED_RUNTIME_REPORT: RuntimeContractReport = {
-  catalog: ["PENDING", "PAID", "SHIPPED", "CANCELLED"],
-  defaultSelection: {
-    statusCode: 200,
-    status: "PENDING",
-    defaulted: true,
-  },
-  invalidSelection: {
-    statusCode: 400,
-    error: "Invalid order status",
-  },
-  validInspection: {
-    statusCode: 200,
-    status: "PAID",
-    terminal: false,
-  },
-  invalidInspection: {
-    statusCode: 400,
-    error: "Invalid order status",
-  },
+  drinks: ["Oat latte", "Flat white", "Iced matcha"],
+  sizes: [
+    { size: "SHORT", cents: 320 },
+    { size: "TALL", cents: 420 },
+    { size: "GRANDE", cents: 520 },
+  ],
+  tallPrice: { statusCode: 200, size: "TALL", cents: 420 },
+  invalidPrice: { statusCode: 400, error: "Unknown drink size" },
 };
 
 export type RuntimeRequest = (
@@ -51,63 +32,39 @@ async function readJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
 
+/** Runs unchanged against full Counter and database-free workerd. */
 export async function exerciseRuntimeContract(
   request: RuntimeRequest,
 ): Promise<RuntimeContractReport> {
-  const catalogResponse = await request("/api/statuses");
-  const catalog = await readJson<{
-    readonly statuses: readonly { readonly status: string }[];
-  }>(catalogResponse);
-
-  const defaultResponse = await request("/api/status");
-  const defaultSelection = await readJson<{
-    readonly status: string;
-    readonly defaulted: boolean;
-  }>(defaultResponse);
-
-  const invalidResponse = await request("/api/status?status=REFUNDED");
-  const invalidSelection = await readJson<{ readonly error: string }>(
+  const menuResponse = await request("/api/menu");
+  const menu = await readJson<{
+    readonly drinks: readonly { readonly name: string }[];
+    readonly sizes: readonly {
+      readonly size: string;
+      readonly cents: number;
+    }[];
+  }>(menuResponse);
+  const tallResponse = await request("/api/menu/pricing/tall");
+  const tallPrice = await readJson<{
+    readonly size: string;
+    readonly cents: number;
+  }>(tallResponse);
+  const invalidResponse = await request("/api/menu/pricing/jumbo");
+  const invalidPrice = await readJson<{ readonly error: string }>(
     invalidResponse,
   );
 
-  const validInspectionResponse = await request("/api/status/inspect", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify("PAID"),
-  });
-  const validInspection = await readJson<{
-    readonly status: string;
-    readonly terminal: boolean;
-  }>(validInspectionResponse);
-
-  const invalidInspectionResponse = await request("/api/status/inspect", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify("REFUNDED"),
-  });
-  const invalidInspection = await readJson<{ readonly error: string }>(
-    invalidInspectionResponse,
-  );
-
   return {
-    catalog: catalog.statuses.map(({ status }) => status),
-    defaultSelection: {
-      statusCode: defaultResponse.status,
-      status: defaultSelection.status,
-      defaulted: defaultSelection.defaulted,
+    drinks: menu.drinks.map(({ name }) => name),
+    sizes: menu.sizes.map(({ size, cents }) => ({ size, cents })),
+    tallPrice: {
+      statusCode: tallResponse.status,
+      size: tallPrice.size,
+      cents: tallPrice.cents,
     },
-    invalidSelection: {
+    invalidPrice: {
       statusCode: invalidResponse.status,
-      error: invalidSelection.error,
-    },
-    validInspection: {
-      statusCode: validInspectionResponse.status,
-      status: validInspection.status,
-      terminal: validInspection.terminal,
-    },
-    invalidInspection: {
-      statusCode: invalidInspectionResponse.status,
-      error: invalidInspection.error,
+      error: invalidPrice.error,
     },
   };
 }

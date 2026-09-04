@@ -17,6 +17,23 @@ type State = (typeof states)["~type"];
 
 The values tuple must be non-empty. Duplicate values are removed in first-seen order, including values introduced by `extend` or `em.combine`.
 
+When API-facing keys need to differ from canonical wire values, use the object overload:
+
+```ts twoslash
+import { em } from "enumwaii";
+
+const orderStatuses = em({
+  ORDER_PAID: "order-paid",
+  ORDER_PENDING: "order-pending",
+});
+const ORDER_STATUS = orderStatuses.enum;
+
+ORDER_STATUS.ORDER_PAID; // branded "order-paid"
+orderStatuses.parse("order-paid");
+```
+
+This is an escape hatch; prefer tuple declarations when keys and values can be identical. Object keys are the developer-facing names on `.enum`, `.rawEnum`, and `.cases`. The mapped values are canonical everywhere else, including identity, parsing, Standard Schema, adapters, iteration, and derivation. Object declarations must be non-empty and cannot contain duplicate values.
+
 ## Surface map
 
 | Surface | Use it for |
@@ -27,7 +44,7 @@ The values tuple must be non-empty. Duplicate values are removed in first-seen o
 | `rawValues` | An unbranded tuple for schema, database, or provider metadata. |
 | `cases` | Native discriminated-union tags when TypeScript cannot narrow a branded string. |
 | `~type` | The branded member union, available only to TypeScript. |
-| `~keys` | The raw key union for `Record` and `satisfies`, available only to TypeScript. |
+| `~keys` | The raw value union for `Record` and `satisfies`, available only to TypeScript. |
 | `~safeParseResult` | This declaration's discriminated parse result, available only to TypeScript. |
 | `~standard` | The Standard Schema v1 contract. |
 
@@ -66,7 +83,7 @@ const priorities = em(["LOW", "HIGH"]);
 const stateOrPriority = em.combine([states, priorities]);
 ```
 
-`pick` and `omit` retain the source identity. `extend` retains the source identity while widening its domain. `combine` derives a new identity from the complete combined member set.
+`pick` and `omit` retain the source identity and any surviving aliased keys. `extend` retains the source identity while widening its domain; new tuple members use identity keys where key equals value. `combine` derives a new identity from the complete combined value set and exposes identity keys because input keys are declaration-local cosmetics.
 
 ## Derive exhaustive data
 

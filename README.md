@@ -158,7 +158,7 @@ The `flat/recommended-type-checked` preset additionally catches direct member vi
 | Runtimes | Node.js, Bun, Deno, and Cloudflare Workers through the shared [Hono](examples/hono) boundary contract |
 | Data and everyday UI | Drizzle + PGlite, Mongoose, TanStack Form, native forms, TanStack Table, URL state, persistence hydration, request validation, and visible failure paths across the examples above |
 
-Every example is independently runnable and exercises invalid or ambiguous input instead of demonstrating only a happy path. Open the [example catalog](https://catofjupit3r.github.io/enumwaii/docs/examples/) for commands and hosted StackBlitz or Codespaces links.
+Every example is independently runnable and exercises invalid or ambiguous input instead of demonstrating only a happy path. Open the [example catalog](https://catofjupit3r.github.io/enumwaii/docs/examples/) for commands and hosted StackBlitz links.
 
 ## Learn more
 

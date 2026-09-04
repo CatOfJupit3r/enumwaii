@@ -1,189 +1,154 @@
+import {
+  exerciseRuntimeContract,
+  EXPECTED_RUNTIME_REPORT,
+} from "./runtime-tests/contract";
 import type { Hono } from "hono";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-
 import { createApp } from "./src/app";
 import { openOrderDatabase, type OrderDatabaseHandle } from "./src/db/client";
 import { hydrateOrder, InvalidOrderRowError } from "./src/db/order-repository";
-import { orders, orderStatusDbEnum } from "./src/db/schema";
+import { drinkSizeDbEnum, orders, orderStatusDbEnum } from "./src/db/schema";
 import {
+  DRINK_SIZE,
+  DRINK_SIZE_DB_VALUES,
   ORDER_STATUS,
-  ORDER_STATUS_DB_ENUM,
   ORDER_STATUS_DB_VALUES,
 } from "./src/domain/order-status";
 
-describe("Hono + Drizzle order operations", () => {
+describe("Counter café order board", () => {
   let database: OrderDatabaseHandle;
   let app: Hono;
-
   beforeAll(async () => {
     database = await openOrderDatabase("memory://");
     await database.repository.seed();
     app = createApp({ orders: database.repository });
   });
-
   afterAll(async () => {
     await database.close();
   });
-
-  it("renders a useful server-side dashboard", async () => {
+  it("renders a barista board with an accessible request toast", async () => {
     const response = await app.request("/");
     const html = await response.text();
-
     expect(response.status).toBe(200);
-    expect(html).toContain("Orders that keep their state honest");
-    expect(html).toContain('id="create-order"');
-    expect(html).toContain("Boundary lab");
-    expect(html).toContain("demo-pending");
+    expect(html).toContain("Coffee orders, right where the barista needs them");
+    expect(html).toContain("marin-oat-latte");
+    expect(html).not.toContain("Boundary lab");
+    expect(html).toContain('id="request-toast"');
+    expect(html).toContain('aria-live="polite"');
   });
-
-  it("persists an order and uses the canonical PostgreSQL default", async () => {
+  it("uses the canonical PostgreSQL defaults while creating a drink", async () => {
     const response = await app.request("/api/orders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ memo: "Database default check" }),
+      body: JSON.stringify({ drink: "Cortado" }),
     });
-    const created = await response.json();
-
     expect(response.status).toBe(201);
-    expect(created).toMatchObject({
+    await expect(response.json()).resolves.toMatchObject({
       defaulted: true,
-      order: { status: "PENDING", memo: "Database default check", version: 1 },
+      order: { status: "PLACED", size: "TALL", drink: "Cortado", version: 1 },
     });
-
-    const listResponse = await app.request("/api/orders");
-    const payload = (await listResponse.json()) as {
-      orders: { id: string; memo: string | null }[];
-    };
-    expect(payload.orders).toContainEqual(
-      expect.objectContaining({ memo: "Database default check" }),
-    );
   });
-
   it("uses enumwaii directly as scalar Standard Schema middleware", async () => {
     const response = await app.request("/api/status/inspect", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify("PAID"),
+      body: JSON.stringify("READY"),
     });
-
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
-      status: "PAID",
-      label: "Paid",
+      status: "READY",
+      label: "Ready",
       terminal: false,
     });
   });
-
-  it.each([
-    ["unknown member", "REFUNDED"],
-    ["wrong primitive", 42],
-  ])("rejects a %s at the scalar boundary", async (_label, body) => {
+  it("rejects an unknown scalar status", async () => {
     const response = await app.request("/api/status/inspect", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify("refunded"),
     });
-
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toMatchObject({
-      error: "Invalid order status",
+      error: "Invalid café order status",
     });
   });
-
-  it("distinguishes a nil default from malformed input", async () => {
-    const defaulted = await app.request("/api/status");
-    expect(defaulted.status).toBe(200);
-    await expect(defaulted.json()).resolves.toMatchObject({
-      status: "PENDING",
-      defaulted: true,
-    });
-
-    const malformed = await app.request("/api/status?status=REFUNDED");
-    expect(malformed.status).toBe(400);
-    await expect(malformed.json()).resolves.toMatchObject({
-      error: "Invalid order status",
-      field: "status",
-    });
-  });
-
-  it("persists a legal transition and increments its version", async () => {
-    const order = await database.repository.create({
-      id: "legal-transition",
-      status: ORDER_STATUS.PENDING,
-    });
-    const response = await app.request(`/api/orders/${order.id}/transition`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ to: "PAID", expectedVersion: 1 }),
-    });
-
+  it("maps URL values to constant-case domain and database values", async () => {
+    const response = await app.request("/api/status?status=picked-up");
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
-      order: { id: order.id, status: "PAID", version: 2 },
+      status: "PICKED_UP",
     });
-    const persisted = await database.repository.list();
-    expect(persisted).toContainEqual(
-      expect.objectContaining({ id: order.id, status: ORDER_STATUS.PAID }),
-    );
+    const filtered = await app.request("/?status=ready");
+    expect(filtered.status).toBe(200);
+    await expect(
+      exerciseRuntimeContract(async (path, init) => app.request(path, init)),
+    ).resolves.toEqual(EXPECTED_RUNTIME_REPORT);
   });
-
-  it("rejects an illegal transition", async () => {
+  it("defaults a missing status query but rejects malformed input", async () => {
+    const defaulted = await app.request("/api/status");
+    await expect(defaulted.json()).resolves.toMatchObject({
+      status: "PLACED",
+      defaulted: true,
+    });
+    const malformed = await app.request("/api/status?status=refunded");
+    expect(malformed.status).toBe(400);
+  });
+  it("persists a legal card move and increments its version", async () => {
     const order = await database.repository.create({
-      id: "illegal-transition",
-      status: ORDER_STATUS.PENDING,
+      id: "legal-transition",
+      drink: "Flat white",
+      status: ORDER_STATUS.PLACED,
+      size: DRINK_SIZE.TALL,
     });
     const response = await app.request(`/api/orders/${order.id}/transition`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ to: "SHIPPED", expectedVersion: 1 }),
+      body: JSON.stringify({ to: "BREWING", expectedVersion: 1 }),
     });
-
-    expect(response.status).toBe(409);
-    await expect(response.json()).resolves.toEqual({
-      error: "Illegal order transition",
-      from: "PENDING",
-      to: "SHIPPED",
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      order: { id: order.id, status: "BREWING", version: 2 },
     });
   });
-
-  it("reports a stale optimistic version without overwriting the row", async () => {
+  it("surfaces a barista version conflict without overwriting the row", async () => {
     const order = await database.repository.create({
       id: "version-conflict",
-      status: ORDER_STATUS.PENDING,
+      drink: "Americano",
+      status: ORDER_STATUS.PLACED,
     });
-    await database.repository.transition(order.id, ORDER_STATUS.PAID, 1);
-
+    await database.repository.transition(order.id, ORDER_STATUS.BREWING, 1);
     const response = await app.request(`/api/orders/${order.id}/transition`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ to: "SHIPPED", expectedVersion: 1 }),
+      body: JSON.stringify({ to: "READY", expectedVersion: 1 }),
     });
-
     expect(response.status).toBe(409);
     await expect(response.json()).resolves.toMatchObject({
-      error: "Order version conflict",
+      error: "Another barista already moved this order",
       expectedVersion: 1,
       actualVersion: 2,
     });
   });
-
-  it("keeps the canonical enum and default in Drizzle metadata", () => {
-    const statusColumn = getTableConfig(orders).columns.find(
-      (column) => column.name === "status",
-    );
-
+  it("keeps status and drink size database metadata canonical", () => {
+    const columns = getTableConfig(orders).columns;
     expect(orderStatusDbEnum.enumValues).toEqual(ORDER_STATUS_DB_VALUES);
-    expect(statusColumn?.enumValues).toEqual(ORDER_STATUS_DB_VALUES);
-    expect(statusColumn?.default).toBe(ORDER_STATUS_DB_ENUM.PENDING);
+    expect(drinkSizeDbEnum.enumValues).toEqual(DRINK_SIZE_DB_VALUES);
+    expect(columns.find((column) => column.name === "status")?.default).toBe(
+      "PLACED",
+    );
+    expect(columns.find((column) => column.name === "size")?.default).toBe(
+      "TALL",
+    );
   });
-
-  it("rejects historical or corrupt output instead of silently coercing it", () => {
+  it("frames corrupt hydration as a migration failure", () => {
     expect(() =>
       hydrateOrder({
         id: "historical-row",
-        status: "REFUNDED",
-        memo: null,
+        status: "refunded",
+        drink: "Latte",
+        size: "TALL",
+        note: null,
         version: 1,
         createdAt: "2026-08-30T12:00:00.000Z",
         updatedAt: "2026-08-30T12:00:00.000Z",

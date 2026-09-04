@@ -35,11 +35,11 @@ try {
   const response = await request("/api/orders", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ memo: "Created inside Deno" }),
+    body: JSON.stringify({ drink: "Created inside Deno" }),
   });
   const payload = (await response.json()) as {
     readonly defaulted: boolean;
-    readonly order: { readonly status: string; readonly memo: string | null };
+    readonly order: { readonly status: string; readonly drink: string };
   };
 
   assert.equal(response.status, 201);
@@ -47,12 +47,12 @@ try {
     {
       defaulted: payload.defaulted,
       status: payload.order.status,
-      memo: payload.order.memo,
+      drink: payload.order.drink,
     },
     {
       defaulted: true,
-      status: "PENDING",
-      memo: "Created inside Deno",
+      status: "PLACED",
+      drink: "Created inside Deno",
     },
   );
   console.log("Deno, PGlite, Drizzle, Hono, and enumwaii contract passed");

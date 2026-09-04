@@ -83,6 +83,12 @@ async function manifestPaths() {
     }
   }
 
+  for await (const path of glob("examples/*/package.json", {
+    cwd: workspaceRoot,
+  })) {
+    paths.add(resolve(workspaceRoot, path));
+  }
+
   return [...paths].sort((left, right) => left.localeCompare(right));
 }
 
@@ -111,6 +117,6 @@ if (violations.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    `Dependency version policy valid in ${paths.length} workspace manifests.`,
+    `Dependency version policy valid in ${paths.length} repository manifests.`,
   );
 }

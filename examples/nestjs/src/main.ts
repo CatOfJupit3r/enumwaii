@@ -19,7 +19,9 @@ async function bootstrap(): Promise<void> {
 
   app.enableShutdownHooks();
   await app.listen(port, host);
-  bootstrapLogger.log(`Order console listening on http://localhost:${port}`);
+  bootstrapLogger.log(
+    `Helpdesk dashboard listening on http://localhost:${port}`,
+  );
 }
 
 void bootstrap().catch((error: unknown) => {

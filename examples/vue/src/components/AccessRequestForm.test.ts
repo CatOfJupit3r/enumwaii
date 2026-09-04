@@ -5,6 +5,16 @@ import { ACCESS_LEVELS } from "../domain/access-control";
 import AccessRequestForm from "./AccessRequestForm.vue";
 
 describe("AccessRequestForm", () => {
+  it("omits Owner from the invitation-safe role options", () => {
+    const wrapper = mount(AccessRequestForm);
+    const values = wrapper
+      .findAll("select option")
+      .map((option) => option.attributes("value"));
+
+    expect(values).toContain(ACCESS_LEVELS.EDITOR);
+    expect(values).not.toContain(ACCESS_LEVELS.OWNER);
+  });
+
   it("keeps invalid native draft values outside the emitted domain event", async () => {
     const wrapper = mount(AccessRequestForm);
 
@@ -41,4 +51,17 @@ describe("AccessRequestForm", () => {
       wrapper.get<HTMLSelectElement>('select[name="level"]').element.value,
     ).toBe("");
   });
+});
+
+it("rejects an Owner role injected into the invitation form", async () => {
+  const wrapper = mount(AccessRequestForm);
+  await wrapper.get('input[name="email"]').setValue("alex@studio.dev");
+  const select = wrapper.get<HTMLSelectElement>('select[name="level"]');
+  const injected = document.createElement("option");
+  injected.value = ACCESS_LEVELS.OWNER;
+  select.element.append(injected);
+  await select.setValue(ACCESS_LEVELS.OWNER);
+  await wrapper.get("form").trigger("submit");
+  expect(wrapper.emitted("created")).toBeUndefined();
+  expect(wrapper.text()).toContain("Choose one of the owned access levels.");
 });

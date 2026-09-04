@@ -1,59 +1,63 @@
-# TanStack Start + Solid release control room
+# Statuswaii — public status page and ops room
 
-This is a complete TanStack Start application built with the official Solid adapter. It presents a release/incident control room rather than a synthetic test surface: the first request is server-rendered, route data comes from a loader-backed server function, incident transitions execute as server mutations, and the UI updates inside a Solid transition.
+**Pitch:** A credible hosted-status product with a calm public page and a versioned internal incident control room.
 
-## Route tour
+This complete TanStack Start + Solid example keeps enumwaii ownership intact across SSR loaders, server functions, search parameters, TanStack Form, and the client/server serialization boundary.
 
-### `/` — control room
+## Product tour
 
-The dashboard loader calls `getIncidentBoard` during SSR and hydrates the same snapshot on the client. Every incident carries an owned `IncidentState`, and the cards render presentation metadata from an exhaustive `derive` table. Their action buttons come from an exhaustive `deriveTo` transition graph.
+### `/` — public status
 
-The typed `focus` search parameter is also an interactive boundary demo:
+The first screen is useful without explanation: seeded incidents produce a service-health banner, an active-incident list, and a recent-history timeline. The banner folds the severity metadata from the exhaustive incident-state `.derive()` table. When no incidents are open, it automatically renders “All systems operational.”
 
-- **Nil default** removes `focus`; only the missing value defaults to `MITIGATING`.
-- **Valid member** requests `MONITORING` and keeps the parsed branded member through the loader and component props.
-- **Malformed fallback** opens `?focus=PAUSED`; that unknown value deliberately recovers to `TRIAGE` and the UI labels the result as a fallback, not a valid request or a default.
+### `/ops` — internal control room
 
-Use the transition buttons on incident cards to run the real POST server function. The mutation uses an optimistic version, validates its object input with Zod plus `zodSchema` from `enumwaii/zod`, and rejects illegal lifecycle moves before updating the in-memory example store.
+Operators can create incidents with TanStack Form and advance cards through the exhaustive `.deriveTo()` transition graph. Mutations carry an optimistic version, so concurrent updates surface as a real refresh-and-retry conflict.
 
-The inline **Open an incident** panel uses TanStack Form's Solid `createForm`, `Field`, and `Subscribe` APIs for required-field errors, submit state, reset, and an aria-live result. Its state select intentionally holds an untrusted DOM string; the enumwaii declaration is attached as the field's Standard Schema validator, then the value is parsed at submit before the validated POST mutation creates a branded version-zero record in the process-local store.
+The `?focus=` search parameter is framed as a link pasted from Slack:
 
-### `/validation` — boundary lab
+- a fresh visit uses a nil-only default;
+- a valid member is parsed and highlighted;
+- `/ops?focus=PAUSED` deliberately falls back to triage and visibly explains that the pasted link contained a typo.
 
-The lab sends a scalar candidate to `inspectIncidentState`. Its `createServerFn().validator(...)` receives the enumwaii declaration directly as a Standard Schema. Owned members return derived guidance; `PAUSED` demonstrates strict rejection. The policy cards contrast that strict seam with the dashboard's nil-only default and explicitly chosen malformed-input fallback.
+## Serialization bridge
 
-The server store is intentionally process-local demo data. Restarting the app returns the board to its seed state.
+Enumwaii members are strings at runtime, but the ownership brand is TypeScript metadata and cannot honestly survive an RPC transport.
 
-## TanStack Start serialization bridge
+```text
+untrusted input
+      │
+      ▼
+server validator ── parse ──► branded IncidentState
+      │
+      ▼ serialize honestly
+plain { state: string } DTO
+      │
+      ▼ hydrate client
+client parse ────────────────► branded IncidentState
+```
 
-Enumwaii values are strings at runtime, but their TypeScript ownership brand is nominal metadata. TanStack Start's strict server-function serializer correctly refuses to promise that nominal provenance survives an RPC transport. The scalar inspection function therefore keeps the enumwaii declaration directly in `.validator(...)`, re-parses the handler data to restore its owned domain type, and returns an explicitly plain DTO whose `state` is a `string`.
+`inspectIncidentState` uses the enumwaii declaration directly as a Standard Schema server-function validator. Its transport DTO deliberately contains a plain string, and `parseIncidentStateInspection` restores ownership on the receiving side. The domain and type-contract tests prove that the intermediate string cannot enter branded code without that second parse.
 
-The boundary-lab client then parses that serialized string again before passing it to enum-derived domain presentation. This is intentionally symmetric: validate on entry to the server, serialize honest wire data, and validate again when the client needs domain ownership. Strict serialization remains enabled; there is no cast, validator wrapper, or branded output hidden behind `strict: false`.
+Incident creation follows the same discipline: the form validates its raw DOM value with enumwaii Standard Schema, then the server validates the full object with Zod and `zodSchema` before the process-local store is updated.
 
-The incident-creation mutation follows the same boundary discipline: the form parses its raw state before calling `createIncident`, while the server function also validates the complete object with Zod and enumwaii's `zodSchema` adapter before `IncidentStore.create` appends the snapshot.
+## Enumwaii coverage
 
-## Project shape
-
-- `src/routes/__root.tsx` provides the document shell, metadata, navigation, hydration, and scripts.
-- `src/routes/index.tsx` owns typed search validation, loader dependencies, SSR data, and interactive mutations.
-- `src/routes/validation.tsx` demonstrates direct Standard Schema server validation.
-- `src/routeTree.gen.ts` follows TanStack Router's generated route-tree convention and is refreshed by the Vite plugin when routes change.
-- `src/domain/` owns declarations, extracted member views, derivations, boundary policies, branded records, and Zod schemas.
-- `src/server/` separates Start server-function wrappers from server-only store behavior.
-- `src/type-contract.test-d.ts` proves raw and foreign values cannot enter domain records, UI props, or transition calls.
-
-The package's `tsconfig.json` intentionally does not enable `verbatimModuleSyntax`; TanStack Start's Solid setup warns that enabling it can leak server bundles into client output.
+- `.enum` and `.values` render owned state choices.
+- `.derive()` owns presentation, severity, and the public status fold.
+- `.deriveTo()` owns allowed incident transitions.
+- Standard Schema validates the TanStack Form field and scalar server input.
+- `zodSchema` composes branded states into mutation objects.
+- `parse`, `safeParse`, `default`, and `fallback` cover realistic boundaries.
 
 ## Commands
 
-Run from the repository root after installing workspace dependencies:
-
 ```sh
-pnpm --filter @enumwaii/example-tanstack-start-solid dev
-pnpm --filter @enumwaii/example-tanstack-start-solid test
-pnpm --filter @enumwaii/example-tanstack-start-solid test:types
-pnpm --filter @enumwaii/example-tanstack-start-solid build
-pnpm --filter @enumwaii/example-tanstack-start-solid start
+pnpm --dir examples/tanstack-start-solid dev
+pnpm --dir examples/tanstack-start-solid test
+pnpm --dir examples/tanstack-start-solid test:types
+pnpm --dir examples/tanstack-start-solid build
+pnpm --dir examples/tanstack-start-solid start
 ```
 
-`dev` serves the application at `http://localhost:3000`. `build` emits the Nitro production server to `.output`; `start` runs that server. `preview` is also available for Vite preview workflows.
+`dev` serves the public page at `http://localhost:3000`; the ops room is at `http://localhost:3000/ops`. The in-memory incident store resets on restart.

@@ -1,51 +1,43 @@
-# Vue 3 + enumwaii access console
+# Crewboard — Members & Permissions
 
-This is a runnable Vue 3.5 + Vite application showing enumwaii inside a normal frontend boundary. It is an access-control console rather than a test fixture: choose a role, inspect its derived permissions, and feed persistence payloads through the boundary lab. A real native Vue invitation form shows the same ownership boundary in ordinary product work without adding a form library.
+**Pitch:** The team-settings screen of a fictional SaaS, with role changes, permission previews, and a safe invitation boundary.
 
-## Run it
+This runnable Vue 3 + Vite application opens as one coherent settings product: six named teammates, per-row role controls, a live permission matrix, and an invite form. There is no boundary lab—the boundary behavior appears where a real user encounters it.
 
-From the repository root, after installing workspace dependencies:
+## Product flow
 
-```sh
-pnpm --filter @enumwaii/example-vue dev
-```
+- Hover or focus a teammate to preview that role’s permissions from the exhaustive access-level → permission `.deriveTo()` table.
+- Change a row’s role through `MemberRoleSelect`. Its native DOM string is strictly parsed before the component emits a branded `AccessLevel`.
+- Invite a teammate with the native Vue form. The role list comes from `accessLevelEnum.omit([OWNER])`, so ownership cannot be granted through an invitation.
+- Change “Viewing settings as” to persist the role in `?as=` and `localStorage`.
 
-The package also exposes the usual Vite commands:
+## Real boundary moments
 
-```sh
-pnpm --filter @enumwaii/example-vue build
-pnpm --filter @enumwaii/example-vue preview
-pnpm --filter @enumwaii/example-vue test
-pnpm --filter @enumwaii/example-vue test:types
-```
+The persistence composable applies a policy based on where the unknown value came from:
 
-## Tour
-
-- **Current session** shows the reactive branded level, the active boundary policy, and the URL query/localStorage synchronization signal. Changing a level updates `?level=...` and `enumwaii-console-level`.
-- **Choose a session lens** renders all four access members. Cards emit a typed `AccessLevel`; the parent never receives a plain string from a card.
-- **Derived policy** uses `derive` for access metadata and `deriveTo` for an exhaustive access-level → permission mapping. The permission list is real UI state, not a static illustration.
-- **Invite a teammate** uses normal Vue refs, native form controls, inline validation, a typed component event, reset behavior, an ARIA live result, and a recent-submission queue. The `<select>` remains a plain DOM string until strict parsing succeeds; only the branded result leaves the form.
-- **Boundary lab** lets you inspect valid (`"EDITOR"`), missing (`null`), malformed (`"ARCHIVED"`), wrong-shaped (`{ level: "EDITOR" }`), and custom external values. Click a policy card to make it active, then apply only an accepted result to the console.
-
-## Boundary behavior
-
-The domain module creates `accessLevelEnum` once and extracts its `.enum` view once as `ACCESS_LEVELS`. The URL and localStorage adapters return `unknown` data; `parseAccessLevel` is the only function allowed to turn that data into a branded `AccessLevel`.
-
-| Policy | Missing (`null`/`undefined`) | Malformed or wrong-shaped |
+| Situation | Policy | User experience |
 | --- | --- | --- |
-| Strict rejection | rejected | rejected |
-| Nil-only default | `VIEWER` | rejected |
-| Invalid-input fallback | `GUEST` fallback | `GUEST` fallback |
+| Fresh visit | nil-only `default` | starts as Viewer |
+| Tampered `?as=SUPERADMIN` link | explicit `fallback` | shows Viewer with an “unknown role” notice |
+| Corrupt localStorage | strict parse | removes the corrupt value and explains the reset |
 
-The distinction is intentional: enumwaii's `default` option is nil-only, whereas `fallback` is for every otherwise-invalid input. Under strict policy, rejected input leaves the current reactive level unchanged. No adapter coerces objects, numbers, or unknown strings.
+Raw URL, storage, and form strings never enter the member table or permission matrix. Those surfaces only accept owned enumwaii members.
 
-## Source layout
+## Enumwaii coverage
 
-- `src/domain/access-control.ts` owns the enums, branded types, exhaustive metadata, permission derivation, and boundary parser.
-- `src/composables/useAccessLevelPersistence.ts` owns reactive refs, `watch` synchronization, URL/localStorage reads, and the last boundary outcome.
-- `src/components/AccessLevelCard.vue` demonstrates typed props/events.
-- `src/components/AccessRequestForm.vue` demonstrates the dependency-free form approach: raw draft state in, a strictly parsed `AccessInvitation` event out.
-- `src/components/BoundaryPlayground.vue` keeps unknown fixtures outside state until the selected enumwaii policy accepts them.
-- `src/domain/access-control.test.ts`, `src/composables/useAccessLevelPersistence.test.ts`, and `src/components/AccessRequestForm.test.ts`, and `src/components/BoundaryPlayground.test.ts` cover domain, persistence, forms, and DOM interactions. `src/type-contract.test-d.ts` proves raw strings cannot enter the domain, invitation, or component prop contracts.
+- `.enum` and `.values` render role controls.
+- `.derive()` owns role and permission presentation.
+- `.deriveTo()` owns the exhaustive permission matrix.
+- `.omit()` defines the invitation-safe role subset.
+- `parse`, `safeParse`, `default`, and `fallback` protect browser and form boundaries.
 
-The test suite uses Vitest's normal `jsdom` environment only for the browser composable and SFC interaction tests; the application itself is the primary showcase.
+## Commands
+
+```sh
+pnpm --dir examples/vue dev
+pnpm --dir examples/vue test
+pnpm --dir examples/vue test:types
+pnpm --dir examples/vue build
+```
+
+`dev` serves Crewboard through Vite. All teammates and invitation activity are local demo data; refresh to reset the table and queue.

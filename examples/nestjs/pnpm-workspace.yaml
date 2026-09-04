@@ -1,0 +1,12 @@
+packages:
+  - "."
+
+savePrefix: ""
+minimumReleaseAge: 1440
+minimumReleaseAgeStrict: true
+blockExoticSubdeps: true
+strictDepBuilds: true
+
+allowBuilds:
+  "@swc/core@1.16.1": true
+  "esbuild@0.28.2": true

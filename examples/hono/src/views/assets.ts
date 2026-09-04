@@ -1,3 +1,8 @@
+import { em } from "enumwaii";
+
+const noticeTones = em(["SUCCESS", "ERROR"]);
+const NOTICE_TONE = noticeTones.enum;
+
 export const DASHBOARD_CSS = String.raw`
 :root {
   color-scheme: dark;
@@ -45,13 +50,14 @@ h1 { max-width: 760px; margin: 20px 0 18px; font-size: clamp(42px, 7vw, 78px); l
 .hero-aside { align-self: end; padding: 24px; border: 1px solid var(--line); border-radius: 22px; background: linear-gradient(145deg, rgba(200, 255, 115, 0.1), rgba(20, 27, 25, 0.85)); }
 .hero-aside strong { display: block; margin-bottom: 12px; font-size: 14px; }
 .hero-aside code { display: block; color: var(--lime); font-size: 13px; line-height: 1.8; }
-.status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 48px; }
+.status-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 48px; }
 .status-card { position: relative; overflow: hidden; min-height: 142px; padding: 20px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); }
 .status-card::after { position: absolute; right: -20px; bottom: -30px; width: 90px; height: 90px; border-radius: 999px; background: currentColor; content: ""; filter: blur(42px); opacity: 0.25; }
 .status-card.amber { color: var(--amber); }
 .status-card.blue { color: var(--blue); }
 .status-card.green { color: var(--green); }
 .status-card.slate { color: var(--slate); }
+.status-card.rose { color: var(--danger); }
 .status-top { display: flex; align-items: center; justify-content: space-between; }
 .status-label { color: var(--muted); font-size: 12px; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }
 .status-count { margin-top: 16px; color: var(--ink); font-size: 38px; font-weight: 780; letter-spacing: -0.04em; }
@@ -75,6 +81,7 @@ h1 { max-width: 760px; margin: 20px 0 18px; font-size: clamp(42px, 7vw, 78px); l
 .badge.blue { color: var(--blue); background: rgba(129, 188, 255, 0.08); }
 .badge.green { color: var(--green); background: rgba(114, 226, 168, 0.08); }
 .badge.slate { color: var(--slate); background: rgba(167, 177, 173, 0.08); }
+.badge.rose { color: var(--danger); background: rgba(255, 139, 126, 0.08); }
 .order p { margin: 10px 0 8px; color: var(--muted); font-size: 13px; }
 .order-meta { color: #718078; font-size: 11px; }
 .transition-form { display: grid; grid-template-columns: 110px 72px auto; gap: 7px; align-self: center; }
@@ -85,12 +92,9 @@ input:focus, select:focus { border-color: rgba(200, 255, 115, 0.62); box-shadow:
 button { min-height: 42px; padding: 9px 14px; border: 0; border-radius: 10px; cursor: pointer; background: var(--lime); color: var(--lime-ink); font-weight: 800; transition: transform 140ms ease, filter 140ms ease; }
 button:hover { filter: brightness(1.06); transform: translateY(-1px); }
 button:disabled { cursor: wait; filter: grayscale(0.7); opacity: 0.65; transform: none; }
-.button-secondary { border: 1px solid var(--line); background: #151e1a; color: var(--ink); }
-.button-danger { border-color: rgba(255, 139, 126, 0.28); color: var(--danger); }
-.lab { padding: 22px 24px 24px; }
-.lab-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-.lab button { min-height: 38px; padding: 8px 10px; font-size: 12px; }
-.output { min-height: 138px; max-height: 270px; overflow: auto; margin: 16px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #08100d; color: #bdeaa9; font-size: 11px; line-height: 1.65; white-space: pre-wrap; }
+.request-toast { position: fixed; right: 20px; bottom: 20px; z-index: 10; max-width: min(420px, calc(100vw - 40px)); padding: 13px 16px; border: 1px solid rgba(200, 255, 115, 0.42); border-radius: 12px; background: #152019; box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35); color: var(--ink); font-size: 13px; font-weight: 700; line-height: 1.45; }
+.request-toast[data-tone="ERROR"] { border-color: rgba(255, 139, 126, 0.52); background: #2a1715; color: #ffd3cc; }
+.request-toast[data-tone="SUCCESS"] { color: #d9ffad; }
 .policy { padding: 22px 24px; }
 .policy strong { display: block; margin-bottom: 9px; }
 .policy p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
@@ -110,22 +114,29 @@ button:disabled { cursor: wait; filter: grayscale(0.7); opacity: 0.65; transform
   .order { grid-template-columns: 1fr; padding: 19px 17px; }
   .transition-form { grid-template-columns: minmax(0, 1fr) 68px auto; }
   .panel-head { padding: 19px 17px; }
-  .form-body, .lab, .policy { padding: 19px 17px; }
+  .form-body, .policy { padding: 19px 17px; }
   .footer { flex-direction: column; }
 }
 `;
 
 export const DASHBOARD_SCRIPT = String.raw`
 (() => {
-  const output = document.querySelector("#api-output");
-  const show = (label, payload) => {
-    if (!output) return;
-    output.textContent = label + "\n" + JSON.stringify(payload, null, 2);
+  const NOTICE_TONE = ${JSON.stringify(NOTICE_TONE)};
+  const toast = document.querySelector("#request-toast");
+  const show = (message, tone = NOTICE_TONE.SUCCESS) => {
+    if (!toast) return;
+    toast.hidden = false;
+    toast.dataset.tone = tone;
+    toast.textContent = message;
   };
-  const send = async (url, options) => {
+  const send = async (url, options, successMessage) => {
     const response = await fetch(url, options);
-    const payload = await response.json();
-    show(response.status + " " + response.statusText, payload);
+    const payload = await response.json().catch(() => ({}));
+    if (response.ok) {
+      show(successMessage, NOTICE_TONE.SUCCESS);
+    } else {
+      show(payload.error || "Counter could not complete that request.", NOTICE_TONE.ERROR);
+    }
     return response.ok;
   };
   const withBusyButton = async (button, operation) => {
@@ -134,7 +145,7 @@ export const DASHBOARD_SCRIPT = String.raw`
       const ok = await operation();
       if (ok) window.setTimeout(() => window.location.reload(), 850);
     } catch (error) {
-      show("Network error", { error: String(error) });
+      show("Counter could not reach the order board. Try again.", "error");
     } finally {
       button.disabled = false;
     }
@@ -144,14 +155,12 @@ export const DASHBOARD_SCRIPT = String.raw`
     const form = event.currentTarget;
     const button = form.querySelector("button[type=submit]");
     const data = new FormData(form);
-    const status = data.get("status");
-    const body = { memo: data.get("memo") };
-    if (status) body.status = status;
+    const body = { drink: data.get("drink"), size: data.get("size"), note: data.get("note") };
     withBusyButton(button, () => send("/api/orders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
-    }));
+    }, "Order added to the board. Refreshing…"));
   });
   document.querySelectorAll(".transition-form").forEach((form) => {
     form.addEventListener("submit", (event) => {
@@ -165,22 +174,8 @@ export const DASHBOARD_SCRIPT = String.raw`
           to: data.get("to"),
           expectedVersion: Number(data.get("expectedVersion")),
         }),
-      }));
+      }, "Cup moved. Refreshing the board…"));
     });
-  });
-  document.querySelectorAll("[data-boundary-body]").forEach((button) => {
-    button.addEventListener("click", () => withBusyButton(button, () =>
-      send("/api/status/inspect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: button.dataset.boundaryBody,
-      })
-    ));
-  });
-  document.querySelectorAll("[data-boundary-url]").forEach((button) => {
-    button.addEventListener("click", () => withBusyButton(button, () =>
-      send(button.dataset.boundaryUrl)
-    ));
   });
 })();
 `;

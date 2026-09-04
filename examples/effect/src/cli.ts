@@ -1,324 +1,192 @@
+import { em } from "enumwaii";
 import { Console, Data, Effect, Either } from "effect";
 
 import {
-  applyJobCommand,
+  applyDeployCommand,
+  ansiColor,
+  DEPLOY_COMMAND,
+  DEPLOY_STATUS,
+  DeployNotFound,
+  DeployRepository,
+  DeployRepositoryLive,
+  DeployVersionConflict,
   describeStatus,
-  IllegalJobTransition,
-  InvalidJobInput,
-  JOB_STATUS,
-  JobNotFound,
-  JobRepository,
-  JobRepositoryLive,
-  JobStateConflict,
-} from "./job-workflow";
+  IllegalDeployTransition,
+  InvalidDeployInput,
+} from "./deployment-pipeline";
 
-const usageText = `Enumwaii / Effect job control room
+const usageText = `shipctl — a pocket deploy orchestrator
 
 Usage:
-  pnpm --filter @enumwaii/example-effect dev
-  pnpm --filter @enumwaii/example-effect dev -- --state QUEUED --command START
-  pnpm --filter @enumwaii/example-effect dev -- --json '{"state":"QUEUED","command":"START"}' --id build-42
+  shipctl list
+  shipctl deploy <service>
+  shipctl promote <id>
+  shipctl retry <id>
+  shipctl rollback <id>
+  shipctl demo
 
-Options:
-  --state <value>    Claimed external job state
-  --command <value>  Claimed external command
-  --json <payload>   Decode a JSON payload instead of --state/--command
-  --id <id>          Job identifier (defaults to job-1)
-  --demo             Run the built-in scenario
-  --help             Show this help
-
-With no options, the CLI runs a control-room scenario covering success,
-malformed input, illegal transitions, stale state, and missing-job recovery.
-`;
-
+An optional --version <n> on a mutation demonstrates stale-write protection.`;
 export class CliUsageError extends Data.TaggedError("CliUsageError")<{
   readonly reason: string;
 }> {}
-
-type CommandOptions = {
-  readonly kind: "command";
+type Mutation = {
+  readonly command: (typeof DEPLOY_COMMAND)[keyof typeof DEPLOY_COMMAND];
   readonly id: string;
-  readonly input: unknown;
+  readonly expectedVersion?: number;
 };
-
+const cliKinds = em(["HELP", "LIST", "DEMO", "MUTATE"]);
+const CLI_KIND = cliKinds.cases;
+const cliCommands = em({
+  DEMO: "demo",
+  LIST: "list",
+  DEPLOY: "deploy",
+  PROMOTE: "promote",
+  RETRY: "retry",
+  ROLLBACK: "rollback",
+});
+const CLI_COMMAND = cliCommands.enum;
+const mutationCommands = cliCommands.omit([CLI_COMMAND.DEMO, CLI_COMMAND.LIST]);
+const commandRoutes = mutationCommands.derive(
+  [CLI_COMMAND.DEPLOY, DEPLOY_COMMAND.START],
+  [CLI_COMMAND.PROMOTE, DEPLOY_COMMAND.PROMOTE],
+  [CLI_COMMAND.RETRY, DEPLOY_COMMAND.RETRY],
+  [CLI_COMMAND.ROLLBACK, DEPLOY_COMMAND.ROLLBACK],
+);
 type CliOptions =
-  { readonly kind: "help" } | { readonly kind: "scenario" } | CommandOptions;
+  | { readonly kind: (typeof CLI_KIND)["HELP" | "LIST" | "DEMO"] }
+  | { readonly kind: typeof CLI_KIND.MUTATE; readonly mutation: Mutation };
+type CliError =
+  | CliUsageError
+  | InvalidDeployInput
+  | IllegalDeployTransition
+  | DeployNotFound
+  | DeployVersionConflict;
 
-type WorkflowError =
-  InvalidJobInput | IllegalJobTransition | JobNotFound | JobStateConflict;
-
-type CliError = CliUsageError | WorkflowError;
-
-function optionValue(
+function parseVersion(
   args: readonly string[],
-  index: number,
-  option: string,
-): string | CliUsageError {
-  const value = args[index + 1];
-  if (value === undefined || value.startsWith("--")) {
-    return new CliUsageError({ reason: `${option} requires a value` });
-  }
-  return value;
+): number | undefined | CliUsageError {
+  if (args.length === 0) return undefined;
+  if (args.length !== 2 || args[0] !== "--version")
+    return new CliUsageError({
+      reason: "Expected optional --version <number>",
+    });
+  const version = Number(args[1]);
+  return Number.isInteger(version) && version > 0
+    ? version
+    : new CliUsageError({ reason: "--version must be a positive integer" });
 }
-
 export function parseCliArgs(
   args: readonly string[],
 ): Effect.Effect<CliOptions, CliUsageError> {
-  if (args.length === 0) {
-    return Effect.succeed({ kind: "scenario" });
-  }
-
-  if (args.length === 1 && args[0] === "--help") {
-    return Effect.succeed({ kind: "help" });
-  }
-
-  if (args.length === 1 && args[0] === "--demo") {
-    return Effect.succeed({ kind: "scenario" });
-  }
-
-  if (args.includes("--demo")) {
+  if (args.length === 0 || (args.length === 1 && args[0] === CLI_COMMAND.DEMO))
+    return Effect.succeed({ kind: CLI_KIND.DEMO });
+  if (args.length === 1 && args[0] === "--help")
+    return Effect.succeed({ kind: CLI_KIND.HELP });
+  if (args.length === 1 && args[0] === CLI_COMMAND.LIST)
+    return Effect.succeed({ kind: CLI_KIND.LIST });
+  const [action, id, ...rest] = args;
+  const parsedCommand = mutationCommands.safeParse(action);
+  const command = parsedCommand.success
+    ? commandRoutes.get(parsedCommand.value)
+    : undefined;
+  if (command === undefined || id === undefined)
     return Effect.fail(
-      new CliUsageError({ reason: "--demo is only valid as the sole option" }),
+      new CliUsageError({
+        reason: "Choose list, deploy, promote, retry, rollback, or demo",
+      }),
     );
-  }
-
-  let id = "job-1";
-  let state: string | undefined;
-  let command: string | undefined;
-  let jsonInput: unknown;
-  let hasJsonInput = false;
-
-  for (let index = 0; index < args.length; index += 1) {
-    const argument = args[index];
-    if (argument === undefined) {
-      return Effect.fail(new CliUsageError({ reason: "Missing argument" }));
-    }
-
-    switch (argument) {
-      case "--id": {
-        const value = optionValue(args, index, argument);
-        if (value instanceof CliUsageError) return Effect.fail(value);
-        if (value.length === 0) {
-          return Effect.fail(
-            new CliUsageError({ reason: "--id cannot be empty" }),
-          );
-        }
-        id = value;
-        index += 1;
-        break;
-      }
-      case "--state": {
-        const value = optionValue(args, index, argument);
-        if (value instanceof CliUsageError) return Effect.fail(value);
-        if (hasJsonInput) {
-          return Effect.fail(
-            new CliUsageError({
-              reason: "--state/--command cannot be combined with --json",
-            }),
-          );
-        }
-        state = value;
-        index += 1;
-        break;
-      }
-      case "--command": {
-        const value = optionValue(args, index, argument);
-        if (value instanceof CliUsageError) return Effect.fail(value);
-        if (hasJsonInput) {
-          return Effect.fail(
-            new CliUsageError({
-              reason: "--state/--command cannot be combined with --json",
-            }),
-          );
-        }
-        command = value;
-        index += 1;
-        break;
-      }
-      case "--json": {
-        const value = optionValue(args, index, argument);
-        if (value instanceof CliUsageError) return Effect.fail(value);
-        if (state !== undefined || command !== undefined || hasJsonInput) {
-          return Effect.fail(
-            new CliUsageError({
-              reason:
-                "--json can only be supplied once without --state/--command",
-            }),
-          );
-        }
-        try {
-          jsonInput = JSON.parse(value);
-        } catch {
-          return Effect.fail(
-            new CliUsageError({ reason: "--json must contain valid JSON" }),
-          );
-        }
-        hasJsonInput = true;
-        index += 1;
-        break;
-      }
-      case "--help":
-        return Effect.fail(
-          new CliUsageError({
-            reason: "--help cannot be combined with options",
-          }),
-        );
-      default:
-        return Effect.fail(
-          new CliUsageError({ reason: `Unknown option: ${argument}` }),
-        );
-    }
-  }
-
-  let input: unknown;
-  if (hasJsonInput) {
-    input = jsonInput;
-  } else if (state === undefined && command === undefined) {
-    input = {};
-  } else if (state === undefined) {
-    input = { command };
-  } else if (command === undefined) {
-    input = { state };
-  } else {
-    input = { state, command };
-  }
-
-  return Effect.succeed({ kind: "command", id, input });
+  const expectedVersion = parseVersion(rest);
+  if (expectedVersion instanceof CliUsageError)
+    return Effect.fail(expectedVersion);
+  return Effect.succeed({
+    kind: CLI_KIND.MUTATE,
+    mutation: { command, id, expectedVersion },
+  });
 }
-
-function outcomeLabel(result: Either.Either<unknown, WorkflowError>): string {
-  return Either.isRight(result) ? "OK" : `ERROR / ${result.left._tag}`;
+function displayStatus(
+  status: (typeof DEPLOY_STATUS)[keyof typeof DEPLOY_STATUS],
+): string {
+  const detail = describeStatus(status);
+  return `${ansiColor(detail.color)}${detail.glyph} ${detail.label}\u001b[0m`;
 }
-
-function runScenario(): Effect.Effect<void, JobNotFound, JobRepository> {
+function listDeploys(): Effect.Effect<void, never, DeployRepository> {
   return Effect.gen(function* () {
-    const repository = yield* JobRepository;
+    const deploys = yield* (yield* DeployRepository).list();
     yield* Console.log(
-      [
-        "",
-        "╭────────────────────────────────────────────────────────────╮",
-        "│ ENUMWAII / EFFECT JOB CONTROL ROOM                         │",
-        "│ Branded state at the boundary, typed failures in the core   │",
-        "╰────────────────────────────────────────────────────────────╯",
-        "",
-        "State model: QUEUED → RUNNING → SUCCEEDED | FAILED → QUEUED",
-        "The demo repository is a Ref-backed Effect service.",
-      ].join("\n"),
+      "\nshipctl  SERVICE          STATUS       VERSION\n────────────────────────────────────────────",
     );
-
-    yield* repository.save({ id: "demo-job", status: JOB_STATUS.QUEUED });
-
-    const successful = yield* Effect.either(
-      applyJobCommand("demo-job", { state: "QUEUED", command: "START" }),
-    );
+    for (const deploy of deploys)
+      yield* Console.log(
+        `         ${deploy.service.padEnd(16)} ${displayStatus(deploy.status).padEnd(22)} v${deploy.version}`,
+      );
+  });
+}
+function runMutation(
+  mutation: Mutation,
+): Effect.Effect<void, CliError, DeployRepository> {
+  return Effect.gen(function* () {
+    const current = yield* (yield* DeployRepository).get(mutation.id);
+    const updated = yield* applyDeployCommand(mutation.id, {
+      state: current.status,
+      command: mutation.command,
+      expectedVersion: mutation.expectedVersion,
+    });
     yield* Console.log(
-      `  success       ${outcomeLabel(successful)} → ${JOB_STATUS.RUNNING}`,
-    );
-
-    const malformed = yield* Effect.either(
-      applyJobCommand("demo-job", { state: "WAITING", command: "START" }),
-    );
-    yield* Console.log(`  malformed     ${outcomeLabel(malformed)}`);
-
-    const illegal = yield* Effect.either(
-      applyJobCommand("demo-job", { state: "RUNNING", command: "RETRY" }),
-    );
-    yield* Console.log(`  illegal       ${outcomeLabel(illegal)}`);
-
-    const conflict = yield* Effect.either(
-      applyJobCommand("demo-job", { state: "QUEUED", command: "START" }),
-    );
-    yield* Console.log(`  stale state   ${outcomeLabel(conflict)}`);
-
-    const missing = yield* Effect.either(
-      applyJobCommand("missing", { state: "QUEUED", command: "START" }),
-    );
-    if (Either.isLeft(missing) && missing.left._tag === "JobNotFound") {
-      yield* Console.log("  missing job   RECOVERED / JobNotFound");
-    } else {
-      yield* Console.log(`  missing job   ${outcomeLabel(missing)}`);
-    }
-
-    const persisted = yield* repository.get("demo-job");
-    const metadata = describeStatus(persisted.status);
-    yield* Console.log(
-      `\n  persisted     ${metadata.status} (terminal=${metadata.terminal}, retryable=${metadata.retryable})`,
-    );
-    yield* Console.log(
-      "\nTry --state/--command to drive one command yourself.\n",
+      `${updated.service}: ${displayStatus(current.status)} → ${displayStatus(updated.status)} (v${updated.version})`,
     );
   });
 }
-
-function runCommand(
-  options: CommandOptions,
-): Effect.Effect<void, WorkflowError, JobRepository> {
+function runDemo(): Effect.Effect<void, CliError, DeployRepository> {
   return Effect.gen(function* () {
-    const repository = yield* JobRepository;
-    yield* repository.save({ id: options.id, status: JOB_STATUS.QUEUED });
     yield* Console.log(
-      `Job ${options.id} seeded as ${JOB_STATUS.QUEUED}; decoding external command...`,
+      "\nshipctl / deployment pipeline\nA tiny deploy orchestrator for the services you ship.\n",
     );
-    const updated = yield* applyJobCommand(options.id, options.input);
-    const metadata = describeStatus(updated.status);
+    yield* listDeploys();
     yield* Console.log(
-      `Transition accepted: ${updated.id} → ${metadata.status} (terminal=${metadata.terminal}, retryable=${metadata.retryable})`,
+      "\nStory: deploy checkout-api, let email-worker recover, then show a stale write.",
     );
+    yield* runMutation({ id: "checkout-api", command: DEPLOY_COMMAND.START });
+    yield* runMutation({ id: "email-worker", command: DEPLOY_COMMAND.RETRY });
+    const stale = yield* Effect.either(
+      runMutation({
+        id: "checkout-api",
+        command: DEPLOY_COMMAND.PROMOTE,
+        expectedVersion: 1,
+      }),
+    );
+    if (Either.isLeft(stale))
+      yield* Console.log(`stale write: ${stale.left._tag}`);
   });
 }
-
 function runOptions(
   options: CliOptions,
-): Effect.Effect<void, CliError, JobRepository> {
-  switch (options.kind) {
-    case "help":
-      return Console.log(usageText);
-    case "scenario":
-      return runScenario();
-    case "command":
-      return runCommand(options);
-  }
+): Effect.Effect<void, CliError, DeployRepository> {
+  if (options.kind === CLI_KIND.HELP) return Console.log(usageText);
+  if (options.kind === CLI_KIND.LIST) return listDeploys();
+  if (options.kind === CLI_KIND.DEMO) return runDemo();
+  return "mutation" in options
+    ? runMutation(options.mutation)
+    : Console.log(usageText);
 }
-
-function printable(value: unknown): string {
-  try {
-    const encoded = JSON.stringify(value);
-    return encoded === undefined ? String(value) : encoded;
-  } catch {
-    return "<unprintable>";
-  }
-}
-
 function formatError(error: CliError): string {
   switch (error._tag) {
     case "CliUsageError":
-      return `Usage error: ${error.reason}\n\n${usageText}`;
-    case "InvalidJobInput":
-      return `Invalid job input (${error.field}): ${printable(error.received)}`;
-    case "IllegalJobTransition":
-      return `Illegal transition: ${error.state} + ${error.command}`;
-    case "JobStateConflict":
-      return `Stale state for ${error.id}: stored ${error.stored}, claimed ${error.claimed}`;
-    case "JobNotFound":
-      return `Job not found: ${error.id}`;
+      return `${error.reason}\n\n${usageText}`;
+    case "InvalidDeployInput":
+      return `Invalid deploy input (${error.field})`;
+    case "IllegalDeployTransition":
+      return `Can't ${error.command.toLowerCase()} a ${error.state} deploy`;
+    case "DeployVersionConflict":
+      return `Someone else promoted ${error.id} first (expected v${error.expected}, found v${error.stored})`;
+    case "DeployNotFound":
+      return `Unknown deploy: ${error.id}`;
   }
 }
-
-function exitCode(error: CliError): number {
-  return error._tag === "CliUsageError" ? 2 : 1;
-}
-
 const program = Effect.gen(function* () {
-  const options = yield* parseCliArgs(process.argv.slice(2));
-  return yield* runOptions(options);
-}).pipe(Effect.provide(JobRepositoryLive));
-
-async function main(): Promise<void> {
-  const result = await Effect.runPromise(Effect.either(program));
-  if (Either.isLeft(result)) {
-    await Effect.runPromise(Console.error(formatError(result.left)));
-    process.exitCode = exitCode(result.left);
-  }
+  return yield* runOptions(yield* parseCliArgs(process.argv.slice(2)));
+}).pipe(Effect.provide(DeployRepositoryLive));
+const result = await Effect.runPromise(Effect.either(program));
+if (Either.isLeft(result)) {
+  await Effect.runPromise(Console.error(formatError(result.left)));
+  process.exitCode = result.left._tag === "CliUsageError" ? 2 : 1;
 }
-
-await main();

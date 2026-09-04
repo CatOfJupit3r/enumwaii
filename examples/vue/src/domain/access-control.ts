@@ -1,6 +1,15 @@
 import { em, type InferEnumwaii } from "enumwaii";
 
-const accessLevelEnum = em(["OWNER", "EDITOR", "VIEWER", "GUEST"]);
+const accents = em(["VIOLET", "BLUE", "CYAN", "AMBER"]);
+export const ACCESS_ACCENT = accents.enum;
+export type AccessAccent = InferEnumwaii<typeof accents>;
+
+const accessLevelEnum = em({
+  OWNER: "owner",
+  EDITOR: "editor",
+  VIEWER: "viewer",
+  GUEST: "guest",
+});
 
 // This is the only enum view extracted in this module. Everything else uses
 // the branded members from this stable, named boundary.
@@ -10,9 +19,17 @@ export type AccessLevel = InferEnumwaii<typeof accessLevelEnum>;
 export type AccessLevelParseResult =
   (typeof accessLevelEnum)["~safeParseResult"];
 
+export const invitableAccessLevels = accessLevelEnum.omit([
+  ACCESS_LEVELS.OWNER,
+]);
+export const INVITABLE_ACCESS_LEVELS = invitableAccessLevels.enum;
+export const INVITABLE_ACCESS_LEVEL_VALUES = invitableAccessLevels.values;
+
+export type InvitableAccessLevel = InferEnumwaii<typeof invitableAccessLevels>;
+
 export interface AccessInvitation {
   readonly email: string;
-  readonly level: AccessLevel;
+  readonly level: InvitableAccessLevel;
   readonly note: string;
 }
 
@@ -20,7 +37,7 @@ export interface AccessLevelMetadata {
   readonly label: string;
   readonly eyebrow: string;
   readonly description: string;
-  readonly accent: "violet" | "blue" | "cyan" | "amber";
+  readonly accent: AccessAccent;
   readonly rank: number;
 }
 
@@ -31,7 +48,7 @@ const accessLevelMetadata = accessLevelEnum.derive(
       label: "Owner",
       eyebrow: "Full control",
       description: "Can shape the workspace, manage people, and see billing.",
-      accent: "violet",
+      accent: ACCESS_ACCENT.VIOLET,
       rank: 4,
     },
   ],
@@ -41,7 +58,7 @@ const accessLevelMetadata = accessLevelEnum.derive(
       label: "Editor",
       eyebrow: "Build and share",
       description: "Can create, update, and invite teammates to collaborate.",
-      accent: "blue",
+      accent: ACCESS_ACCENT.BLUE,
       rank: 3,
     },
   ],
@@ -51,7 +68,7 @@ const accessLevelMetadata = accessLevelEnum.derive(
       label: "Viewer",
       eyebrow: "Read only",
       description: "Can inspect workspace content without changing anything.",
-      accent: "cyan",
+      accent: ACCESS_ACCENT.CYAN,
       rank: 2,
     },
   ],
@@ -61,7 +78,7 @@ const accessLevelMetadata = accessLevelEnum.derive(
       label: "Guest",
       eyebrow: "Limited view",
       description: "Can see explicitly shared items and nothing more.",
-      accent: "amber",
+      accent: ACCESS_ACCENT.AMBER,
       rank: 1,
     },
   ],
@@ -169,10 +186,10 @@ const accessPolicyDefinitions = accessPolicies.derive<AccessPolicyDefinition>()(
     ACCESS_POLICY.FALLBACK,
     {
       label: "Invalid-input fallback",
-      description: "Any malformed value becomes the explicit Guest fallback.",
+      description: "Any malformed value becomes the explicit Viewer fallback.",
       parse(input: unknown): AccessLevelParseResult {
         return accessLevelEnum.safeParse(input, {
-          fallback: ACCESS_LEVELS.GUEST,
+          fallback: ACCESS_LEVELS.VIEWER,
         });
       },
     },

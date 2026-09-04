@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { isValidElement } from "react";
 import { inspect } from "node:util";
 
-import { em, EnumwaiiError, EnumwaiiParseError } from "../src/index";
+import { em, Enumwaii, EnumwaiiError, EnumwaiiParseError } from "../src/index";
 import { valibotSchema } from "../src/adapters/valibot";
 import { lowercase, uppercase } from "../src/derive-with";
 import { zodSchema } from "../src/adapters/zod";
@@ -37,6 +37,57 @@ describe("em", () => {
   it("deduplicates declarations and rejects empty declarations", () => {
     expect(em(["A", "A", "B", "A"]).rawValues).toEqual(["A", "B"]);
     expect(() => em([] as never)).toThrow(/^An enum must/);
+  });
+
+  it("maps developer-facing object keys to canonical raw values", () => {
+    const statuses = em({
+      ORDER_PAID: "order-paid",
+      ORDER_PENDING: "order-pending",
+    });
+    const STATUS = statuses.enum;
+
+    expect(STATUS.ORDER_PAID).toBe("order-paid");
+    expect(statuses.rawEnum).toEqual({
+      ORDER_PAID: "order-paid",
+      ORDER_PENDING: "order-pending",
+    });
+    expect(statuses.cases.ORDER_PENDING).toBe("order-pending");
+    expect(statuses.rawValues).toEqual(["order-paid", "order-pending"]);
+    expect(statuses.values).toEqual(["order-paid", "order-pending"]);
+    expect(Object.isFrozen(statuses.enum)).toBe(true);
+    expect(Object.isFrozen(statuses.rawValues)).toBe(true);
+    expect(Object.is(statuses.enum, statuses.rawEnum)).toBe(true);
+    expect(Object.is(statuses.enum, statuses.cases)).toBe(true);
+
+    expect(statuses.parse("order-paid")).toBe(STATUS.ORDER_PAID);
+    expect(statuses.safeParse("order-pending")).toEqual({
+      success: true,
+      value: STATUS.ORDER_PENDING,
+    });
+    expect(statuses.is("ORDER_PAID")).toBe(false);
+    expect(statuses["~standard"].validate("order-paid")).toEqual({
+      value: STATUS.ORDER_PAID,
+    });
+    expect(zodSchema(statuses).parse("order-paid")).toBe(STATUS.ORDER_PAID);
+    expect(v.parse(valibotSchema(statuses), "order-pending")).toBe(
+      STATUS.ORDER_PENDING,
+    );
+
+    const equivalent = em({
+      PAID: "order-paid",
+      PENDING: "order-pending",
+    });
+    expect(statuses.parse(equivalent.enum.PAID)).toBe(STATUS.ORDER_PAID);
+
+    const constructed = new Enumwaii({ PAID: "paid" });
+    expect(constructed.enum.PAID).toBe("paid");
+  });
+
+  it("rejects empty object declarations and duplicate mapped values", () => {
+    expect(() => em({})).toThrow(EnumwaiiError);
+    expect(() => em({ FIRST: "same", SECOND: "same" })).toThrow(
+      /cannot map multiple keys to the same value/u,
+    );
   });
 });
 
@@ -164,6 +215,60 @@ describe("composition and exhaustive derivation", () => {
       "FULL",
       "NONE",
     ]);
+  });
+
+  it("preserves aliased keys through subsets and uses identity keys for additions", () => {
+    const statuses = em({
+      ORDER_PAID: "order-paid",
+      ORDER_PENDING: "order-pending",
+      ORDER_CANCELLED: "order-cancelled",
+    });
+    const STATUS = statuses.enum;
+
+    expect(
+      statuses.pick([STATUS.ORDER_PAID, STATUS.ORDER_PENDING]).rawEnum,
+    ).toEqual({
+      ORDER_PAID: "order-paid",
+      ORDER_PENDING: "order-pending",
+    });
+    expect(statuses.omit([STATUS.ORDER_PENDING]).rawEnum).toEqual({
+      ORDER_PAID: "order-paid",
+      ORDER_CANCELLED: "order-cancelled",
+    });
+    expect(statuses.extend(["order-refunded"]).rawEnum).toEqual({
+      ORDER_PAID: "order-paid",
+      ORDER_PENDING: "order-pending",
+      ORDER_CANCELLED: "order-cancelled",
+      "order-refunded": "order-refunded",
+    });
+    expect(statuses.extend(["order-paid"]).rawEnum).toEqual(statuses.rawEnum);
+
+    const combined = em.combine([
+      statuses.pick([STATUS.ORDER_PAID]),
+      em({ PENDING: "order-pending" }),
+    ]);
+    expect(combined.rawEnum).toEqual({
+      "order-paid": "order-paid",
+      "order-pending": "order-pending",
+    });
+
+    const labels = statuses.derive((status) => status.toUpperCase());
+    expect(labels.record["order-paid"]).toBe("ORDER-PAID");
+
+    const actions = em({ NOTIFY: "notify", IGNORE: "ignore" });
+    const ACTION = actions.enum;
+    const handling = statuses.deriveTo(
+      actions,
+      [STATUS.ORDER_PAID, ACTION.NOTIFY],
+      [STATUS.ORDER_PENDING, ACTION.NOTIFY],
+      [STATUS.ORDER_CANCELLED, ACTION.IGNORE],
+    );
+    expect(handling.record["order-cancelled"]).toBe(ACTION.IGNORE);
+  });
+
+  it("rejects an extend identity key that conflicts with an aliased key", () => {
+    const values = em({ next: "current" });
+    expect(() => values.extend(["next"])).toThrow(/identity key "next"/u);
   });
 
   it("builds checked lookup maps", () => {

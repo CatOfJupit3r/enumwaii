@@ -22,9 +22,9 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "A TanStack Start and Solid incident control room powered by enumwaii.",
+          "Statuswaii is a public status page and incident ops room powered by enumwaii.",
       },
-      { title: "Northstar · Release control" },
+      { title: "Statuswaii · Service health" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -56,11 +56,11 @@ function RootDocument(props: Readonly<{ children: JSX.Element }>) {
           <header class="topbar">
             <Link class="brand" to="/" search={{}}>
               <span class="brand__mark" aria-hidden="true">
-                N
+                S
               </span>
               <span>
-                <strong>Northstar</strong>
-                <small>release operations</small>
+                <strong>Statuswaii</strong>
+                <small>service health</small>
               </span>
             </Link>
 
@@ -72,20 +72,21 @@ function RootDocument(props: Readonly<{ children: JSX.Element }>) {
                 search={{}}
                 to="/"
               >
-                Control room
+                Public status
               </Link>
               <Link
                 activeProps={{ class: "nav-link nav-link--active" }}
                 class="nav-link"
-                to="/validation"
+                search={{}}
+                to="/ops"
               >
-                Boundary lab
+                Ops room
               </Link>
             </nav>
 
             <div class="topbar__status">
               <span class="live-dot" aria-hidden="true" />
-              Live environment
+              Updated live
             </div>
           </header>
 
@@ -93,7 +94,7 @@ function RootDocument(props: Readonly<{ children: JSX.Element }>) {
 
           <footer class="site-footer">
             <span>enumwaii × TanStack Start × SolidJS</span>
-            <span class="mono">CONTROL / 042</span>
+            <span class="mono">STATUS / LIVE</span>
           </footer>
         </div>
         <Scripts />
@@ -105,11 +106,11 @@ function RootDocument(props: Readonly<{ children: JSX.Element }>) {
 function NotFoundPage() {
   return (
     <main class="not-found page-frame">
-      <p class="eyebrow">404 / Signal lost</p>
-      <h1>This route is outside the runbook.</h1>
-      <p>Return to the release control room and re-establish context.</p>
+      <p class="eyebrow">404 / Page unavailable</p>
+      <h1>This status route does not exist.</h1>
+      <p>Return to the public status page for the latest service health.</p>
       <Link class="primary-link" to="/" search={{}}>
-        Back to control room
+        Back to status
       </Link>
     </main>
   );

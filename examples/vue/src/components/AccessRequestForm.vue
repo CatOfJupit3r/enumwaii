@@ -2,10 +2,9 @@
 import { ref } from "vue";
 
 import {
-  ACCESS_POLICY,
-  ACCESS_LEVEL_VALUES,
+  INVITABLE_ACCESS_LEVEL_VALUES,
   describeAccessLevel,
-  parseAccessLevel,
+  invitableAccessLevels,
   type AccessInvitation,
 } from "../domain/access-control";
 
@@ -39,7 +38,7 @@ function submitInvitation(): void {
   successMessage.value = "";
 
   const emailError = validateEmail();
-  const levelResult = parseAccessLevel(rawLevel.value, ACCESS_POLICY.STRICT);
+  const levelResult = invitableAccessLevels.safeParse(rawLevel.value);
   const levelError = levelResult.success
     ? undefined
     : "Choose one of the owned access levels.";
@@ -112,7 +111,7 @@ function submitInvitation(): void {
         >
           <option disabled value="">Choose a level</option>
           <option
-            v-for="level in ACCESS_LEVEL_VALUES"
+            v-for="level in INVITABLE_ACCESS_LEVEL_VALUES"
             :key="level"
             :value="level"
           >

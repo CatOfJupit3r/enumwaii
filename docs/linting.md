@@ -9,7 +9,7 @@ Enumwaii uses three cooperating enforcement layers: TypeScript owns assignabilit
 
 The runtime package contains declarations and validation. The ESLint package is a separate development dependency for repositories that want source-level guidance.
 
-The syntax-only preset checks declaration casing from source syntax. The type-checked preset uses `typescript-eslint` parser services for provenance-sensitive rules.
+The syntax-only preset checks declaration casing and restricts object inputs to documented external-contract or compatibility exceptions with `no-object-em`. The type-checked preset uses `typescript-eslint` parser services for provenance-sensitive rules and detects imported or dynamic object inputs too.
 
 ## Rule coverage
 

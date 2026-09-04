@@ -33,7 +33,7 @@ The plugin is a Node-based development tool. Deno and Cloudflare applications ne
 
 ### Syntax-only flat config
 
-The lightweight preset uses syntax-only analysis to enforce declaration casing:
+The lightweight preset uses syntax-only analysis to enforce declaration casing and restrict object inputs:
 
 ```js
 import enumwaii from "eslint-plugin-enumwaii";
@@ -73,17 +73,52 @@ For eslintrc configuration, use the `recommended` and `recommended-type-checked`
 | Rule | Recommended | Type information | Purpose |
 | --- | --- | --- | --- |
 | `enforce-enum-casing` | Both | No | Enforce declaration-key and configurable value casing. |
+| `no-object-em` | Both | Optional | Prefer arrays; reserve object inputs for documented external contracts or compatibility. |
 | `no-direct-enumwaii-reference` | Type-aware | Yes | Extract `.enum`, `.rawEnum`, and `.cases` before referencing members. |
 | `no-enumwaii-case-misuse` | Type-aware | Yes | Keep raw case values inside discriminated-union declarations and narrowing. |
 | `no-raw-enum-comparison` | Type-aware | Yes | Replace raw comparison and `switch` literals with owned members. |
 | `no-raw-enum-member` | Type-aware | Yes | Use owned members and composition APIs for subsets and targeted mappings. |
 | `no-union-property-in` | Type-aware | Yes | Prefer an enumwaii case discriminant to structural `in` narrowing. |
 
-Only `enforce-enum-casing` has options; the other rules have no options. The rules do not autofix, so provenance-sensitive changes remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
+`enforce-enum-casing` and `no-object-em` have options; the other rules have no options. The rules do not autofix, so provenance-sensitive changes remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
+
+### `no-object-em`
+
+Enabled in every recommended preset. Use `em(["IN_PROGRESS", "COMPLETED"])` for internal identities and new public APIs, including `PROGRESS_TYPE`. Keep display labels in a separate map indexed by extracted enum members. For existing enum subsets and derivations, use `.pick()`, `.omit()`, `.deriveTo()`, and `em.combine()` with owned members.
+
+Reserve object inputs with distinct keys and values for **external-contract** constraints (AWS or other provider SDKs, provider events/scopes, protocol/media/browser/CSS/locale/runtime tokens) or **compatibility** constraints (existing database rows, saved files, historical messages, previously published values). A new public interface, URL, CLI/config choice, serialization, or lowercase spelling alone does not qualify. AI assistants should fix the representation or use composition, rather than disabling lint or renaming variables to fit an ignore pattern.
+
+```js
+{
+  rules: {
+    "enumwaii/no-object-em": ["error", {
+      ignore: [{
+        name: { startsWith: "aws", endsWith: "Status" },
+        reason: "external-contract",
+        justification: "AWS SDK values must retain the provider's exact spelling.",
+      }, {
+        name: { regex: "^legacyOrderStatus$" },
+        reason: "compatibility",
+        justification: "Existing orders.status rows use inProgress and done.",
+      }],
+    }],
+  },
+}
+```
+
+Each `name` accepts either one object containing any combination of `startsWith`, `endsWith`, and `contains` (at least one required), or a separate `{ regex: string }` object. All provided string conditions must match (AND); ignore entries are alternatives (OR). For example, `{ startsWith: "aws", endsWith: "Status", contains: "Wire" }` matches `awsWireStatus`. Regex cannot be mixed with the string conditions. Native JavaScript string methods implement the first three (`contains` uses `includes`); regex strings compile once per rule instance with the Unicode flag. Matching is case-sensitive against the receiving variable name, such as `awsStatus` in `const awsStatus = em(SdkStatus)`. Anonymous calls cannot match an exception. Patterns must be nonempty; `reason` and a nonblank `justification` are mandatory. No exceptions are built in, and matching a name cannot prove the stated contract.
+
+Recognizes direct factories, renamed named imports and namespace imports from `enumwaii`, TypeScript wrappers, local constant aliases, and local TypeScript enums. Without parser services, unknown imported values, parameters, and function results are outside its scope. Project-aware TypeScript parser services extend checking to those object inputs while allowing arrays and tuples. Unknown/`any` inputs remain unclassified.
+
+An exemption never permits a statically resolved redundant object literal such as `em({ GET: "GET", POST: "POST" })`: use `em(["GET", "POST"])`. The rule does not prove redundancy for imported or dynamic objects and does not autofix contract-sensitive values.
+
+Exceptions apply only to this rule: retain magic-string enforcement at use sites. Required external literal values may need a separate, narrowly scoped `enforce-enum-casing` name override; keep your keys `CONSTANT_CASE`. Directly importing the provider enum avoids duplicating its literal definitions.
+
+Reports: `objectInput`, `redundantObject`.
 
 ### `enforce-enum-casing`
 
-Checks string literals in the first array or object passed directly to `em(...)` or `new Enumwaii(...)`. This is the only syntax-only rule: it does not need TypeScript parser services. Object keys always require `CONSTANT_CASE`. Tuple members and object values follow `valueCasing`: `"constant"` (the default), `"kebab"`, or `"snake"`. Non-literal values are outside its scope.
+Checks string literals in the first array or object passed directly to `em(...)` or `new Enumwaii(...)`. It does not need TypeScript parser services. Object keys always require `CONSTANT_CASE`. Tuple members and object values follow `valueCasing`: `"constant"` (the default), `"kebab"`, or `"snake"`. Non-literal values are outside its scope.
 
 Use `valueCasing` for consistent lowercase wire formats. Disable the rule locally at one declaration, or configure `ignoredNamePatterns` and `ignoredFilePatterns` when a naming convention or generated-file boundary should bypass casing checks entirely.
 

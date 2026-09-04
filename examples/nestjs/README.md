@@ -2,7 +2,13 @@
 
 Helpdesk is a support-ticket backend with severity SLAs and an agent dashboard.
 
-Run: pnpm --dir examples/nestjs dev
+With Docker running, start the MongoDB container and app together:
+
+```sh
+pnpm --dir examples/nestjs dev
+```
+
+Stop the example database with `pnpm --dir examples/nestjs db:down`.
 
 Tickets move through OPEN -> IN_PROGRESS -> WAITING_ON_CUSTOMER -> RESOLVED -> CLOSED; a resolved ticket can be reopened. Severity derives the SLA and badge tone. Mongoose stores raw enum values from .rawValues, while hydrateTicket() re-parses them before they enter the branded domain. A retired v1 status fails closed.
 

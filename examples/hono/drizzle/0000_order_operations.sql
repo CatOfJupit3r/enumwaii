@@ -1,13 +1,9 @@
-CREATE TYPE "public"."counter_order_status" AS ENUM('PLACED', 'BREWING', 'READY', 'PICKED_UP', 'CANCELLED');
---> statement-breakpoint
-CREATE TYPE "public"."counter_drink_size" AS ENUM('SHORT', 'TALL', 'GRANDE');
+CREATE TYPE "public"."order_status" AS ENUM('PENDING', 'PAID', 'SHIPPED', 'CANCELLED');
 --> statement-breakpoint
 CREATE TABLE "orders" (
 	"id" text PRIMARY KEY NOT NULL,
-	"status" "counter_order_status" DEFAULT 'PLACED' NOT NULL,
-	"drink" text NOT NULL,
-	"size" "counter_drink_size" DEFAULT 'TALL' NOT NULL,
-	"note" text,
+	"status" "order_status" DEFAULT 'PENDING' NOT NULL,
+	"memo" text,
 	"version" integer DEFAULT 1 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,

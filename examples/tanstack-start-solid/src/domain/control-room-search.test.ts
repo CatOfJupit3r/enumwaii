@@ -10,24 +10,24 @@ describe("control-room search boundary", () => {
   it("defaults a missing focus and records why", () => {
     expect(controlRoomSearchSchema.parse({})).toEqual({
       focus: INCIDENT_STATE.MITIGATING,
-      resolution: "default",
+      resolution: "DEFAULT",
       received: null,
     });
-    expect(resolveControlRoomFocus(null).resolution).toBe("default");
+    expect(resolveControlRoomFocus(null).resolution).toBe("DEFAULT");
   });
 
   it("preserves valid external members as branded output", () => {
-    expect(controlRoomSearchSchema.parse({ focus: "MONITORING" })).toEqual({
+    expect(controlRoomSearchSchema.parse({ focus: "monitoring" })).toEqual({
       focus: INCIDENT_STATE.MONITORING,
-      resolution: "requested",
-      received: "MONITORING",
+      resolution: "REQUESTED",
+      received: "monitoring",
     });
   });
 
   it("labels malformed recovery instead of treating it as a default", () => {
     expect(controlRoomSearchSchema.parse({ focus: "PAUSED" })).toEqual({
       focus: INCIDENT_STATE.TRIAGE,
-      resolution: "fallback",
+      resolution: "FALLBACK",
       received: '"PAUSED"',
     });
   });
@@ -35,7 +35,7 @@ describe("control-room search boundary", () => {
   it("uses enumwaii's safe received text for unusual boundary values", () => {
     expect(resolveControlRoomFocus(Symbol("focus"))).toEqual({
       focus: INCIDENT_STATE.TRIAGE,
-      resolution: "fallback",
+      resolution: "FALLBACK",
       received: "Symbol(focus)",
     });
   });

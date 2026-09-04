@@ -1,3 +1,4 @@
+import { em, type InferEnumwaii } from "enumwaii";
 import { z } from "zod";
 
 import {
@@ -6,7 +7,9 @@ import {
   type IncidentState,
 } from "./incidents";
 
-export type FocusResolution = "requested" | "default" | "fallback";
+const focusResolutions = em(["REQUESTED", "DEFAULT", "FALLBACK"]);
+export const FOCUS_RESOLUTION = focusResolutions.enum;
+export type FocusResolution = InferEnumwaii<typeof focusResolutions>;
 
 export interface ControlRoomFocus {
   readonly focus: IncidentState;
@@ -28,7 +31,7 @@ export function resolveControlRoomFocus(input: unknown): ControlRoomFocus {
       focus: incidentStateSchema.parse(input, {
         default: INCIDENT_STATE.MITIGATING,
       }),
-      resolution: "default",
+      resolution: FOCUS_RESOLUTION.DEFAULT,
       received: null,
     };
   }
@@ -37,7 +40,7 @@ export function resolveControlRoomFocus(input: unknown): ControlRoomFocus {
   if (parsed.success) {
     return {
       focus: parsed.value,
-      resolution: "requested",
+      resolution: FOCUS_RESOLUTION.REQUESTED,
       received: parsed.value,
     };
   }
@@ -46,7 +49,7 @@ export function resolveControlRoomFocus(input: unknown): ControlRoomFocus {
     focus: incidentStateSchema.parse(input, {
       fallback: INCIDENT_STATE.TRIAGE,
     }),
-    resolution: "fallback",
+    resolution: FOCUS_RESOLUTION.FALLBACK,
     received: parsed.error.receivedText,
   };
 }

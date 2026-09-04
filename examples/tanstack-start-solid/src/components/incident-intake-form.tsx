@@ -1,3 +1,4 @@
+import { NOTICE_TONE, type NoticeTone } from "~/domain/presentation";
 import { createForm } from "@tanstack/solid-form";
 import { For, Show, createSignal } from "solid-js";
 import { z } from "zod";
@@ -23,7 +24,7 @@ interface IncidentDraft {
 }
 
 interface SubmissionNotice {
-  readonly tone: "success" | "error";
+  readonly tone: NoticeTone;
   readonly message: string;
 }
 
@@ -48,16 +49,16 @@ export function IncidentIntakeForm(props: IncidentIntakeFormProps) {
         props.onCreated(created);
         form.reset();
         setNotice({
-          tone: "success",
+          tone: NOTICE_TONE.SUCCESS,
           message: `${created.id} added to the live incident board.`,
         });
       } catch (error) {
-        setNotice({ tone: "error", message: errorMessage(error) });
+        setNotice({ tone: NOTICE_TONE.ERROR, message: errorMessage(error) });
       }
     },
     onSubmitInvalid: () => {
       setNotice({
-        tone: "error",
+        tone: NOTICE_TONE.ERROR,
         message: "Complete the required fields before opening the incident.",
       });
     },

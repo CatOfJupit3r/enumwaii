@@ -7,16 +7,16 @@ This is a runnable Vue 3.5 + Vite application showing enumwaii inside a normal f
 From the repository root, after installing workspace dependencies:
 
 ```sh
-pnpm --filter @enumwaii/example-vue dev
+pnpm --dir examples/vue dev
 ```
 
 The package also exposes the usual Vite commands:
 
 ```sh
-pnpm --filter @enumwaii/example-vue build
-pnpm --filter @enumwaii/example-vue preview
-pnpm --filter @enumwaii/example-vue test
-pnpm --filter @enumwaii/example-vue test:types
+pnpm --dir examples/vue build
+pnpm --dir examples/vue preview
+pnpm --dir examples/vue test
+pnpm --dir examples/vue test:types
 ```
 
 ## Tour

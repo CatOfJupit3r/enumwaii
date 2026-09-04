@@ -57,8 +57,8 @@ export const Dashboard: FC<DashboardProps> = ({ orders }) => (
           </div>
           <aside class="hero-aside">
             <strong>Run it without Docker</strong>
-            <code>pnpm --filter</code>
-            <code>@enumwaii/example-hono-drizzle dev</code>
+            <code>pnpm --dir examples/hono</code>
+            <code>dev</code>
             <code>→ http://localhost:3000</code>
           </aside>
         </section>

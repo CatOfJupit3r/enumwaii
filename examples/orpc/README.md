@@ -3,7 +3,7 @@
 Run the independently packaged service from the repository root:
 
 ```sh
-pnpm --filter @enumwaii/example-orpc dev
+pnpm --dir examples/orpc dev
 ```
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000). The responsive console loads the current process-local jobs and sends every interaction through the real oRPC `OpenAPIHandler`; the UI has no fixtures or proxy endpoints.
@@ -54,10 +54,10 @@ Submit the same request with `expectedVersion: 9` to see typed `VERSION_CONFLICT
 ## Build, run, and validate
 
 ```sh
-pnpm --filter @enumwaii/example-orpc test
-pnpm --filter @enumwaii/example-orpc test:types
-pnpm --filter @enumwaii/example-orpc build
-pnpm --filter @enumwaii/example-orpc start
+pnpm --dir examples/orpc test
+pnpm --dir examples/orpc test:types
+pnpm --dir examples/orpc build
+pnpm --dir examples/orpc start
 pnpm exec prettier --check examples/orpc
 ```
 

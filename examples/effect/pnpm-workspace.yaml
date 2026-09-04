@@ -1,0 +1,11 @@
+packages:
+  - "."
+
+savePrefix: ""
+minimumReleaseAge: 1440
+minimumReleaseAgeStrict: true
+blockExoticSubdeps: true
+strictDepBuilds: true
+
+allowBuilds:
+  "esbuild@0.28.2": true

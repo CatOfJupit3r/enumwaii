@@ -16,7 +16,7 @@
     "@elysia/node": "1.4.6",
     "@sinclair/typebox": "0.34.52",
     "elysia": "1.4.30",
-    "enumwaii": "workspace:*",
+    "enumwaii": "file:../../packages/enumwaii",
     "openapi-types": "12.1.3"
   },
   "devDependencies": {

@@ -8,10 +8,10 @@ Cloudflare workerd runs the same database-free order-status routes. That keeps t
 
 | Host | Native boundary | What runs | Development command |
 | --- | --- | --- | --- |
-| Node.js | `@hono/node-server` | Complete dashboard, API, Drizzle repository, migrations, and PGlite. | `pnpm --filter @enumwaii/example-hono-drizzle dev` |
-| Bun | `Bun.serve` | Complete dashboard and the same Drizzle + PGlite database application. | `pnpm --filter @enumwaii/example-hono-drizzle dev:bun` |
-| Deno | `Deno.serve` | Complete dashboard and the same Drizzle + PGlite database application. | `pnpm --filter @enumwaii/example-hono-drizzle dev:deno` |
-| Cloudflare `workerd` | Hono Worker default export | Shared status catalog, parsing, and Standard Schema routes without a DB. | `pnpm --filter @enumwaii/example-hono-drizzle dev:cloudflare` |
+| Node.js | `@hono/node-server` | Complete dashboard, API, Drizzle repository, migrations, and PGlite. | `pnpm --dir examples/hono dev` |
+| Bun | `Bun.serve` | Complete dashboard and the same Drizzle + PGlite database application. | `pnpm --dir examples/hono dev:bun` |
+| Deno | `Deno.serve` | Complete dashboard and the same Drizzle + PGlite database application. | `pnpm --dir examples/hono dev:deno` |
+| Cloudflare `workerd` | Hono Worker default export | Shared status catalog, parsing, and Standard Schema routes without a DB. | `pnpm --dir examples/hono dev:cloudflare` |
 
 The Wrangler configuration explicitly enables `no_nodejs_compat` and `no_nodejs_compat_v2`. The Cloudflare development server and compatibility test therefore prove that the portable route slice does not acquire Node polyfills accidentally.
 
@@ -21,13 +21,13 @@ From the repository root:
 
 ```sh
 # Node.js
-pnpm --filter @enumwaii/example-hono-drizzle dev
+pnpm --dir examples/hono dev
 
 # Bun
-pnpm --filter @enumwaii/example-hono-drizzle dev:bun
+pnpm --dir examples/hono dev:bun
 
 # Deno
-pnpm --filter @enumwaii/example-hono-drizzle dev:deno
+pnpm --dir examples/hono dev:deno
 ```
 
 Open <http://localhost:3000>. The dashboard lists persisted orders and exposes:
@@ -42,7 +42,7 @@ PGlite stores Node data in `.data/orders`, Bun data in `.data/orders-bun`, and D
 ## Run the Cloudflare boundary worker
 
 ```sh
-pnpm --filter @enumwaii/example-hono-drizzle dev:cloudflare
+pnpm --dir examples/hono dev:cloudflare
 ```
 
 Wrangler serves the Worker locally, normally at <http://localhost:8787>. It does not require a Cloudflare account. The Worker exposes `GET /api/statuses`, `GET /api/status`, and `POST /api/status/inspect`, which are the exact routes mounted by the complete database application.
@@ -101,25 +101,25 @@ The checked-in Drizzle migration creates the PostgreSQL enum and `orders` table.
 ## Commands
 
 ```sh
-pnpm --filter @enumwaii/example-hono-drizzle dev
-pnpm --filter @enumwaii/example-hono-drizzle build
-pnpm --filter @enumwaii/example-hono-drizzle start
-pnpm --filter @enumwaii/example-hono-drizzle test
-pnpm --filter @enumwaii/example-hono-drizzle test:types
+pnpm --dir examples/hono dev
+pnpm --dir examples/hono build
+pnpm --dir examples/hono start
+pnpm --dir examples/hono test
+pnpm --dir examples/hono test:types
 
 # Execute the shared HTTP contract in each native runtime
-pnpm --filter @enumwaii/example-hono-drizzle test:bun
-pnpm --filter @enumwaii/example-hono-drizzle test:deno
-pnpm --filter @enumwaii/example-hono-drizzle test:cloudflare
-pnpm --filter @enumwaii/example-hono-drizzle test:runtimes
+pnpm --dir examples/hono test:bun
+pnpm --dir examples/hono test:deno
+pnpm --dir examples/hono test:cloudflare
+pnpm --dir examples/hono test:runtimes
 
 # Root shortcut for the same cross-runtime suite
 pnpm test:runtimes
 
 # Apply the checked-in migration, inspect schema drift, or open Drizzle Studio
-pnpm --filter @enumwaii/example-hono-drizzle db:migrate
-pnpm --filter @enumwaii/example-hono-drizzle db:push
-pnpm --filter @enumwaii/example-hono-drizzle db:studio
+pnpm --dir examples/hono db:migrate
+pnpm --dir examples/hono db:push
+pnpm --dir examples/hono db:studio
 ```
 
 The Node-focused tests construct the app through `createApp`, use `app.request`, and connect to an isolated in-memory PGlite database. They cover persistence, PostgreSQL enum metadata/defaults, scalar boundary failures, transition conflicts, stale versions, and strict historical-row rejection.

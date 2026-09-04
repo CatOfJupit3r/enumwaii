@@ -1,7 +1,7 @@
 # Elysia + enumwaii
 
 ```sh
-pnpm --filter @enumwaii/example-elysia dev
+pnpm --dir examples/elysia dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) for the Theme Boundary Console: a responsive, interactive playground backed by the real API. It runs Elysia 1.4 on Node through the official `@elysia/node` adapter. Set `PORT` to change the default port of `3000`.
@@ -92,10 +92,10 @@ Direct Standard Schema failures become customized `422 INVALID_THEME_REQUEST` re
 ## Build and verify
 
 ```sh
-pnpm --filter @enumwaii/example-elysia test
-pnpm --filter @enumwaii/example-elysia test:types
-pnpm --filter @enumwaii/example-elysia build
-pnpm --filter @enumwaii/example-elysia start
+pnpm --dir examples/elysia test
+pnpm --dir examples/elysia test:types
+pnpm --dir examples/elysia build
+pnpm --dir examples/elysia start
 ```
 
 `build` emits an ESM Node application to `dist/server.mjs`; `start` runs that production artifact. Tests import the configured app and use Fetch requests without importing `src/server.ts`, so they never bind a port.

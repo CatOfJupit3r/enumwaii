@@ -40,7 +40,9 @@ pnpm test:runtimes
 
 `pnpm check` is the release gate. It checks formatting and lint, runtime and type tests, package skills, builds, emitted JSDoc, publint, and package type resolution. Run it before requesting review.
 
-`pnpm test:runtimes` is the opt-in cross-runtime gate and additionally requires Bun 1.4 and Deno 2.9. Cloudflare's local `workerd` binary is installed with the workspace dependencies. CI installs the pinned Bun and Deno versions for this suite, so they are not prerequisites for ordinary Node-focused work.
+Examples are versioned in this repository but intentionally live outside the root pnpm workspace so their transitive dependencies do not enter the committed root lockfile. `pnpm check` builds the local `enumwaii` package, installs each example independently without a frozen lockfile, and runs its tests, type checks, and build. Generated example lockfiles are ignored. To work on one example from the repository root, run `pnpm --filter enumwaii build`, then `pnpm --dir examples/<name> install --no-frozen-lockfile` and `pnpm --dir examples/<name> <script>`.
+
+`pnpm test:runtimes` is the opt-in cross-runtime gate and additionally requires Bun 1.4 and Deno 2.9. Cloudflare's local `workerd` binary is installed with the Hono example dependencies. CI installs the pinned Bun and Deno versions for this suite, so they are not prerequisites for ordinary Node-focused work.
 
 ## Repository map
 
@@ -93,3 +95,7 @@ A pull request should:
 Core validation starts on every pull request. Extended validation is queued automatically and waits at the protected `extended-validation` environment until a maintainer approves it. Once approved, it checks the exact current head across all examples, documentation, Node 18, Bun, Deno, and Cloudflare Workers. A new push cancels the older run and requires approval for the new head.
 
 Maintainers may ask to split a pull request when independent changes make its behavior or release impact difficult to review.
+
+## Dependency alert triage
+
+The committed root lockfile intentionally covers only the published packages and documentation workspace. Example manifests remain visible to Dependabot for direct-dependency alerts, while their generated lockfiles are ignored to avoid transitive example alerts. If the repository should suppress those remaining direct alerts too, a maintainer must configure a Dependabot auto-triage rule in **Settings → Code security** that auto-dismisses alerts whose manifest path matches `examples/**`. GitHub stores this rule in repository settings rather than `dependabot.yml`.

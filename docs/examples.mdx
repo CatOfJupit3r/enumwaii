@@ -11,7 +11,7 @@ The repository examples are independent applications with package manifests, run
   service. Use the checked-in runtime commands for those environments.
 </Callout>
 
-The hosted links import the complete repository so the unpublished `workspace:*` copy of enumwaii remains available. They install only the selected example and its dependencies, then build the local library before starting.
+The hosted links import the complete repository so the unpublished local copy of enumwaii remains available through each example's `file:` dependency. They install only the selected example and its dependencies, then build the local library before starting.
 
 <Cards>
   <ExampleCard
@@ -21,7 +21,7 @@ The hosted links import the complete repository so the unpublished `workspace:*`
   >
     [Open in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Anextjs&file=examples%2Fnextjs%2Fcomponents%2Fboundary-lab.tsx) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/nextjs)
 
-    `pnpm --filter @enumwaii/example-nextjs dev`
+    `pnpm --dir examples/nextjs dev`
 
   </ExampleCard>
   <ExampleCard
@@ -31,7 +31,7 @@ The hosted links import the complete repository so the unpublished `workspace:*`
   >
     [Open in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Atanstack-start-solid&file=examples%2Ftanstack-start-solid%2Fsrc%2Froutes%2Fvalidation.tsx) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/tanstack-start-solid)
 
-    `pnpm --filter @enumwaii/example-tanstack-start-solid dev`
+    `pnpm --dir examples/tanstack-start-solid dev`
 
   </ExampleCard>
   <ExampleCard
@@ -41,7 +41,7 @@ The hosted links import the complete repository so the unpublished `workspace:*`
   >
     [Open in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Avue&file=examples%2Fvue%2Fsrc%2Fcomponents%2FBoundaryPlayground.vue) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/vue)
 
-    `pnpm --filter @enumwaii/example-vue dev`
+    `pnpm --dir examples/vue dev`
 
   </ExampleCard>
   <ExampleCard
@@ -51,7 +51,7 @@ The hosted links import the complete repository so the unpublished `workspace:*`
   >
     [Run the Node showcase in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Ahono&file=examples%2Fhono%2Fsrc%2Froutes%2Fapi.ts) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/hono)
 
-    `pnpm --filter @enumwaii/example-hono-drizzle dev`
+    `pnpm --dir examples/hono dev`
 
   </ExampleCard>
   <ExampleCard
@@ -61,7 +61,7 @@ The hosted links import the complete repository so the unpublished `workspace:*`
   >
     [Open in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Aelysia&file=examples%2Felysia%2Fsrc%2Fhttp%2Ftheme-plugin.ts) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/elysia)
 
-    `pnpm --filter @enumwaii/example-elysia dev`
+    `pnpm --dir examples/elysia dev`
 
   </ExampleCard>
   <ExampleCard
@@ -71,7 +71,7 @@ The hosted links import the complete repository so the unpublished `workspace:*`
   >
     [Open in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Aorpc&file=examples%2Forpc%2Fsrc%2Frouter.ts) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/orpc)
 
-    `pnpm --filter @enumwaii/example-orpc dev`
+    `pnpm --dir examples/orpc dev`
 
   </ExampleCard>
   <ExampleCard
@@ -81,7 +81,7 @@ The hosted links import the complete repository so the unpublished `workspace:*`
   >
     [Run the CLI in StackBlitz](https://stackblitz.com/fork/github/CatOfJupit3r/enumwaii/tree/main?startScript=stackblitz%3Aeffect&file=examples%2Feffect%2Fsrc%2Fjob-workflow.ts&view=editor&terminalHeight=50) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/effect)
 
-    `pnpm --filter @enumwaii/example-effect dev`
+    `pnpm --dir examples/effect dev`
 
   </ExampleCard>
   <ExampleCard
@@ -91,7 +91,7 @@ The hosted links import the complete repository so the unpublished `workspace:*`
   >
     [Open a GitHub Codespace](https://codespaces.new/CatOfJupit3r/enumwaii?quickstart=1) · [View source](https://github.com/CatOfJupit3r/enumwaii/tree/main/examples/nestjs)
 
-    `pnpm --filter @enumwaii/example-nestjs-mongoose dev`
+    `pnpm --dir examples/nestjs dev`
 
   </ExampleCard>
 </Cards>

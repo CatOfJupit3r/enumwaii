@@ -35,11 +35,11 @@ The response rejects `PAUSED` under the default-only policy and returns `QUEUED`
 From the repository root:
 
 ```sh
-pnpm --filter @enumwaii/example-nextjs dev
-pnpm --filter @enumwaii/example-nextjs build
-pnpm --filter @enumwaii/example-nextjs start
-pnpm --filter @enumwaii/example-nextjs test
-pnpm --filter @enumwaii/example-nextjs test:types
+pnpm --dir examples/nextjs dev
+pnpm --dir examples/nextjs build
+pnpm --dir examples/nextjs start
+pnpm --dir examples/nextjs test
+pnpm --dir examples/nextjs test:types
 ```
 
 The app uses no remote fonts, images, database, or environment variables, so it can run locally immediately after workspace dependencies are installed.

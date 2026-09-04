@@ -15,9 +15,9 @@ import {
 const usageText = `Enumwaii / Effect job control room
 
 Usage:
-  pnpm --filter @enumwaii/example-effect dev
-  pnpm --filter @enumwaii/example-effect dev -- --state QUEUED --command START
-  pnpm --filter @enumwaii/example-effect dev -- --json '{"state":"QUEUED","command":"START"}' --id build-42
+  pnpm --dir examples/effect dev
+  pnpm --dir examples/effect dev -- --state QUEUED --command START
+  pnpm --dir examples/effect dev -- --json '{"state":"QUEUED","command":"START"}' --id build-42
 
 Options:
   --state <value>    Claimed external job state

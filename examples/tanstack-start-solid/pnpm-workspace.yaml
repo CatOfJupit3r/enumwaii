@@ -1,0 +1,16 @@
+packages:
+  - "."
+
+savePrefix: ""
+minimumReleaseAge: 1440
+minimumReleaseAgeStrict: true
+blockExoticSubdeps: true
+strictDepBuilds: true
+
+allowBuilds:
+  "esbuild@0.28.1 || 0.28.2": true
+  "workerd@1.20260828.1": true
+
+# 6.4.1 omits dist/types.js even though its entry point exports that file.
+overrides:
+  "@solid-primitives/utils": 6.4.0

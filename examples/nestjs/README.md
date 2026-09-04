@@ -7,8 +7,8 @@ An independently runnable order service and MongoDB operations console. It uses 
 From the repository root:
 
 ```sh
-pnpm --filter @enumwaii/example-nestjs-mongoose db:up
-pnpm --filter @enumwaii/example-nestjs-mongoose dev
+pnpm --dir examples/nestjs db:up
+pnpm --dir examples/nestjs dev
 ```
 
 The Compose service exposes MongoDB on `127.0.0.1:27017`; the application uses `mongodb://127.0.0.1:27017/enumwaii_nest_orders` by default. Override it with `MONGODB_URI`. Override the HTTP listener with `PORT` or `HOST`.
@@ -18,9 +18,9 @@ Both `dev` and `build` compile directly with SWC before running Node. The checke
 `@nestjs/common` is intentionally pinned to `12.0.0`: the published `12.0.1` artifact omits runtime `.js` files that its ESM interface barrels export. Nest core, platform, and testing stay on `12.0.1`, whose peer ranges accept `12.0.0`.
 
 ```sh
-pnpm --filter @enumwaii/example-nestjs-mongoose build
-pnpm --filter @enumwaii/example-nestjs-mongoose start
-pnpm --filter @enumwaii/example-nestjs-mongoose db:down
+pnpm --dir examples/nestjs build
+pnpm --dir examples/nestjs start
+pnpm --dir examples/nestjs db:down
 ```
 
 `db:down` stops the service but preserves the named Mongo volume.
@@ -88,8 +88,8 @@ The runtime policy for an already-corrupt historical row is fail closed. `hydrat
 ## Tests without Docker
 
 ```sh
-pnpm --filter @enumwaii/example-nestjs-mongoose test
-pnpm --filter @enumwaii/example-nestjs-mongoose test:types
+pnpm --dir examples/nestjs test
+pnpm --dir examples/nestjs test:types
 ```
 
 The suite is intentionally separated from runtime infrastructure:

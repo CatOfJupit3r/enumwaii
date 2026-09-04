@@ -49,11 +49,11 @@ The package's `tsconfig.json` intentionally does not enable `verbatimModuleSynta
 Run from the repository root after installing workspace dependencies:
 
 ```sh
-pnpm --filter @enumwaii/example-tanstack-start-solid dev
-pnpm --filter @enumwaii/example-tanstack-start-solid test
-pnpm --filter @enumwaii/example-tanstack-start-solid test:types
-pnpm --filter @enumwaii/example-tanstack-start-solid build
-pnpm --filter @enumwaii/example-tanstack-start-solid start
+pnpm --dir examples/tanstack-start-solid dev
+pnpm --dir examples/tanstack-start-solid test
+pnpm --dir examples/tanstack-start-solid test:types
+pnpm --dir examples/tanstack-start-solid build
+pnpm --dir examples/tanstack-start-solid start
 ```
 
 `dev` serves the application at `http://localhost:3000`. `build` emits the Nitro production server to `.output`; `start` runs that server. `preview` is also available for Vite preview workflows.

@@ -10,7 +10,7 @@
     "test:types": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "enumwaii": "workspace:*",
+    "enumwaii": "file:../../packages/enumwaii",
     "vue": "3.5.42"
   },
   "devDependencies": {

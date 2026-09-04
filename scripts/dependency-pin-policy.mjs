@@ -26,7 +26,7 @@ function expectedSpecifier(manifest, section) {
   }
 
   if (manifest.private === true || section === "devDependencies") {
-    return "an exact SemVer version or workspace:*";
+    return "an exact SemVer version, workspace:*, or a local file: dependency";
   }
 
   return "a caret SemVer range or workspace:^";
@@ -42,7 +42,11 @@ function isAllowedSpecifier(manifest, section, specifier) {
   }
 
   if (manifest.private === true || section === "devDependencies") {
-    return specifier === "workspace:*" || isExactVersion(specifier);
+    return (
+      specifier === "workspace:*" ||
+      specifier.startsWith("file:") ||
+      isExactVersion(specifier)
+    );
   }
 
   return specifier === "workspace:^" || isCaretRange(specifier);

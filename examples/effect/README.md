@@ -3,7 +3,7 @@
 Run the operator console directly from the repository root:
 
 ```sh
-pnpm --filter @enumwaii/example-effect dev
+pnpm --dir examples/effect dev
 ```
 
 With no arguments it prints a control-room overview and executes a small, in-memory scenario:
@@ -23,19 +23,19 @@ The console also accepts external command input so edge cases can be tried witho
 
 ```sh
 # accepted: exit 0
-pnpm --filter @enumwaii/example-effect dev -- --state QUEUED --command START
+pnpm --dir examples/effect dev -- --state QUEUED --command START
 
 # malformed enum input: exit 1
-pnpm --filter @enumwaii/example-effect dev -- --state WAITING --command START
+pnpm --dir examples/effect dev -- --state WAITING --command START
 
 # valid command, but illegal from QUEUED: exit 1
-pnpm --filter @enumwaii/example-effect dev -- --state QUEUED --command RETRY
+pnpm --dir examples/effect dev -- --state QUEUED --command RETRY
 
 # valid state/command, but stale versus the seeded QUEUED job: exit 1
-pnpm --filter @enumwaii/example-effect dev -- --state RUNNING --command START
+pnpm --dir examples/effect dev -- --state RUNNING --command START
 
 # JSON is decoded as unknown at the same boundary
-pnpm --filter @enumwaii/example-effect dev -- --json '{"state":"QUEUED","command":"START"}' --id build-42
+pnpm --dir examples/effect dev -- --json '{"state":"QUEUED","command":"START"}' --id build-42
 ```
 
 `--help` lists all options. Usage errors return exit code 2; malformed input, illegal transitions, stale state, and missing jobs return exit code 1. The default scenario catches and reports expected workflow failures so the overview itself completes successfully.
@@ -53,11 +53,11 @@ The repository is deliberately in-memory and synchronous. It does not include HT
 ## Scripts and validation
 
 ```sh
-pnpm --filter @enumwaii/example-effect dev
-pnpm --filter @enumwaii/example-effect build
-pnpm --filter @enumwaii/example-effect start
-pnpm --filter @enumwaii/example-effect test
-pnpm --filter @enumwaii/example-effect run test:types
+pnpm --dir examples/effect dev
+pnpm --dir examples/effect build
+pnpm --dir examples/effect start
+pnpm --dir examples/effect test
+pnpm --dir examples/effect run test:types
 ```
 
 `build` uses tsdown to produce the Node ESM bundle in `dist/`. The full workspace may need its root install/build step first when workspace importers have changed; the package intentionally keeps its own manifest, TypeScript config, and build config.

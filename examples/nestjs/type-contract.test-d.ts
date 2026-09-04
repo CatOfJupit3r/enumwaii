@@ -1,33 +1,36 @@
 import { em } from "enumwaii";
-
 import {
-  assertOrderTransition,
-  describeOrderStatus,
-  ORDER_STATUS,
-  type OrderStatus,
-} from "./src/domain/order-status";
-import type { RawOrderDocument } from "./src/persistence/order.hydrator";
-import type { RawOrderStatus } from "./src/persistence/order.schema";
+  assertTicketTransition,
+  describeTicketStatus,
+  SEVERITY,
+  TICKET_STATUS,
+  TONE,
+  type Tone,
+  type TicketStatus,
+} from "./src/domain/ticket-status";
+import type { RawTicketDocument } from "./src/persistence/ticket.hydrator";
+import type { RawTicketStatus } from "./src/persistence/ticket.schema";
 
 declare const rawString: string;
-declare const rawDatabaseStatus: RawOrderStatus;
-declare const persistedOrder: RawOrderDocument;
+declare const rawDatabaseStatus: RawTicketStatus;
+declare const persistedTicket: RawTicketDocument;
 
 // @ts-expect-error Untrusted strings must cross an enumwaii parser boundary.
-describeOrderStatus(rawString);
-
+describeTicketStatus(rawString);
 // @ts-expect-error Mongoose's raw status union is deliberately not branded.
-assertOrderTransition(rawDatabaseStatus, ORDER_STATUS.PAID);
-
+assertTicketTransition(rawDatabaseStatus, TICKET_STATUS.RESOLVED);
 // @ts-expect-error A raw persisted field cannot masquerade as a domain member.
-const unhydratedStatus: OrderStatus = persistedOrder.status;
+const unhydratedStatus: TicketStatus = persistedTicket.status;
 
-const shipmentStatuses = em(["PENDING", "IN_TRANSIT"]);
-const SHIPMENT_STATUS = shipmentStatuses.enum;
-
+const externalStatuses = em({ OPEN: "OPEN", SUSPENDED: "suspended" });
 // @ts-expect-error An overlapping member owned by another enumwaii is foreign.
-describeOrderStatus(SHIPMENT_STATUS.PENDING);
-
-assertOrderTransition(ORDER_STATUS.PENDING, ORDER_STATUS.PAID);
-
+describeTicketStatus(externalStatuses.enum.OPEN);
+assertTicketTransition(TICKET_STATUS.OPEN, TICKET_STATUS.IN_PROGRESS);
+void SEVERITY.NORMAL;
 void unhydratedStatus;
+
+const validTone: Tone = TONE.BLUE;
+// @ts-expect-error Presentation tones are owned members, too.
+const rawTone: Tone = "BLUE";
+void validTone;
+void rawTone;

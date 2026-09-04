@@ -8,7 +8,7 @@ export class MongoIdPipe implements PipeTransform<unknown, string> {
       !/^[\da-f]{24}$/iu.test(value) ||
       !Types.ObjectId.isValid(value)
     ) {
-      throw new BadRequestException("Invalid order id");
+      throw new BadRequestException("Invalid ticket id");
     }
     return value;
   }

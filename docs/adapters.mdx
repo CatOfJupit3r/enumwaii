@@ -174,9 +174,14 @@ export const roleQueryParser = createEnumwaiiQueryParser(roles, ROLE.USER);
 When the default depends on component state or props, create it inside the component:
 
 ```tsx
+// @jsx: react-jsx
 import { useQueryState } from "nuqs";
+import { em } from "enumwaii";
 import { createEnumwaiiQueryParser } from "enumwaii/nuqs";
-import { ROLE, roles, type Role } from "./roles";
+
+const roles = em(["ADMIN", "USER"]);
+const ROLE = roles.enum;
+type Role = (typeof roles)["~type"];
 
 export function RoleFilter({ defaultRole }: { defaultRole: Role }) {
   const parser = createEnumwaiiQueryParser(roles, defaultRole);

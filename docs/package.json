@@ -26,6 +26,7 @@
     "@types/react-dom": "19.2.5",
     "enumwaii": "workspace:*",
     "fumadocs-twoslash": "3.3.0",
+    "nuqs": "2.10.1",
     "postcss": "8.5.26",
     "premove": "4.0.0",
     "tailwindcss": "4.3.3",

@@ -93,6 +93,9 @@ importers:
       fumadocs-twoslash:
         specifier: 3.3.0
         version: 3.3.0(e92eba567982b958685492afd12aa28a)
+      nuqs:
+        specifier: 2.10.1
+        version: 2.10.1(next@16.3.3(@babel/core@7.29.7(supports-color@10.2.2))(@types/node@26.4.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
       postcss:
         specifier: 8.5.26
         version: 8.5.26

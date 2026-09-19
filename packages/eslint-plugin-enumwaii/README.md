@@ -80,6 +80,7 @@ Legacy presets are available as `recommended` and `recommended-type-checked`.
 | `no-raw-enum-comparison` | Yes | Replace raw comparison and `switch` literals with owned members. |
 | `no-raw-enum-member` | Yes | Use owned members and composition APIs in subsets and mappings. |
 | `no-union-property-in` | Yes | Prefer enumwaii discriminants to structural `in` narrowing. |
+| `prefer-native-schema-adapters` | Yes | Use enumwaii's Zod or Valibot adapter instead of rebuilding schemas from member views. |
 
 `enforce-enum-casing` and `no-object-em` have options. For casing, set `valueCasing` to `"constant"` (the default), `"kebab"`, or `"snake"`; object keys always remain `CONSTANT_CASE`. Use `ignoredNamePatterns` or `ignoredFilePatterns` with `*`, `**`, and `?` wildcards to skip both casing checks for selected declarations. The other rules have no options, and none of the rules autofix provenance-sensitive code.
 
@@ -129,6 +130,8 @@ Strong exceptions include provider SDK enums, provider event identifiers and sco
 The rule checks `em(...)` and `new Enumwaii(...)`, including named import aliases and namespace imports from `enumwaii`, TypeScript expression wrappers, local constant aliases, and local TypeScript enums. Without type services, imported inputs, parameters, and function results whose shape is unknown are outside its scope. Configure the type-checked preset with project services to detect these object inputs too; arrays and tuples remain allowed. Unknown/`any` types cannot establish an object input. Redundancy checking is limited to resolved object literals.
 
 Exceptions affect only this rule. Casing and usage-site magic-string rules remain active. If a required external literal spelling conflicts with casing, configure `enforce-enum-casing` separately for that specific declaration using its existing name override; keep internal keys `CONSTANT_CASE`. Importing a provider's enum directly also avoids duplicating its literal definitions. No autofix is offered because changing values can break a contract.
+
+The type-aware preset also enables `prefer-native-schema-adapters`. It reports `z.enum`, `z.nativeEnum`, `v.enum`, and `v.picklist` when their input comes from an enumwaii member view, including extracted aliases. Use `emToZodSchema(enumeration)` or `emToValibotSchema(enumeration)` when a concrete library schema is required, or pass the declaration itself to a Standard Schema consumer.
 
 ## Oxlint
 

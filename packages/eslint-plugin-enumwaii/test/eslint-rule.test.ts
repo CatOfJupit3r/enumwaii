@@ -233,4 +233,17 @@ describe("eslint-plugin-enumwaii", () => {
       lintFixture("no-union-property-in", "union-property-in"),
     ).resolves.toEqual(["structuralUnionNarrowing"]);
   }, 30_000);
+
+  it("prefers native adapters over schemas rebuilt from enumwaii views", async () => {
+    await expect(
+      lintFixture("prefer-native-schema-adapters", "native-schema-adapters"),
+    ).resolves.toEqual([
+      "preferAdapter",
+      "preferAdapter",
+      "preferAdapter",
+      "preferAdapter",
+      "preferAdapter",
+      "preferAdapter",
+    ]);
+  }, 30_000);
 });

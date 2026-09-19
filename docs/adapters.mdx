@@ -75,11 +75,11 @@ declare const payload: unknown;
 // ---cut---
 import { z } from "zod";
 import { em } from "enumwaii";
-import { zodSchema } from "enumwaii/zod";
+import { emToZodSchema } from "enumwaii/zod";
 
 const roles = em(["ADMIN", "USER"]);
 const inputSchema = z.object({
-  role: zodSchema(roles),
+  role: emToZodSchema(roles),
 });
 
 const input = inputSchema.parse(payload);
@@ -117,11 +117,11 @@ declare const payload: unknown;
 // ---cut---
 import * as v from "valibot";
 import { em } from "enumwaii";
-import { valibotSchema } from "enumwaii/valibot";
+import { emToValibotSchema } from "enumwaii/valibot";
 
 const roles = em(["ADMIN", "USER"]);
 const inputSchema = v.object({
-  role: valibotSchema(roles),
+  role: emToValibotSchema(roles),
 });
 
 const input = v.parse(inputSchema, payload);

@@ -1,5 +1,5 @@
 import { em, type InferEnumwaii } from "enumwaii";
-import { zodSchema } from "enumwaii/zod";
+import { emToZodSchema } from "enumwaii/zod";
 import { z } from "zod";
 
 const tones = em(["CRITICAL", "ACTIVE", "WATCH", "CLEAR"]);
@@ -138,7 +138,7 @@ export const INITIAL_INCIDENTS = [
 
 export const transitionIncidentInputSchema = z.object({
   incidentId: z.string().trim().min(1),
-  to: zodSchema(incidentStates),
+  to: emToZodSchema(incidentStates),
   expectedVersion: z.number().int().nonnegative(),
 });
 
@@ -151,7 +151,7 @@ export const createIncidentInputSchema = z.object({
   title: z.string().trim().min(1),
   owner: z.string().trim().min(1),
   impact: z.string().trim().min(1),
-  state: zodSchema(incidentStates),
+  state: emToZodSchema(incidentStates),
 });
 
 export type CreateIncidentInput = z.output<typeof createIncidentInputSchema>;

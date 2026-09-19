@@ -112,9 +112,9 @@ An enumwaii declaration already is a Standard Schema schema. Compatible form, RP
 Use an adapter only when an API specifically requires its native schema type:
 
 ```ts
-import { zodSchema } from "enumwaii/zod";
+import { emToZodSchema } from "enumwaii/zod";
 
-export const workspaceRoleSchema = zodSchema(workspaceRoles);
+export const workspaceRoleSchema = emToZodSchema(workspaceRoles);
 ```
 
 Zod and Valibot are optional peers with separate `enumwaii/zod` and `enumwaii/valibot` entry points. Read [schemas and adapters](https://catofjupit3r.github.io/enumwaii/docs/adapters/) for installation and type-preserving examples.

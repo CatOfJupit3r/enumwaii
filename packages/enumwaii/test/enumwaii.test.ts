@@ -4,9 +4,9 @@ import { inspect } from "node:util";
 
 import { em, Enumwaii, EnumwaiiError, EnumwaiiParseError } from "../src/index";
 import { createEnumwaiiQueryParser } from "../src/adapters/nuqs";
-import { valibotSchema } from "../src/adapters/valibot";
+import { emToValibotSchema } from "../src/adapters/valibot";
 import { lowercase, uppercase } from "../src/derive-with";
-import { zodSchema } from "../src/adapters/zod";
+import { emToZodSchema } from "../src/adapters/zod";
 import * as v from "valibot";
 
 const roles = em(["ADMIN", "USER", "GUEST"]);
@@ -69,8 +69,8 @@ describe("em", () => {
     expect(statuses["~standard"].validate("order-paid")).toEqual({
       value: STATUS.ORDER_PAID,
     });
-    expect(zodSchema(statuses).parse("order-paid")).toBe(STATUS.ORDER_PAID);
-    expect(v.parse(valibotSchema(statuses), "order-pending")).toBe(
+    expect(emToZodSchema(statuses).parse("order-paid")).toBe(STATUS.ORDER_PAID);
+    expect(v.parse(emToValibotSchema(statuses), "order-pending")).toBe(
       STATUS.ORDER_PENDING,
     );
 
@@ -181,10 +181,10 @@ describe("deserialization", () => {
   });
 
   it("offers optional Zod and Valibot adapters", () => {
-    expect(zodSchema(roles).parse("ADMIN")).toBe(ROLE.ADMIN);
-    expect(() => zodSchema(roles).parse("OWNER")).toThrow();
-    expect(v.parse(valibotSchema(roles), "USER")).toBe(ROLE.USER);
-    expect(() => v.parse(valibotSchema(roles), "OWNER")).toThrow();
+    expect(emToZodSchema(roles).parse("ADMIN")).toBe(ROLE.ADMIN);
+    expect(() => emToZodSchema(roles).parse("OWNER")).toThrow();
+    expect(v.parse(emToValibotSchema(roles), "USER")).toBe(ROLE.USER);
+    expect(() => v.parse(emToValibotSchema(roles), "OWNER")).toThrow();
   });
 
   it("creates a nuqs parser with validation and an owned default", () => {

@@ -80,6 +80,7 @@ For eslintrc configuration, use the `recommended` and `recommended-type-checked`
 | `no-raw-enum-comparison` | Type-aware | Yes | Replace raw comparison and `switch` literals with owned members. |
 | `no-raw-enum-member` | Type-aware | Yes | Use owned members and composition APIs for subsets and targeted mappings. |
 | `no-union-property-in` | Type-aware | Yes | Prefer an enumwaii case discriminant to structural `in` narrowing. |
+| `prefer-native-schema-adapters` | Type-aware | Yes | Prefer enumwaii's Zod or Valibot adapter over schemas rebuilt from member views. |
 
 `enforce-enum-casing`, `no-object-em`, and `no-manual-enum` have options; the other rules have no options. The rules do not autofix, so provenance-sensitive changes remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
 
@@ -408,6 +409,40 @@ const grants = roles.deriveTo(
 );
 const combined = em.combine([roles, permissions]);
 ```
+
+### `prefer-native-schema-adapters`
+
+Reports `z.enum`, `z.nativeEnum`, `v.enum`, and `v.picklist` calls that rebuild a schema from an enumwaii `.enum`, `.rawEnum`, `.cases`, `.values`, or `.rawValues` view. Extracted and imported aliases are traced through TypeScript symbols, while ordinary arrays and objects remain valid schema inputs.
+
+Use the library-specific adapter when an API requires a concrete schema type. If the receiving API supports Standard Schema, pass the enumwaii declaration directly without an adapter.
+
+#### Flagged
+
+```ts
+// @noErrors
+import { em } from "enumwaii";
+import { z } from "zod";
+
+const roles = em(["ADMIN", "USER"]);
+const RAW_ROLE = roles.rawEnum;
+const roleSchema = z.enum(RAW_ROLE);
+// @error: enumwaii/prefer-native-schema-adapters (preferAdapter) — preserve enumwaii validation and branded output.
+```
+
+#### Accepted
+
+```ts
+import { em } from "enumwaii";
+import { emToZodSchema } from "enumwaii/zod";
+
+const roles = em(["ADMIN", "USER"]);
+const roleSchema = emToZodSchema(roles);
+
+declare function acceptsStandardSchema(schema: typeof roles): void;
+acceptsStandardSchema(roles);
+```
+
+The rule has no autofix because adapter schemas can differ from reconstructed schemas in their inferred output types and error behavior. Reports: `preferAdapter`.
 
 ### `no-union-property-in`
 

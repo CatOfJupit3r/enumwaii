@@ -12,9 +12,9 @@ import type { EnumwaiiIdentityKeyMap, EnumwaiiValue } from "../types/enumwaii";
 /**
  * Creates a nuqs parser for an enumwaii declaration.
  *
- * Valid query values are returned as branded enumwaii members. Invalid values
- * follow nuqs parser semantics and resolve to the supplied default. The `nuqs`
- * peer dependency must be installed by the application.
+ * Valid query values are returned as branded enumwaii members.
+ * Invalid values follow nuqs parser semantics and resolve to the supplied default.
+ * The `nuqs` peer dependency must be installed by the application.
  *
  * @param enumeration Declaration whose members are valid query values.
  * @param defaultValue Owned member used when the query value is absent or invalid.

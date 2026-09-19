@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import * as v from "valibot";
-import { valibotSchema } from "enumwaii/valibot";
+import { emToValibotSchema } from "enumwaii/valibot";
 import { em, type InferEnumwaii } from "enumwaii";
 
 import {
@@ -30,7 +30,7 @@ class ParcelBoundaryError extends Error {
 const scanEventSchema = v.object({
   checkpoint: v.pipe(v.string(), v.minLength(2)),
   place: v.pipe(v.string(), v.minLength(2)),
-  courier: valibotSchema(courierSchema),
+  courier: emToValibotSchema(courierSchema),
 });
 
 function requireStatus(input: unknown, boundary: string): ParcelStatus {

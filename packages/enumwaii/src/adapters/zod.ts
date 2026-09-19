@@ -11,29 +11,27 @@ import type { Enumwaii } from "../enumwaii";
 import type { EnumwaiiIdentityKeyMap, EnumwaiiValue } from "../types/enumwaii";
 
 /**
- * Adapts an enumwaii declaration to a Zod schema for integrations that require
- * Zod's schema type.
+ * Adapts an enumwaii declaration to a Zod schema for integrations that require Zod's schema type.
  *
- * The returned custom schema accepts exactly the declaration's runtime string
- * members and infers the branded member union as its output. Use this optional
- * subpath when a Zod consumer cannot accept the declaration's native Standard
- * Schema implementation; parsing an invalid value follows Zod's normal error
- * behavior. The `zod` peer dependency must be installed by the application.
+ * The returned custom schema accepts exactly the declaration's runtime string members and infers the branded member union as its output.
+ * Use this optional subpath when a Zod consumer cannot accept the declaration's native Standard Schema implementation;
+ * parsing an invalid value follows Zod's normal error behavior.
+ * The `zod` peer dependency must be installed by the application.
  *
  * @param enumeration Declaration whose membership should be validated.
  * @returns A Zod schema typed as the declaration's branded member union.
  *
  * @example
  * ```ts
- * import { zodSchema } from "enumwaii/zod";
+ * import { emToZodSchema } from "enumwaii/zod";
  *
- * const role = zodSchema(roles).parse(input);
+ * const role = emToZodSchema(roles).parse(input);
  * ```
  *
  * @see https://zod.dev/
  * @see https://github.com/CatOfJupit3r/enumwaii/blob/main/docs/runtime-boundaries.md#standard-schema
  */
-export function zodSchema<
+export function emToZodSchema<
   TRaw extends string,
   TIdentity extends string,
   TKeys extends Readonly<Record<string, string>> = EnumwaiiIdentityKeyMap<TRaw>,

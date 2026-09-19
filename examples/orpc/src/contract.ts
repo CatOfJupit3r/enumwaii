@@ -1,6 +1,6 @@
 import { oc } from "@orpc/contract";
 import { em } from "enumwaii";
-import { zodSchema } from "enumwaii/zod";
+import { emToZodSchema } from "enumwaii/zod";
 import { z } from "zod";
 import {
   reservationStatuses,
@@ -14,13 +14,13 @@ const errorKinds = em([
   "VERSION_CONFLICT",
 ]);
 export const ERROR_KIND = errorKinds.enum;
-const statusFieldSchema = zodSchema(reservationStatuses);
-const errorKindSchema = zodSchema(errorKinds);
+const statusFieldSchema = emToZodSchema(reservationStatuses);
+const errorKindSchema = emToZodSchema(errorKinds);
 
 export const reservationSchema = z.strictObject({
   id: z.string().min(1),
   owner: z.string().min(1),
-  service: zodSchema(reservationServices),
+  service: emToZodSchema(reservationServices),
   partySize: z.int().min(1).max(12),
   status: statusFieldSchema,
   version: z.int().nonnegative(),
@@ -36,7 +36,7 @@ export const transitionInputSchema = z.strictObject({
 export const requestInputSchema = z.strictObject({
   owner: z.string().min(1),
   partySize: z.int().min(1).max(12),
-  service: zodSchema(reservationServices),
+  service: emToZodSchema(reservationServices),
 });
 export const transitionResultSchema = z.strictObject({
   reservation: reservationSummarySchema,

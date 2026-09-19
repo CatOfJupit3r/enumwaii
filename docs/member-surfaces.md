@@ -59,6 +59,8 @@ statuses.parse("ORDER_PAID"); // throws
 
 The keys are only the developer-facing object surface. `.values`, `.rawValues`, parsing, schemas, adapters, and derivation all use the mapped values.
 
+Member-level JSDoc is preserved from object properties to hover information on `.enum` members. Use a fully documented identity map such as `em({ /** ... */ READY: "READY" })` when every member needs documentation. TypeScript does not expose tuple-element comments through mapped property symbols, so comments inside `em([/* ... */ "READY"])` cannot appear on `enum.READY`. The `no-object-em` rule recognizes a fully documented object as this intentional documentation form.
+
 Extract member views once and reference members through the extracted constant:
 
 ```ts

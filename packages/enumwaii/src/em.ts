@@ -61,6 +61,9 @@ export interface Em {
    * Standard Schema validation, adapters, derivation, and declaration identity.
    * The object is copied, and its values must be unique.
    *
+   * TypeScript preserves JSDoc written on object properties when hovering the corresponding `.enum` members.
+   * Comments on tuple elements cannot be carried through a mapped return type by the TypeScript language service.
+   *
    * @param members Key-to-raw value members to own.
    * @returns An {@link Enumwaii} declaration whose public object views retain
    * the supplied keys while all value-oriented APIs use the mapped strings.

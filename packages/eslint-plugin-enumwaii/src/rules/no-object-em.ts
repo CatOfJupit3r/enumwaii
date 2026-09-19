@@ -64,11 +64,14 @@ function nameOf(node: Declaration): string | undefined {
 }
 
 /**
- * Prefer array declarations and reserve object inputs for documented external
- * contracts or existing compatibility constraints. All recommended presets
- * enable this rule without requiring type services; when present, type services
- * also identify imported or dynamically produced object inputs. Name exemptions never permit redundant literal
- * key/value mappings and do not disable casing or usage-site rules.
+ * Prefer array declarations and reserve object inputs for documented external contracts or existing compatibility constraints.
+ *
+ * All recommended presets enable this rule without requiring type services.
+ * When present, type services also identify imported or dynamically produced object inputs.
+ *
+ * Name exemptions never permit redundant literal key/value mappings,
+ * unless every member has JSDoc that must be preserved on the generated member surface.
+ * Exceptions do not disable casing or usage-site rules.
  *
  * @example Use array identity instead of an unnecessary object mapping.
  * ```ts
@@ -199,6 +202,20 @@ export const noObjectEmRule = createRule<Options, MessageIds>({
         );
       }
       if (!isObject) return;
+      const documentedMembers =
+        input.type === AST_NODE_TYPES.ObjectExpression &&
+        input.properties.length > 0 &&
+        input.properties.every(
+          (property) =>
+            property.type === AST_NODE_TYPES.Property &&
+            context.sourceCode
+              .getCommentsBefore(property)
+              .some(
+                (comment) =>
+                  comment.type === "Block" && comment.value.startsWith("*"),
+              ),
+        );
+      if (documentedMembers) return;
       const redundant =
         input.type === AST_NODE_TYPES.ObjectExpression &&
         input.properties.length > 0 &&

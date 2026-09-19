@@ -98,6 +98,33 @@ describe("no-object-em", () => {
     expect(await lint(source)).toEqual([]);
   });
 
+  it("allows fully documented object members so TypeScript can preserve JSDoc", async () => {
+    expect(
+      await lint(`
+        em({
+          /** Default state. */
+          NONE: "NONE",
+          /** Active state. */
+          ACTIVE: "ACTIVE",
+        });
+      `),
+    ).toEqual([]);
+  });
+
+  it("still rejects partially documented redundant objects", async () => {
+    expect(
+      (
+        await lint(`
+          em({
+            /** Default state. */
+            NONE: "NONE",
+            ACTIVE: "ACTIVE",
+          });
+        `)
+      ).map((message) => message.messageId),
+    ).toEqual(["redundantObject"]);
+  });
+
   it.each([
     { startsWith: "aws" },
     { endsWith: "Status" },

@@ -132,6 +132,8 @@ There are no automatic fixes. Preserve existing wire and persisted values when m
 
 Enabled in every recommended preset. Use `em(["IN_PROGRESS", "COMPLETED"])` for internal identities and new public APIs, including `PROGRESS_TYPE`. Keep display labels in a separate map indexed by extracted enum members. For existing enum subsets and derivations, use `.pick()`, `.omit()`, `.deriveTo()`, and `em.combine()` with owned members.
 
+A redundant identity object is accepted when every property has a JSDoc block. This is the supported member-documentation form because TypeScript preserves comments from named object properties on `.enum` hovers but cannot carry tuple-element comments into generated property symbols. Partially documented objects remain invalid.
+
 Reserve object inputs with distinct keys and values for **external-contract** constraints (AWS or other provider SDKs, provider events/scopes, protocol/media/browser/CSS/locale/runtime tokens) or **compatibility** constraints (existing database rows, saved files, historical messages, previously published values). A new public interface, URL, CLI/config choice, serialization, or lowercase spelling alone does not qualify. AI assistants should fix the representation or use composition, rather than disabling lint or renaming variables to fit an ignore pattern.
 
 ```js

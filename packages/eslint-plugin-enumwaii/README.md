@@ -101,7 +101,7 @@ Legacy presets are available as `recommended` and `recommended-type-checked`.
 
 ## no-object-em
 
-Enabled at error severity in all recommended presets. Prefer `em(["IN_PROGRESS", "COMPLETED"])`, including for new public APIs you control. Object mappings are an exception for values whose exact spelling is imposed by an external contract or existing compatibility requirement. Different keys and values alone do not establish that need.
+Enabled at error severity in all recommended presets. Prefer `em(["IN_PROGRESS", "COMPLETED"])`, including for new public APIs you control. Object mappings are an exception for values whose exact spelling is imposed by an external contract or existing compatibility requirement. A fully documented object is also accepted when named properties are required to preserve member-level JSDoc through TypeScript. Different keys and values alone do not establish an exception.
 
 ```js
 {

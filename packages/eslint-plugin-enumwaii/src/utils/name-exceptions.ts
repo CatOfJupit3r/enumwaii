@@ -35,71 +35,78 @@ type Matcher =
       endsWith?: never;
       contains?: never;
     };
-type Exception = {
+export type NameException = {
   name: Matcher;
   reason: (typeof EXCEPTION_REASON)[keyof typeof EXCEPTION_REASON];
   justification: string;
 };
-export type NameExceptionOptions = [{ ignore?: Exception[] }];
+export type NameExceptionOptions = [{ ignore?: NameException[] }];
+
+type RuleSchemaArray = Extract<
+  TSESLint.RuleMetaData<string>["schema"],
+  readonly unknown[]
+>;
+
+export const nameExceptionArraySchema: RuleSchemaArray[number] = {
+  type: VALUE_TYPE.ARRAY,
+  items: {
+    type: VALUE_TYPE.OBJECT,
+    additionalProperties: false,
+    required: Object.values(OPTION_KEY),
+    properties: {
+      name: {
+        oneOf: [
+          {
+            type: VALUE_TYPE.OBJECT,
+            additionalProperties: false,
+            minProperties: 1,
+            properties: {
+              [MATCHER_KEY.STARTS_WITH]: {
+                type: VALUE_TYPE.STRING,
+                minLength: 1,
+              },
+              [MATCHER_KEY.ENDS_WITH]: {
+                type: VALUE_TYPE.STRING,
+                minLength: 1,
+              },
+              [MATCHER_KEY.CONTAINS]: {
+                type: VALUE_TYPE.STRING,
+                minLength: 1,
+              },
+            },
+          },
+          {
+            type: VALUE_TYPE.OBJECT,
+            additionalProperties: false,
+            required: [MATCHER_KEY.REGEX],
+            properties: {
+              [MATCHER_KEY.REGEX]: {
+                type: VALUE_TYPE.STRING,
+                minLength: 1,
+              },
+            },
+          },
+        ],
+      },
+      reason: {
+        type: VALUE_TYPE.STRING,
+        enum: Object.values(EXCEPTION_REASON),
+      },
+      justification: {
+        type: VALUE_TYPE.STRING,
+        pattern: REGEX.NONBLANK,
+        minLength: 1,
+      },
+    },
+  },
+};
 
 export const nameExceptionSchema: TSESLint.RuleMetaData<string>["schema"] = [
   {
     type: VALUE_TYPE.OBJECT,
     additionalProperties: false,
     properties: {
-      ignore: {
-        type: VALUE_TYPE.ARRAY,
-        items: {
-          type: VALUE_TYPE.OBJECT,
-          additionalProperties: false,
-          required: Object.values(OPTION_KEY),
-          properties: {
-            name: {
-              oneOf: [
-                {
-                  type: VALUE_TYPE.OBJECT,
-                  additionalProperties: false,
-                  minProperties: 1,
-                  properties: {
-                    [MATCHER_KEY.STARTS_WITH]: {
-                      type: VALUE_TYPE.STRING,
-                      minLength: 1,
-                    },
-                    [MATCHER_KEY.ENDS_WITH]: {
-                      type: VALUE_TYPE.STRING,
-                      minLength: 1,
-                    },
-                    [MATCHER_KEY.CONTAINS]: {
-                      type: VALUE_TYPE.STRING,
-                      minLength: 1,
-                    },
-                  },
-                },
-                {
-                  type: VALUE_TYPE.OBJECT,
-                  additionalProperties: false,
-                  required: [MATCHER_KEY.REGEX],
-                  properties: {
-                    [MATCHER_KEY.REGEX]: {
-                      type: VALUE_TYPE.STRING,
-                      minLength: 1,
-                    },
-                  },
-                },
-              ],
-            },
-            reason: {
-              type: VALUE_TYPE.STRING,
-              enum: Object.values(EXCEPTION_REASON),
-            },
-            justification: {
-              type: VALUE_TYPE.STRING,
-              pattern: REGEX.NONBLANK,
-              minLength: 1,
-            },
-          },
-        },
-      },
+      ignore: nameExceptionArraySchema,
     },
   },
 ];

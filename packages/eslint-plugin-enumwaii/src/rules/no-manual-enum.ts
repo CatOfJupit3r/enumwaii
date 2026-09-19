@@ -125,6 +125,13 @@ export const noManualEnumRule = createRule<
       );
     }
 
+    function objectStructure(type: ts.Type): boolean {
+      if (type.isUnionOrIntersection()) {
+        return type.types.every(objectStructure);
+      }
+      return (type.flags & ts.TypeFlags.Object) !== 0;
+    }
+
     function selection(node: ts.UnionTypeNode): boolean {
       let current: ts.Node = node;
       while (ts.isParenthesizedTypeNode(current.parent))
@@ -132,17 +139,42 @@ export const noManualEnumRule = createRule<
       const parent = current.parent;
       if (ts.isIndexedAccessTypeNode(parent) && parent.indexType === current)
         return true;
+      const typeArguments =
+        ts.isTypeReferenceNode(parent) ||
+        ts.isExpressionWithTypeArguments(parent)
+          ? parent.typeArguments
+          : undefined;
+      if (!typeArguments || typeArguments[0] === current) return false;
+
+      const keyArgument = typeArguments.findIndex(
+        (argument) => argument === current,
+      );
+      if (keyArgument < 1) return false;
+
+      const keys = new Set(node.types.flatMap((part) => literals(part)));
+      if (keys.size < 2) return false;
+
+      const sourceType = checker.getApparentType(
+        checker.getBaseConstraintOfType(
+          checker.getTypeAtLocation(typeArguments[0]!),
+        ) ?? checker.getTypeAtLocation(typeArguments[0]!),
+      );
+      const sourceProperties = new Set(
+        sourceType.getProperties().map((property) => property.name),
+      );
       if (
-        !ts.isTypeReferenceNode(parent) ||
-        parent.typeArguments?.[1] !== current
-      )
+        sourceProperties.size === 0 ||
+        [...keys].some((key) => !sourceProperties.has(key))
+      ) {
         return false;
-      const symbol = symbolAt(parent.typeName);
+      }
+
+      const resultType = checker.getTypeAtLocation(parent);
       return (
-        (symbol?.name === "Pick" || symbol?.name === "Omit") &&
-        !!symbol.declarations?.some((declaration) =>
-          /[\\/]lib\.es5\.d\.ts$/u.test(declaration.getSourceFile().fileName),
-        )
+        objectStructure(resultType) &&
+        resultType
+          .getProperties()
+          .every((property) => sourceProperties.has(property.name))
       );
     }
 

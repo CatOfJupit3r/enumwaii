@@ -34,6 +34,23 @@ orderStatuses.parse("order-paid");
 
 This is an escape hatch; prefer tuple declarations when keys and values can be identical. Object keys are the developer-facing names on `.enum`, `.rawEnum`, and `.cases`. The mapped values are canonical everywhere else, including identity, parsing, Standard Schema, adapters, iteration, and derivation. Object declarations must be non-empty and cannot contain duplicate values.
 
+The object form is also the supported way to attach member-level JSDoc. TypeScript preserves documentation from named object properties on the corresponding `.enum` properties, but its type system does not carry comments from tuple elements into generated property symbols:
+
+```ts twoslash
+import { em } from "enumwaii";
+
+const states = em({
+  /** Default state when no workflow is active. */
+  NONE: "NONE",
+  /** Work is currently in progress. */
+  ACTIVE: "ACTIVE",
+});
+
+states.enum.NONE;
+```
+
+When `no-object-em` is enabled, every property must have JSDoc for a documentation-only identity mapping to be accepted. Partially documented or undocumented redundant objects are still reported.
+
 ## Surface map
 
 | Surface | Use it for |

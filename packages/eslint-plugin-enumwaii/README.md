@@ -80,27 +80,37 @@ Legacy presets are available as `recommended` and `recommended-type-checked`.
 | `no-raw-enum-comparison` | Yes | Replace raw comparison and `switch` literals with owned members. |
 | `no-raw-enum-member` | Yes | Use owned members and composition APIs in subsets and mappings. |
 | `no-union-property-in` | Yes | Prefer enumwaii discriminants to structural `in` narrowing. |
+| `prefer-native-schema-adapters` | Yes | Use enumwaii's Zod or Valibot adapter instead of rebuilding schemas from member views. |
 
-`enforce-enum-casing` and `no-object-em` have options. For casing, set `valueCasing` to `"constant"` (the default), `"kebab"`, or `"snake"`; object keys always remain `CONSTANT_CASE`. Use `ignoredNamePatterns` or `ignoredFilePatterns` with `*`, `**`, and `?` wildcards to skip both casing checks for selected declarations. The other rules have no options, and none of the rules autofix provenance-sensitive code.
+`enforce-enum-casing`, `no-object-em`, and `no-manual-enum` have options. For casing, set `valueCasing` to `"constant"` (the default), `"kebab"`, or `"snake"`; object keys always remain `CONSTANT_CASE`. Use a structured `ignore` entry when an external contract or compatibility requirement should exempt the same declaration from casing and object-input checks. `ignoredNamePatterns` and `ignoredFilePatterns` remain available for wildcard-based casing configuration. The other rules have no options, and none of the rules autofix provenance-sensitive code.
 
 ```js
+const wireExceptions = [
+  {
+    name: { regex: "^providerStatus$" },
+    reason: "external-contract",
+    justification: "Provider status values must retain their published spelling.",
+  },
+];
+
 {
   rules: {
     "enumwaii/enforce-enum-casing": [
       "error",
       {
         valueCasing: "kebab",
-        ignoredNamePatterns: ["wire*"],
+        ignore: wireExceptions,
         ignoredFilePatterns: ["**/generated/**"],
       },
     ],
+    "enumwaii/no-object-em": ["error", { ignore: wireExceptions }],
   },
 }
 ```
 
 ## no-object-em
 
-Enabled at error severity in all recommended presets. Prefer `em(["IN_PROGRESS", "COMPLETED"])`, including for new public APIs you control. Object mappings are an exception for values whose exact spelling is imposed by an external contract or existing compatibility requirement. Different keys and values alone do not establish that need.
+Enabled at error severity in all recommended presets. Prefer `em(["IN_PROGRESS", "COMPLETED"])`, including for new public APIs you control. Object mappings are an exception for values whose exact spelling is imposed by an external contract or existing compatibility requirement. A fully documented object is also accepted when named properties are required to preserve member-level JSDoc through TypeScript. Different keys and values alone do not establish an exception.
 
 ```js
 {
@@ -129,6 +139,8 @@ Strong exceptions include provider SDK enums, provider event identifiers and sco
 The rule checks `em(...)` and `new Enumwaii(...)`, including named import aliases and namespace imports from `enumwaii`, TypeScript expression wrappers, local constant aliases, and local TypeScript enums. Without type services, imported inputs, parameters, and function results whose shape is unknown are outside its scope. Configure the type-checked preset with project services to detect these object inputs too; arrays and tuples remain allowed. Unknown/`any` types cannot establish an object input. Redundancy checking is limited to resolved object literals.
 
 Exceptions affect only this rule. Casing and usage-site magic-string rules remain active. If a required external literal spelling conflicts with casing, configure `enforce-enum-casing` separately for that specific declaration using its existing name override; keep internal keys `CONSTANT_CASE`. Importing a provider's enum directly also avoids duplicating its literal definitions. No autofix is offered because changing values can break a contract.
+
+The type-aware preset also enables `prefer-native-schema-adapters`. It reports `z.enum`, `z.nativeEnum`, `v.enum`, and `v.picklist` when their input comes from an enumwaii member view, including extracted aliases. Use `emToZodSchema(enumeration)` or `emToValibotSchema(enumeration)` when a concrete library schema is required, or pass the declaration itself to a Standard Schema consumer.
 
 ## Oxlint
 

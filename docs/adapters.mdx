@@ -1,6 +1,6 @@
 ---
 title: Schemas and adapters
-description: Use native Standard Schema support or opt into Zod and Valibot entry points.
+description: Use native Standard Schema support or opt into Zod, Valibot, and nuqs entry points.
 ---
 
 ## Standard Schema is the default
@@ -75,11 +75,11 @@ declare const payload: unknown;
 // ---cut---
 import { z } from "zod";
 import { em } from "enumwaii";
-import { zodSchema } from "enumwaii/zod";
+import { emToZodSchema } from "enumwaii/zod";
 
 const roles = em(["ADMIN", "USER"]);
 const inputSchema = z.object({
-  role: zodSchema(roles),
+  role: emToZodSchema(roles),
 });
 
 const input = inputSchema.parse(payload);
@@ -117,11 +117,11 @@ declare const payload: unknown;
 // ---cut---
 import * as v from "valibot";
 import { em } from "enumwaii";
-import { valibotSchema } from "enumwaii/valibot";
+import { emToValibotSchema } from "enumwaii/valibot";
 
 const roles = em(["ADMIN", "USER"]);
 const inputSchema = v.object({
-  role: valibotSchema(roles),
+  role: emToValibotSchema(roles),
 });
 
 const input = v.parse(inputSchema, payload);
@@ -134,3 +134,56 @@ The adapter follows Valibot's normal parsing and issue behavior while preserving
 </Tabs>
 
 Both library adapters are separate package entry points and both validator packages are optional peers. Applications that use only Standard Schema do not load either integration.
+
+## nuqs query parsers
+
+Install nuqs when URL query state should use enumwaii's validation and branded member type:
+
+```sh tab="npm" tab-group="enumwaii-package-manager"
+npm install nuqs
+```
+
+```sh tab="pnpm"
+pnpm add nuqs
+```
+
+```sh tab="yarn"
+yarn add nuqs
+```
+
+```sh tab="bun"
+bun add nuqs
+```
+
+```sh tab="deno"
+deno add npm:nuqs
+```
+
+For a shared default, create the parser beside the declaration and export both:
+
+```ts
+import { em } from "enumwaii";
+import { createEnumwaiiQueryParser } from "enumwaii/nuqs";
+
+export const roles = em(["ADMIN", "USER"]);
+export const ROLE = roles.enum;
+export type Role = (typeof roles)["~type"];
+export const roleQueryParser = createEnumwaiiQueryParser(roles, ROLE.USER);
+```
+
+When the default depends on component state or props, create it inside the component:
+
+```tsx
+import { useQueryState } from "nuqs";
+import { createEnumwaiiQueryParser } from "enumwaii/nuqs";
+import { ROLE, roles, type Role } from "./roles";
+
+export function RoleFilter({ defaultRole }: { defaultRole: Role }) {
+  const parser = createEnumwaiiQueryParser(roles, defaultRole);
+  const [role, setRole] = useQueryState("role", parser);
+
+  return <button onClick={() => setRole(ROLE.ADMIN)}>{role}</button>;
+}
+```
+
+The parser returns `null` for invalid query strings as required by nuqs, applies the supplied owned member as its default, and serializes members as their raw string value. The `enumwaii/nuqs` entry point and `nuqs` peer are optional; applications that do not import it do not load nuqs.

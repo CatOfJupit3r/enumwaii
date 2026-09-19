@@ -19,6 +19,7 @@ import { noObjectEmRule } from "./rules/no-object-em";
 import { noRawEnumComparisonRule } from "./rules/no-raw-enum-comparison";
 import { noRawEnumMemberRule } from "./rules/no-raw-enum-member";
 import { noUnionPropertyInRule } from "./rules/no-union-property-in";
+import { preferNativeSchemaAdaptersRule } from "./rules/prefer-native-schema-adapters";
 
 /**
  * Rule implementations published by `eslint-plugin-enumwaii`, keyed by the
@@ -50,6 +51,8 @@ export const rules = {
   "no-raw-enum-member": noRawEnumMemberRule,
   /** Type-aware rule steering object-union narrowing toward enumwaii cases discriminants. */
   "no-union-property-in": noUnionPropertyInRule,
+  /** Type-aware rule preferring native schema adapters over reconstructed schemas. */
+  "prefer-native-schema-adapters": preferNativeSchemaAdaptersRule,
 } as const;
 
 /** Rule map for the syntax-only recommended eslintrc configuration. */
@@ -76,6 +79,8 @@ const typeCheckedRules = {
   "enumwaii/no-raw-enum-member": "error",
   /** Prefer enumwaii cases discriminants over structural `in` narrowing. */
   "enumwaii/no-union-property-in": "error",
+  /** Preserve enumwaii validation and output types at schema boundaries. */
+  "enumwaii/prefer-native-schema-adapters": "error",
 } as const;
 
 /**
@@ -201,4 +206,5 @@ export {
   noRawEnumComparisonRule,
   noRawEnumMemberRule,
   noUnionPropertyInRule,
+  preferNativeSchemaAdaptersRule,
 };

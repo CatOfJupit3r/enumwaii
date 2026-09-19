@@ -9,11 +9,18 @@ import {
   type InferEnumwaii,
   type InferEnumwaiiCase,
 } from "../src/index";
+import { createEnumwaiiQueryParser } from "../src/adapters/nuqs";
 
 const roles = em(["ADMIN", "USER"]);
 const ROLE = roles.enum;
 const RAW_ROLE = roles.rawEnum;
 type Role = InferEnumwaii<typeof roles>;
+
+const roleQueryParser = createEnumwaiiQueryParser(roles, ROLE.USER);
+expectTypeOf(roleQueryParser.parseServerSide("ADMIN")).toEqualTypeOf<Role>();
+expectTypeOf(roleQueryParser.serialize(ROLE.ADMIN)).toEqualTypeOf<string>();
+// @ts-expect-error defaults must be owned members
+createEnumwaiiQueryParser(roles, "USER");
 
 expectTypeOf<Role>().toEqualTypeOf<
   EnumwaiiValue<"ADMIN" | "USER", EnumwaiiIdentity<"ADMIN" | "USER">>

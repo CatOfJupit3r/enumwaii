@@ -65,6 +65,16 @@
         "default": "./dist/adapters/valibot.cjs"
       }
     },
+    "./nuqs": {
+      "import": {
+        "types": "./dist/adapters/nuqs.d.mts",
+        "default": "./dist/adapters/nuqs.mjs"
+      },
+      "require": {
+        "types": "./dist/adapters/nuqs.d.cts",
+        "default": "./dist/adapters/nuqs.cjs"
+      }
+    },
     "./derive-with": {
       "import": {
         "types": "./dist/derive-with/index.d.mts",
@@ -92,10 +102,14 @@
     "test:build": "publint --strict && attw --pack --profile node16"
   },
   "peerDependencies": {
+    "nuqs": "^2.10.1",
     "valibot": "^1.0.0",
     "zod": "^3.25.0 || ^4.0.0"
   },
   "peerDependenciesMeta": {
+    "nuqs": {
+      "optional": true
+    },
     "valibot": {
       "optional": true
     },
@@ -106,6 +120,7 @@
   "devDependencies": {
     "@tanstack/intent": "0.3.8",
     "@types/react": "19.2.18",
+    "nuqs": "2.10.1",
     "react": "19.2.8",
     "valibot": "1.4.2",
     "zod": "4.5.4"

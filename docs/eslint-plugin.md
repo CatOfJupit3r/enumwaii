@@ -80,8 +80,11 @@ For eslintrc configuration, use the `recommended` and `recommended-type-checked`
 | `no-raw-enum-comparison` | Type-aware | Yes | Replace raw comparison and `switch` literals with owned members. |
 | `no-raw-enum-member` | Type-aware | Yes | Use owned members and composition APIs for subsets and targeted mappings. |
 | `no-union-property-in` | Type-aware | Yes | Prefer an enumwaii case discriminant to structural `in` narrowing. |
+| `prefer-native-schema-adapters` | Type-aware | Yes | Prefer enumwaii's Zod or Valibot adapter over schemas rebuilt from member views. |
 
 `enforce-enum-casing`, `no-object-em`, and `no-manual-enum` have options; the other rules have no options. The rules do not autofix, so provenance-sensitive changes remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
+
+All three configurable rules accept the same structured declaration `ignore` entries. Define reviewed exceptions once and pass that array to every rule that should honor them. Each entry requires a name matcher, an `external-contract` or `compatibility` reason, and a nonblank justification. This keeps matching behavior and rationale aligned instead of maintaining parallel wildcard and regex lists.
 
 ### `no-manual-enum`
 
@@ -131,6 +134,8 @@ There are no automatic fixes. Preserve existing wire and persisted values when m
 
 Enabled in every recommended preset. Use `em(["IN_PROGRESS", "COMPLETED"])` for internal identities and new public APIs, including `PROGRESS_TYPE`. Keep display labels in a separate map indexed by extracted enum members. For existing enum subsets and derivations, use `.pick()`, `.omit()`, `.deriveTo()`, and `em.combine()` with owned members.
 
+A redundant identity object is accepted when every property has a JSDoc block. This is the supported member-documentation form because TypeScript preserves comments from named object properties on `.enum` hovers but cannot carry tuple-element comments into generated property symbols. Partially documented objects remain invalid.
+
 Reserve object inputs with distinct keys and values for **external-contract** constraints (AWS or other provider SDKs, provider events/scopes, protocol/media/browser/CSS/locale/runtime tokens) or **compatibility** constraints (existing database rows, saved files, historical messages, previously published values). A new public interface, URL, CLI/config choice, serialization, or lowercase spelling alone does not qualify. AI assistants should fix the representation or use composition, rather than disabling lint or renaming variables to fit an ignore pattern.
 
 ```js
@@ -165,21 +170,30 @@ Reports: `objectInput`, `redundantObject`.
 
 Checks string literals in the first array or object passed directly to `em(...)` or `new Enumwaii(...)`. It does not need TypeScript parser services. Object keys always require `CONSTANT_CASE`. Tuple members and object values follow `valueCasing`: `"constant"` (the default), `"kebab"`, or `"snake"`. Non-literal values are outside its scope.
 
-Use `valueCasing` for consistent lowercase wire formats. Disable the rule locally at one declaration, or configure `ignoredNamePatterns` and `ignoredFilePatterns` when a naming convention or generated-file boundary should bypass casing checks entirely.
+Use `valueCasing` for consistent lowercase wire formats. Use structured `ignore` entries for reviewed declaration exceptions shared with `no-object-em` or `no-manual-enum`. `ignoredNamePatterns` and `ignoredFilePatterns` remain available when a simple wildcard or generated-file boundary should bypass casing checks entirely.
 
 The ignore options accept wildcard patterns. `*` matches within one path segment, `**` crosses path separators, and `?` matches one non-separator character. Name patterns match identifiers directly bound to a declaration, such as `wireStatus` in `const wireStatus = em([...])`. File patterns match normalized forward-slash paths, so `**/generated/**` works on every operating system. A matched declaration skips both key and value checks.
 
 ```js
+const wireExceptions = [
+  {
+    name: { startsWith: "provider", endsWith: "Status" },
+    reason: "external-contract",
+    justification: "Provider status values retain their published spelling.",
+  },
+];
+
 {
   rules: {
     "enumwaii/enforce-enum-casing": [
       "error",
       {
         valueCasing: "kebab",
-        ignoredNamePatterns: ["wire*", "*Payload"],
+        ignore: wireExceptions,
         ignoredFilePatterns: ["**/generated/**", "**/*.generated.ts"],
       },
     ],
+    "enumwaii/no-object-em": ["error", { ignore: wireExceptions }],
   },
 }
 ```
@@ -408,6 +422,40 @@ const grants = roles.deriveTo(
 );
 const combined = em.combine([roles, permissions]);
 ```
+
+### `prefer-native-schema-adapters`
+
+Reports `z.enum`, `z.nativeEnum`, `v.enum`, and `v.picklist` calls that rebuild a schema from an enumwaii `.enum`, `.rawEnum`, `.cases`, `.values`, or `.rawValues` view. Extracted and imported aliases are traced through TypeScript symbols, while ordinary arrays and objects remain valid schema inputs.
+
+Use the library-specific adapter when an API requires a concrete schema type. If the receiving API supports Standard Schema, pass the enumwaii declaration directly without an adapter.
+
+#### Flagged
+
+```ts
+// @noErrors
+import { em } from "enumwaii";
+import { z } from "zod";
+
+const roles = em(["ADMIN", "USER"]);
+const RAW_ROLE = roles.rawEnum;
+const roleSchema = z.enum(RAW_ROLE);
+// @error: enumwaii/prefer-native-schema-adapters (preferAdapter) — preserve enumwaii validation and branded output.
+```
+
+#### Accepted
+
+```ts
+import { em } from "enumwaii";
+import { emToZodSchema } from "enumwaii/zod";
+
+const roles = em(["ADMIN", "USER"]);
+const roleSchema = emToZodSchema(roles);
+
+declare function acceptsStandardSchema(schema: typeof roles): void;
+acceptsStandardSchema(roles);
+```
+
+The rule has no autofix because adapter schemas can differ from reconstructed schemas in their inferred output types and error behavior. Reports: `preferAdapter`.
 
 ### `no-union-property-in`
 

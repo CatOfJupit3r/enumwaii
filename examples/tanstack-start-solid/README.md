@@ -39,7 +39,7 @@ client parse ────────────────► branded Inciden
 
 `inspectIncidentState` uses the enumwaii declaration directly as a Standard Schema server-function validator. Its transport DTO deliberately contains a plain string, and `parseIncidentStateInspection` restores ownership on the receiving side. The domain and type-contract tests prove that the intermediate string cannot enter branded code without that second parse.
 
-Incident creation follows the same discipline: the form validates its raw DOM value with enumwaii Standard Schema, then the server validates the full object with Zod and `zodSchema` before the process-local store is updated.
+Incident creation follows the same discipline: the form validates its raw DOM value with enumwaii Standard Schema, then the server validates the full object with Zod and `emToZodSchema` before the process-local store is updated.
 
 ## Enumwaii coverage
 
@@ -47,7 +47,7 @@ Incident creation follows the same discipline: the form validates its raw DOM va
 - `.derive()` owns presentation, severity, and the public status fold.
 - `.deriveTo()` owns allowed incident transitions.
 - Standard Schema validates the TanStack Form field and scalar server input.
-- `zodSchema` composes branded states into mutation objects.
+- `emToZodSchema` composes branded states into mutation objects.
 - `parse`, `safeParse`, `default`, and `fallback` cover realistic boundaries.
 
 ## Commands

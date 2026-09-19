@@ -1,5 +1,10 @@
 import { AST_NODE_TYPES, ESLintUtils } from "@typescript-eslint/utils";
 import type { TSESTree } from "@typescript-eslint/utils";
+import {
+  createNameMatchers,
+  nameExceptionArraySchema,
+  type NameException,
+} from "../utils/name-exceptions";
 
 const createRule = ESLintUtils.RuleCreator(
   (ruleName) =>
@@ -22,6 +27,7 @@ type MessageIds = "invalidInternalMember";
 type ValueCasing = keyof typeof VALUE_CASING_PATTERNS;
 type Options = [
   {
+    ignore?: NameException[];
     ignoredFilePatterns?: string[];
     ignoredNamePatterns?: string[];
     valueCasing?: ValueCasing;
@@ -92,12 +98,14 @@ function declarationName(
  * `valueCasing`, which defaults to `constant` and also supports `kebab` and
  * `snake`. It does not need TypeScript parser services.
  *
- * `ignoredNamePatterns` matches wildcard patterns against identifiers directly
- * bound to a declaration, such as `wireStatus` in
- * `const wireStatus = em([...])`. `ignoredFilePatterns` matches normalized
- * forward-slash file paths. `*` matches within one path segment, `**` crosses
- * path separators, and `?` matches one non-separator character. Ignored
- * declarations skip both key and value checks. The rule provides no autofix.
+ * Use `ignore` for reviewed declaration exceptions with the same structured name matchers,
+ * reasons, and required justifications accepted by `no-object-em` and `no-manual-enum`.
+ * This lets one exception list be shared across rules.
+ *
+ * `ignoredNamePatterns` and `ignoredFilePatterns` remain available for wildcard-based configuration.
+ * `*` matches within one path segment, `**` crosses path separators, and `?` matches one non-separator character.
+ * Ignored declarations skip both key and value checks.
+ * The rule provides no autofix.
  *
  * @example Incorrect member casing
  * The declaration contains an internal member that is not `CONSTANT_CASE`.
@@ -135,6 +143,7 @@ export const enforceEnumCasingRule = createRule<Options, MessageIds>({
         type: "object",
         additionalProperties: false,
         properties: {
+          ignore: nameExceptionArraySchema,
           ignoredFilePatterns: {
             type: "array",
             items: { type: "string" },
@@ -155,12 +164,17 @@ export const enforceEnumCasingRule = createRule<Options, MessageIds>({
   },
   defaultOptions: [
     {
+      ignore: [],
       ignoredFilePatterns: [],
       ignoredNamePatterns: [],
       valueCasing: "constant",
     },
   ],
   create(context, [options]) {
+    const structuredNameMatchers = createNameMatchers(
+      options,
+      "enforce-enum-casing",
+    );
     const ignoredFilePatterns = (options.ignoredFilePatterns ?? []).map(
       wildcardPattern,
     );
@@ -189,7 +203,11 @@ export const enforceEnumCasingRule = createRule<Options, MessageIds>({
       if (!isEmCall && !isEnumwaiiConstructor) return;
 
       const name = declarationName(node);
-      if (name !== undefined && matchesAnyPattern(name, ignoredNamePatterns)) {
+      if (
+        name !== undefined &&
+        (matchesAnyPattern(name, ignoredNamePatterns) ||
+          structuredNameMatchers.some((matches) => matches(name)))
+      ) {
         return;
       }
 

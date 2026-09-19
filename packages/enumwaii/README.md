@@ -114,12 +114,13 @@ const metadata = roles.derive<RoleMetadata>()(
 ## Optional entry points
 
 ```ts
-import { zodSchema } from "enumwaii/zod";
-import { valibotSchema } from "enumwaii/valibot";
+import { emToZodSchema } from "enumwaii/zod";
+import { emToValibotSchema } from "enumwaii/valibot";
+import { createEnumwaiiQueryParser } from "enumwaii/nuqs";
 import { lowercase, uppercase } from "enumwaii/derive-with";
 ```
 
-Zod and Valibot are optional peers. Install only the validator required by your integration.
+Zod, Valibot, and nuqs are optional peers. Install only the integration required by your application.
 
 ## Member views
 

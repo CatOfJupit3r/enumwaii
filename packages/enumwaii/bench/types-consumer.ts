@@ -1,6 +1,6 @@
 import { em, type InferEnumwaii } from "../src/index";
-import { valibotSchema } from "../src/adapters/valibot";
-import { zodSchema } from "../src/adapters/zod";
+import { emToValibotSchema } from "../src/adapters/valibot";
+import { emToZodSchema } from "../src/adapters/zod";
 
 const enum01 = em(["A01", "B01", "C01", "D01"]);
 const enum02 = em(["A02", "B02", "C02", "D02"]);
@@ -46,14 +46,14 @@ const derived04 = enum04.derive((value) => value.toLowerCase());
 const derived05 = enum05.derive((value) => value.toLowerCase());
 const derived06 = enum06.derive((value) => value.toLowerCase());
 
-const zod01 = zodSchema(enum01);
-const zod02 = zodSchema(enum02);
-const zod03 = zodSchema(enum03);
-const zod04 = zodSchema(enum04);
-const valibot01 = valibotSchema(enum05);
-const valibot02 = valibotSchema(enum06);
-const valibot03 = valibotSchema(enum07);
-const valibot04 = valibotSchema(enum08);
+const zod01 = emToZodSchema(enum01);
+const zod02 = emToZodSchema(enum02);
+const zod03 = emToZodSchema(enum03);
+const zod04 = emToZodSchema(enum04);
+const valibot01 = emToValibotSchema(enum05);
+const valibot02 = emToValibotSchema(enum06);
+const valibot03 = emToValibotSchema(enum07);
+const valibot04 = emToValibotSchema(enum08);
 
 type Value01 = InferEnumwaii<typeof enum01>;
 type Value02 = InferEnumwaii<typeof enum02>;

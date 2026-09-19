@@ -83,6 +83,28 @@ describe("no-manual-enum", () => {
     expect(await lint(source)).toEqual([]);
   });
 
+  it("allows key unions in property-structure utility types", async () => {
+    expect(
+      await lint(`
+        interface Account {
+          id: string;
+          displayName: string;
+          email: string;
+        }
+        type AccountSummary = Pick<Account, "id" | "displayName">;
+        interface AccountPreview
+          extends Omit<Account, "id" | "email"> {}
+        type Selected<T, K extends keyof T> = { [P in K]: T[P] };
+        type Without<T, K extends keyof T> = {
+          [P in Exclude<keyof T, K>]: T[P]
+        };
+        interface AccountIdentity
+          extends Selected<Account, "id" | "displayName"> {}
+        type AccountWithoutContact = Without<Account, "displayName" | "email">;
+      `),
+    ).toEqual([]);
+  });
+
   it("enables only the type-checked presets", () => {
     expect(
       plugin.configs["recommended-type-checked"].rules?.[

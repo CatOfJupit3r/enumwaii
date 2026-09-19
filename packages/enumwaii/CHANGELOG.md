@@ -1,5 +1,15 @@
 # enumwaii
 
+## 1.2.0
+
+### Minor Changes
+
+- [#25](https://github.com/CatOfJupit3r/enumwaii/pull/25) [`6a44d1c`](https://github.com/CatOfJupit3r/enumwaii/commit/6a44d1c9e83755e907da041ca868b6f20a3ded14) - Add an optional `enumwaii/nuqs` entry point with `createEnumQueryParser` for branded, validated URL query state.
+
+### Patch Changes
+
+- [#25](https://github.com/CatOfJupit3r/enumwaii/pull/25) [`18759a0`](https://github.com/CatOfJupit3r/enumwaii/commit/18759a09568161418aa3545d44610decf7d1fbe1) - Document and test the JSDoc-preserving object declaration form. Allow fully documented object members through `no-object-em`, including identity mappings, because TypeScript cannot propagate tuple-element comments onto generated `.enum` properties.
+
 ## 1.1.0
 
 ### Minor Changes

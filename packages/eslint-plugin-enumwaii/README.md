@@ -82,19 +82,28 @@ Legacy presets are available as `recommended` and `recommended-type-checked`.
 | `no-union-property-in` | Yes | Prefer enumwaii discriminants to structural `in` narrowing. |
 | `prefer-native-schema-adapters` | Yes | Use enumwaii's Zod or Valibot adapter instead of rebuilding schemas from member views. |
 
-`enforce-enum-casing` and `no-object-em` have options. For casing, set `valueCasing` to `"constant"` (the default), `"kebab"`, or `"snake"`; object keys always remain `CONSTANT_CASE`. Use `ignoredNamePatterns` or `ignoredFilePatterns` with `*`, `**`, and `?` wildcards to skip both casing checks for selected declarations. The other rules have no options, and none of the rules autofix provenance-sensitive code.
+`enforce-enum-casing`, `no-object-em`, and `no-manual-enum` have options. For casing, set `valueCasing` to `"constant"` (the default), `"kebab"`, or `"snake"`; object keys always remain `CONSTANT_CASE`. Use a structured `ignore` entry when an external contract or compatibility requirement should exempt the same declaration from casing and object-input checks. `ignoredNamePatterns` and `ignoredFilePatterns` remain available for wildcard-based casing configuration. The other rules have no options, and none of the rules autofix provenance-sensitive code.
 
 ```js
+const wireExceptions = [
+  {
+    name: { regex: "^providerStatus$" },
+    reason: "external-contract",
+    justification: "Provider status values must retain their published spelling.",
+  },
+];
+
 {
   rules: {
     "enumwaii/enforce-enum-casing": [
       "error",
       {
         valueCasing: "kebab",
-        ignoredNamePatterns: ["wire*"],
+        ignore: wireExceptions,
         ignoredFilePatterns: ["**/generated/**"],
       },
     ],
+    "enumwaii/no-object-em": ["error", { ignore: wireExceptions }],
   },
 }
 ```

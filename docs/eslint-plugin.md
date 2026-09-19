@@ -84,6 +84,8 @@ For eslintrc configuration, use the `recommended` and `recommended-type-checked`
 
 `enforce-enum-casing`, `no-object-em`, and `no-manual-enum` have options; the other rules have no options. The rules do not autofix, so provenance-sensitive changes remain explicit and reviewable. Each flagged example renders the rule and report ID beside the affected source.
 
+All three configurable rules accept the same structured declaration `ignore` entries. Define reviewed exceptions once and pass that array to every rule that should honor them. Each entry requires a name matcher, an `external-contract` or `compatibility` reason, and a nonblank justification. This keeps matching behavior and rationale aligned instead of maintaining parallel wildcard and regex lists.
+
 ### `no-manual-enum`
 
 Enabled in both type-checked presets. Reports unions of two or more distinct raw string literals, including inline annotations, constraints, containers, nullable unions, branded wrappers, and assembly from single-literal aliases (including imports). Adding even one raw literal to a branded enumwaii type is also reported. References to an already assembled vocabulary are not reported again.
@@ -168,21 +170,30 @@ Reports: `objectInput`, `redundantObject`.
 
 Checks string literals in the first array or object passed directly to `em(...)` or `new Enumwaii(...)`. It does not need TypeScript parser services. Object keys always require `CONSTANT_CASE`. Tuple members and object values follow `valueCasing`: `"constant"` (the default), `"kebab"`, or `"snake"`. Non-literal values are outside its scope.
 
-Use `valueCasing` for consistent lowercase wire formats. Disable the rule locally at one declaration, or configure `ignoredNamePatterns` and `ignoredFilePatterns` when a naming convention or generated-file boundary should bypass casing checks entirely.
+Use `valueCasing` for consistent lowercase wire formats. Use structured `ignore` entries for reviewed declaration exceptions shared with `no-object-em` or `no-manual-enum`. `ignoredNamePatterns` and `ignoredFilePatterns` remain available when a simple wildcard or generated-file boundary should bypass casing checks entirely.
 
 The ignore options accept wildcard patterns. `*` matches within one path segment, `**` crosses path separators, and `?` matches one non-separator character. Name patterns match identifiers directly bound to a declaration, such as `wireStatus` in `const wireStatus = em([...])`. File patterns match normalized forward-slash paths, so `**/generated/**` works on every operating system. A matched declaration skips both key and value checks.
 
 ```js
+const wireExceptions = [
+  {
+    name: { startsWith: "provider", endsWith: "Status" },
+    reason: "external-contract",
+    justification: "Provider status values retain their published spelling.",
+  },
+];
+
 {
   rules: {
     "enumwaii/enforce-enum-casing": [
       "error",
       {
         valueCasing: "kebab",
-        ignoredNamePatterns: ["wire*", "*Payload"],
+        ignore: wireExceptions,
         ignoredFilePatterns: ["**/generated/**", "**/*.generated.ts"],
       },
     ],
+    "enumwaii/no-object-em": ["error", { ignore: wireExceptions }],
   },
 }
 ```

@@ -153,6 +153,58 @@ describe("eslint-plugin-enumwaii", () => {
     ]);
   });
 
+  it("shares reviewed declaration exceptions across casing and object rules", async () => {
+    const ignore = [
+      {
+        name: { regex: "^wireStatus$" },
+        reason: "external-contract",
+        justification: "The provider requires these exact wire spellings.",
+      },
+    ];
+    const eslint = new ESLint({
+      overrideConfigFile: true,
+      overrideConfig: {
+        plugins: { enumwaii: plugin as unknown as ESLint.Plugin },
+        rules: {
+          "enumwaii/enforce-enum-casing": ["error", { ignore }],
+          "enumwaii/no-object-em": ["error", { ignore }],
+        },
+      },
+    });
+
+    const [result] = await eslint.lintText(`
+      const wireStatus = em({ badKey: "wire-value" });
+    `);
+
+    expect(result?.messages).toEqual([]);
+  });
+
+  it("requires a rationale for structured casing exceptions", async () => {
+    const eslint = new ESLint({
+      overrideConfigFile: true,
+      overrideConfig: {
+        plugins: { enumwaii: plugin as unknown as ESLint.Plugin },
+        rules: {
+          "enumwaii/enforce-enum-casing": [
+            "error",
+            {
+              ignore: [
+                {
+                  name: { regex: "^wireStatus$" },
+                  reason: "external-contract",
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+
+    await expect(
+      eslint.lintText('const wireStatus = em(["wire-value"]);'),
+    ).rejects.toThrow();
+  });
+
   it("ignores declarations in files matching configured patterns", async () => {
     const eslint = new ESLint({
       cwd: packageRoot,

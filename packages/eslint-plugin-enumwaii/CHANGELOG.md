@@ -1,5 +1,19 @@
 # eslint-plugin-enumwaii
 
+## 1.2.0
+
+### Minor Changes
+
+- [#25](https://github.com/CatOfJupit3r/enumwaii/pull/25) [`f79f616`](https://github.com/CatOfJupit3r/enumwaii/commit/f79f616ff7efd480ec54bebb0457e571a8c7dd26) - Let `enforce-enum-casing` consume the same rationale-required declaration exceptions as `no-object-em` and `no-manual-enum`, so consumers can share one reviewed exception list across rules while retaining existing wildcard options.
+
+- [#25](https://github.com/CatOfJupit3r/enumwaii/pull/25) [`926dfc9`](https://github.com/CatOfJupit3r/enumwaii/commit/926dfc9979731f60a4d3a32f51f96ea8b9684b86) - Add the type-aware `prefer-native-schema-adapters` rule to report Zod and Valibot schemas rebuilt from enumwaii member views and recommend native adapters or Standard Schema instead.
+
+### Patch Changes
+
+- [#25](https://github.com/CatOfJupit3r/enumwaii/pull/25) [`18759a0`](https://github.com/CatOfJupit3r/enumwaii/commit/18759a09568161418aa3545d44610decf7d1fbe1) - Document and test the JSDoc-preserving object declaration form. Allow fully documented object members through `no-object-em`, including identity mappings, because TypeScript cannot propagate tuple-element comments onto generated `.enum` properties.
+
+- [#25](https://github.com/CatOfJupit3r/enumwaii/pull/25) [`61abd63`](https://github.com/CatOfJupit3r/enumwaii/commit/61abd634b45604e864671f80ab48b183afe5123a) - Preserve property-structure derivations whose string-literal key unions select fields from an existing source type, including `Pick`, `Omit`, and equivalent custom utilities.
+
 ## 1.1.0
 
 ### Minor Changes

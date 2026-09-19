@@ -5,6 +5,7 @@ export default defineConfig({
     "src/index.ts",
     "src/adapters/zod.ts",
     "src/adapters/valibot.ts",
+    "src/adapters/nuqs.ts",
     "src/derive-with/index.ts",
   ],
   format: ["esm", "cjs"],
@@ -12,5 +13,5 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   target: "node18",
-  deps: { neverBundle: ["zod", "valibot"] },
+  deps: { neverBundle: ["nuqs", "zod", "valibot"] },
 });

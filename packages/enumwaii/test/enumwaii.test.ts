@@ -3,6 +3,7 @@ import { isValidElement } from "react";
 import { inspect } from "node:util";
 
 import { em, Enumwaii, EnumwaiiError, EnumwaiiParseError } from "../src/index";
+import { createEnumwaiiQueryParser } from "../src/adapters/nuqs";
 import { valibotSchema } from "../src/adapters/valibot";
 import { lowercase, uppercase } from "../src/derive-with";
 import { zodSchema } from "../src/adapters/zod";
@@ -184,6 +185,16 @@ describe("deserialization", () => {
     expect(() => zodSchema(roles).parse("OWNER")).toThrow();
     expect(v.parse(valibotSchema(roles), "USER")).toBe(ROLE.USER);
     expect(() => v.parse(valibotSchema(roles), "OWNER")).toThrow();
+  });
+
+  it("creates a nuqs parser with validation and an owned default", () => {
+    const parser = createEnumwaiiQueryParser(roles, ROLE.GUEST);
+
+    expect(parser.parse("ADMIN")).toBe(ROLE.ADMIN);
+    expect(parser.parse("OWNER")).toBeNull();
+    expect(parser.parseServerSide(undefined)).toBe(ROLE.GUEST);
+    expect(parser.parseServerSide("USER")).toBe(ROLE.USER);
+    expect(parser.serialize(ROLE.ADMIN)).toBe("ADMIN");
   });
 });
 

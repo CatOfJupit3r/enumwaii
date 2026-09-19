@@ -29,6 +29,8 @@
   "excludeProtected": true,
   "intentionallyNotExported": [
     "EnumwaiiCasesBrand",
+    "EnumwaiiExtendedKeys",
+    "EnumwaiiKeysForValues",
     "EnumwaiiValuesBrand",
     "EnumwaiiRawValue",
     "EnumwaiiValidateDeriveEntries",

@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -33,14 +33,14 @@ jobs:
           # maintainer-reviewed environment, checks out an immutable SHA, has no
           # secrets or persisted credentials, and only receives read access.
           allow-unsafe-pr-checkout: true
-      - uses: pnpm/action-setup@v6.0.10
-      - uses: actions/setup-node@v7.0.0
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 22.18.0
-      - uses: oven-sh/setup-bun@v2.2.0
+          node-version: 22.23.3
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: 1.4.0
-      - uses: denoland/setup-deno@v2.0.5
+          bun-version: 1.4.2
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
         with:
           deno-version: v2.9.6
       - name: Validate dependency pins
@@ -50,7 +50,7 @@ jobs:
         run: pnpm check
       - name: Check Bun, Deno, and Cloudflare Workers
         run: pnpm test:runtimes
-      - uses: actions/setup-node@v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 18.20.8
       - name: Check the minimum supported Node major

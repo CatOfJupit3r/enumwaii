@@ -11,18 +11,18 @@
     "test:types": "tsc --noEmit"
   },
   "dependencies": {
-    "@hono/node-server": "2.1.1",
-    "@orpc/contract": "1.15.0",
-    "@orpc/openapi": "1.15.0",
-    "@orpc/server": "1.15.0",
+    "@hono/node-server": "2.1.3",
+    "@orpc/contract": "1.15.4",
+    "@orpc/openapi": "1.15.4",
+    "@orpc/server": "1.15.4",
     "enumwaii": "file:../../packages/enumwaii",
-    "hono": "4.13.5",
-    "zod": "4.5.4"
+    "hono": "4.13.12",
+    "zod": "4.6.5"
   },
   "devDependencies": {
-    "@types/node": "26.4.0",
-    "tsdown": "0.22.14",
-    "tsx": "4.23.13",
+    "@types/node": "26.6.3",
+    "tsdown": "0.23.0",
+    "tsx": "4.23.15",
     "typescript": "6.0.3",
     "vitest": "4.1.11"
   }

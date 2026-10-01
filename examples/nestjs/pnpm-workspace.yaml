@@ -8,5 +8,5 @@ blockExoticSubdeps: true
 strictDepBuilds: true
 
 allowBuilds:
-  "@swc/core@1.16.1": true
+  "@swc/core@1.16.13": true
   "esbuild@0.28.2": true

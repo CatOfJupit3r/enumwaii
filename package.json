@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/CatOfJupit3r/enumwaii.git"
   },
-  "packageManager": "pnpm@11.18.0",
+  "packageManager": "pnpm@11.28.0",
   "engines": {
     "node": ">=22.18.0",
     "pnpm": ">=11.0.0"
@@ -56,16 +56,16 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
-    "@changesets/changelog-github": "1.0.0",
-    "@changesets/cli": "3.0.1",
-    "@types/node": "26.4.0",
+    "@changesets/changelog-github": "1.0.1",
+    "@changesets/cli": "3.0.3",
+    "@types/node": "26.6.3",
     "husky": "9.1.7",
-    "oxlint": "1.80.0",
-    "oxlint-tsgolint": "7.0.2001",
+    "oxlint": "1.86.0",
+    "oxlint-tsgolint": "7.0.2003",
     "premove": "4.0.0",
-    "prettier": "3.9.6",
+    "prettier": "3.9.9",
     "publint": "0.3.24",
-    "tsdown": "0.22.14",
+    "tsdown": "0.23.0",
     "typescript": "6.0.3",
     "vitest": "4.1.11"
   }

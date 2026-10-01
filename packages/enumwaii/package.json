@@ -118,12 +118,12 @@
     }
   },
   "devDependencies": {
-    "@tanstack/intent": "0.3.8",
-    "@types/react": "19.2.18",
+    "@tanstack/intent": "0.5.0",
+    "@types/react": "19.3.0",
     "nuqs": "2.10.1",
-    "react": "19.2.8",
-    "valibot": "1.4.2",
-    "zod": "4.5.4"
+    "react": "19.3.0",
+    "valibot": "1.5.0",
+    "zod": "4.6.5"
   },
   "dependencies": {
     "@standard-schema/spec": "^1.1.0"

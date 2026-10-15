@@ -15,7 +15,7 @@ The [Hono compatibility application](https://github.com/CatOfJupit3r/enumwaii/tr
 
 ## Dependencies
 
-The core package has one regular dependency: `@standard-schema/spec`, whose types are part of the public declaration surface. Zod and Valibot are optional peer dependencies loaded only through `enumwaii/zod` and `enumwaii/valibot`.
+The core package has one regular dependency: `@standard-schema/spec`, whose types are part of the public declaration surface. Zod and Valibot are optional peer dependencies loaded only through `enumwaii/zod` and `enumwaii/valibot`. The Zod adapter requires Zod 4.
 
 The ESLint package supports ESLint 8, 9, and 10 and TypeScript 5.5 through the current 6.x line. TypeScript is optional for the syntax-only preset and required for the type-aware preset.
 

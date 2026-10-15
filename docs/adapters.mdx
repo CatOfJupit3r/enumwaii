@@ -86,7 +86,23 @@ const input = inputSchema.parse(payload);
 // input.role is the branded enumwaii member union
 ```
 
-The adapter follows Zod's normal parse and error behavior while preserving the branded output type.
+The adapter returns a native Zod 4 `z.enum` built from the declaration's member object, typed with the branded output. It follows Zod's normal parse behavior and reports an invalid value as an `invalid_value` issue with the message `Expected one of: ...`. Object declarations keep their keys on the schema's `.enum` view.
+
+Because it is a real `z.enum`, tools that introspect Zod schemas can describe it, for example MCP or model tool definitions:
+
+```ts
+import { z } from "zod";
+import { em } from "enumwaii";
+import { emToZodSchema } from "enumwaii/zod";
+
+const roles = em(["ADMIN", "USER"]);
+const toolInputSchema = z.object({
+  role: emToZodSchema(roles),
+});
+
+const jsonSchema = z.toJSONSchema(toolInputSchema);
+// jsonSchema.properties.role is { type: "string", enum: ["ADMIN", "USER"] }
+```
 
   </Tab>
   <Tab value="Valibot">

@@ -10,12 +10,17 @@
     ":disablePeerDependencies",
     ":maintainLockFilesMonthly",
     ":semanticCommits",
-    ":semanticCommitTypeAll(chore)",
-    ":disableVulnerabilityAlerts"
+    ":semanticCommitTypeAll(chore)"
   ],
   "ignorePresets": [":ignoreModulesAndTests"],
   "labels": ["dependencies"],
   "rangeStrategy": "bump",
+  "vulnerabilityAlerts": {
+    "description": "Renovate owns security updates so the root pnpm workspace lockfile is regenerated with them; open them immediately while honoring the 24-hour npm release quarantine",
+    "addLabels": ["security"],
+    "schedule": ["at any time"],
+    "minimumReleaseAge": "1 day"
+  },
   "packageRules": [
     {
       "description": "Match the workspace's 24-hour npm release quarantine",
@@ -45,6 +50,16 @@
       "matchFileNames": ["examples/**/package.json"],
       "matchUpdateTypes": ["lockFileMaintenance"],
       "enabled": false
+    },
+    {
+      "description": "Hold TypeScript on 6.x everywhere, including examples: TypeScript 7 lacks the compiler API typescript-eslint needs (@typescript-eslint/utils requires typescript <6.1)",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
+    },
+    {
+      "description": "Hold fumadocs-twoslash on 3.x: version 4 imports typescript/unstable/sync, which only TypeScript 7 provides",
+      "matchPackageNames": ["fumadocs-twoslash"],
+      "allowedVersions": "<4"
     }
   ],
   "ignoreDeps": ["@solid-primitives/utils"]

@@ -30,7 +30,7 @@ Repository policy is enforced as follows:
 - The lockfile is committed and frozen in CI. Transitive Git and tarball dependencies are blocked.
 - Dependency lifecycle scripts fail closed. Only the exact reviewed versions listed under `allowBuilds` in `pnpm-workspace.yaml` may run install scripts.
 - New package versions are quarantined for 24 hours.
-- GitHub Actions use exact release tags. Dependabot groups their updates into a small monthly review PR.
+- GitHub Actions are pinned to commit digests. Renovate groups their routine updates into the weekly review PR and opens security updates immediately; Dependabot alerts stay enabled as Renovate's vulnerability source, while Dependabot security updates are disabled.
 - Core and extended validation run on `pull_request` with a read-only token, no secrets, and no persisted credentials. Workflow runs for fork pull requests from outside collaborators wait for maintainer approval.
 - Release is manually dispatched, runs only the publishable packages, and is gated by the `npm-release` environment.
 

@@ -32,12 +32,6 @@ OR
 bun add enumwaii
 ```
 
-OR
-
-```sh
-deno add npm:enumwaii
-```
-
 ## Quick start
 
 ```ts
@@ -135,7 +129,7 @@ Read [Member surfaces](https://catofjupit3r.github.io/enumwaii/docs/member-surfa
 
 ## Compatibility
 
-Node.js 18 or newer is supported. ESM and CommonJS entry points, declarations, and source maps are included. The ESM entry is also tested under Bun 1.4, Deno 2.9, and Cloudflare Workers without Node compatibility flags. See [releases and compatibility](https://catofjupit3r.github.io/enumwaii/docs/release-and-compatibility/).
+Node.js 18 or newer is supported. ESM and CommonJS entry points, declarations, and source maps are included. The ESM entry is also tested under Bun 1.4 and Cloudflare Workers without Node compatibility flags. See [releases and compatibility](https://catofjupit3r.github.io/enumwaii/docs/release-and-compatibility/).
 
 ## License
 

@@ -7,8 +7,8 @@ The repository examples are independent applications with package manifests, run
 
 <Callout type="warn" title="Hosted demos exercise the portable slice">
   StackBlitz runs the browser or Node.js path inside a WebContainer. It cannot
-  prove Hono's Bun, Deno, or workerd paths or NestJS's Docker-backed MongoDB
-  service. Use the checked-in runtime commands for those environments.
+  prove Hono's Bun or workerd paths or NestJS's Docker-backed MongoDB service.
+  Use the checked-in runtime commands for those environments.
 </Callout>
 
 The hosted links import the complete repository so the unpublished local copy of enumwaii remains available through each example's `file:` dependency. They install only the selected example and its dependencies, then build the local library before starting.
@@ -103,8 +103,8 @@ Third-party marks identify technologies exercised by the runnable examples and l
 - Forms use TanStack Form in the Solid application and a dependency-free native approach in Vue.
 - TanStack Table drives a searchable and sortable editorial grid in Byline.
 - Next.js, TanStack Start, and Vue parse URL or persistence state.
-- Hono uses Drizzle with embedded PGlite on Node, Bun, and Deno; its shared database-free status routes also run in Cloudflare workerd with Node compatibility disabled. NestJS uses Mongoose with a checked-in MongoDB Compose service.
+- Hono uses Drizzle with embedded PGlite on Node and Bun; its shared database-free status routes also run in Cloudflare workerd with Node compatibility disabled. NestJS uses Mongoose with a checked-in MongoDB Compose service.
 - Server examples cover JSON, form data, route parameters, request/response schemas, error mapping, and serialized branded strings.
-- The Hono runtime suite keeps one status-boundary contract constant across native Bun and Deno servers and Cloudflare workerd.
+- The Hono runtime suite keeps one status-boundary contract constant across a native Bun server and Cloudflare workerd.
 
 Every application includes invalid and ambiguous inputs alongside its successful flow.

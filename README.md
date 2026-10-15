@@ -60,13 +60,7 @@ OR
 bun add enumwaii
 ```
 
-OR
-
-```sh
-deno add npm:enumwaii
-```
-
-The package ships ESM and CommonJS entry points with declarations and source maps. Node.js 18 or newer is supported; the ESM build is also tested under Bun, Deno, and Cloudflare Workers without Node compatibility flags.
+The package ships ESM and CommonJS entry points with declarations and source maps. Node.js 18 or newer is supported; the ESM build is also tested under Bun and Cloudflare Workers without Node compatibility flags.
 
 ## What it gives you
 
@@ -155,7 +149,7 @@ The `flat/recommended-type-checked` preset additionally catches direct member vi
 | --- | --- |
 | Web applications | [Next.js](examples/nextjs), [TanStack Start + Solid](examples/tanstack-start-solid), and [Vue](examples/vue) |
 | Servers | [Hono](examples/hono), [Elysia](examples/elysia), [oRPC](examples/orpc), [Effect](examples/effect), and [NestJS](examples/nestjs) |
-| Runtimes | Node.js, Bun, Deno, and Cloudflare Workers through the shared [Hono](examples/hono) boundary contract |
+| Runtimes | Node.js, Bun, and Cloudflare Workers through the shared [Hono](examples/hono) boundary contract |
 | Data and everyday UI | Drizzle + PGlite, Mongoose, TanStack Form, native forms, TanStack Table, URL state, persistence hydration, request validation, and visible failure paths across the examples above |
 
 Every example is independently runnable and exercises invalid or ambiguous input instead of demonstrating only a happy path. Open the [example catalog](https://catofjupit3r.github.io/enumwaii/docs/examples/) for commands and hosted StackBlitz links.

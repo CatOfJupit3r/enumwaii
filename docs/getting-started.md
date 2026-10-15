@@ -25,11 +25,7 @@ yarn add enumwaii
 bun add enumwaii
 ```
 
-```sh tab="deno"
-deno add npm:enumwaii
-```
-
-The package ships ESM and CommonJS builds with declarations and source maps. Node.js 18 or newer is supported, and the ESM entry point is also tested under Bun, Deno, and Cloudflare Workers without Node compatibility flags. In a Cloudflare Workers project, use whichever package manager already owns the project and import `enumwaii` normally.
+The package ships ESM and CommonJS builds with declarations and source maps. Node.js 18 or newer is supported, and the ESM entry point is also tested under Bun and Cloudflare Workers without Node compatibility flags. In a Cloudflare Workers project, use whichever package manager already owns the project and import `enumwaii` normally.
 
 The only runtime dependency is the type-focused official Standard Schema specification package. Zod, Valibot, and ESLint are opt-in.
 

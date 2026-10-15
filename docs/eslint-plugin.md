@@ -25,11 +25,7 @@ yarn add -D eslint eslint-plugin-enumwaii
 bun add -d eslint eslint-plugin-enumwaii
 ```
 
-```sh tab="deno"
-deno add --dev npm:eslint npm:eslint-plugin-enumwaii
-```
-
-The plugin is a Node-based development tool. Deno and Cloudflare applications need it only when their repository already runs ESLint through a compatible toolchain; it is not part of enumwaii's runtime support.
+The plugin is a Node-based development tool. Cloudflare applications need it only when their repository already runs ESLint through a compatible toolchain; it is not part of enumwaii's runtime support.
 
 ### Syntax-only flat config
 
@@ -86,86 +82,6 @@ For eslintrc configuration, use the `recommended` and `recommended-type-checked`
 
 All three configurable rules accept the same structured declaration `ignore` entries. Define reviewed exceptions once and pass that array to every rule that should honor them. Each entry requires a name matcher, an `external-contract` or `compatibility` reason, and a nonblank justification. This keeps matching behavior and rationale aligned instead of maintaining parallel wildcard and regex lists.
 
-### `no-manual-enum`
-
-Enabled in both type-checked presets. Reports unions of two or more distinct raw string literals, including inline annotations, constraints, containers, nullable unions, branded wrappers, and assembly from single-literal aliases (including imports). Adding even one raw literal to a branded enumwaii type is also reported. References to an already assembled vocabulary are not reported again.
-
-The rule also reports string-valued const arrays and objects when indexed access extracts a multi-value domain, and unions whose branches share a required property with distinct raw string tags. Ordinary const data is allowed until used as a type vocabulary. Diagnostics distinguish unions, const containers, and discriminants.
-
-```ts
-import { em } from "enumwaii";
-
-const states = em(["LOADING", "SUCCESS", "ERROR"]);
-type State = (typeof states)["~type"];
-const STATE = states.cases;
-type RequestState =
-  | { state: typeof STATE.LOADING }
-  | { state: typeof STATE.SUCCESS; data: string }
-  | { state: typeof STATE.ERROR; error: Error };
-```
-
-Use `.cases` for TypeScript's native discriminant narrowing and exhaustiveness, consistent with the other enumwaii rules. Use `.enum` for ordinary branded values.
-
-`keyof`, indexed property selection, built-in `Pick`/`Omit` keys, open template formats, and existing external type references remain allowed. No blanket exemption applies to `.d.ts` files or DTO names. Exclude generated files explicitly through ESLint `ignores`.
-
-Use `ignore` for explicit declaration exceptions, with the same matchers and required rationale as `no-object-em`:
-
-```js
-{
-  rules: {
-    "enumwaii/no-manual-enum": ["error", {
-      ignore: [{
-        name: { startsWith: "Provider", endsWith: "Status" },
-        reason: "external-contract",
-        justification: "Provider schema requires a separately declared wire type.",
-      }],
-    }],
-  },
-}
-```
-
-A name matcher supports `startsWith`, `endsWith`, and `contains` together (all must match), or a standalone `regex` string. Any matching entry exempts the declaration. Matching is case-sensitive; regexes use Unicode mode. Each entry requires `reason: "external-contract" | "compatibility"` and a nonblank `justification`. Invalid options and regexes fail configuration.
-
-Names come from the nearest enclosing type alias, interface, function, method, or variable declaration. This includes inline annotations within that declaration. For const extraction, match the derived type name, not the source container. Matching stops at the nearest declaration, so ignoring a function does not exempt a separately named local type. Unnamed declarations are not matched. Exceptions neither propagate through references nor disable other rules; generated-file exclusions still belong in ESLint `ignores`.
-
-There are no automatic fixes. Preserve existing wire and persisted values when migrating; `no-object-em` representation exceptions do not disable this rule. Coverage is deliberately bounded: it does not evaluate finite template expansions, arbitrary generic transformations, native TypeScript enum declarations, or const containers hidden behind value aliases or non-const assertions. It recognizes branded ownership through enumwaii's declaration source, not a local function named `em` or a property named `~type`.
-
-### `no-object-em`
-
-Enabled in every recommended preset. Use `em(["IN_PROGRESS", "COMPLETED"])` for internal identities and new public APIs, including `PROGRESS_TYPE`. Keep display labels in a separate map indexed by extracted enum members. For existing enum subsets and derivations, use `.pick()`, `.omit()`, `.deriveTo()`, and `em.combine()` with owned members.
-
-A redundant identity object is accepted when every property has a JSDoc block. This is the supported member-documentation form because TypeScript preserves comments from named object properties on `.enum` hovers but cannot carry tuple-element comments into generated property symbols. Partially documented objects remain invalid.
-
-Reserve object inputs with distinct keys and values for **external-contract** constraints (AWS or other provider SDKs, provider events/scopes, protocol/media/browser/CSS/locale/runtime tokens) or **compatibility** constraints (existing database rows, saved files, historical messages, previously published values). A new public interface, URL, CLI/config choice, serialization, or lowercase spelling alone does not qualify. AI assistants should fix the representation or use composition, rather than disabling lint or renaming variables to fit an ignore pattern.
-
-```js
-{
-  rules: {
-    "enumwaii/no-object-em": ["error", {
-      ignore: [{
-        name: { startsWith: "aws", endsWith: "Status" },
-        reason: "external-contract",
-        justification: "AWS SDK values must retain the provider's exact spelling.",
-      }, {
-        name: { regex: "^legacyOrderStatus$" },
-        reason: "compatibility",
-        justification: "Existing orders.status rows use inProgress and done.",
-      }],
-    }],
-  },
-}
-```
-
-Each `name` accepts either one object containing any combination of `startsWith`, `endsWith`, and `contains` (at least one required), or a separate `{ regex: string }` object. All provided string conditions must match (AND); ignore entries are alternatives (OR). For example, `{ startsWith: "aws", endsWith: "Status", contains: "Wire" }` matches `awsWireStatus`. Regex cannot be mixed with the string conditions. Native JavaScript string methods implement the first three (`contains` uses `includes`); regex strings compile once per rule instance with the Unicode flag. Matching is case-sensitive against the receiving variable name, such as `awsStatus` in `const awsStatus = em(SdkStatus)`. Anonymous calls cannot match an exception. Patterns must be nonempty; `reason` and a nonblank `justification` are mandatory. No exceptions are built in, and matching a name cannot prove the stated contract.
-
-Recognizes direct factories, renamed named imports and namespace imports from `enumwaii`, TypeScript wrappers, local constant aliases, and local TypeScript enums. Without parser services, unknown imported values, parameters, and function results are outside its scope. Project-aware TypeScript parser services extend checking to those object inputs while allowing arrays and tuples. Unknown/`any` inputs remain unclassified.
-
-An exemption never permits a statically resolved redundant object literal such as `em({ GET: "GET", POST: "POST" })`: use `em(["GET", "POST"])`. The rule does not prove redundancy for imported or dynamic objects and does not autofix contract-sensitive values.
-
-Exceptions apply only to this rule: retain magic-string enforcement at use sites. Required external literal values may need a separate, narrowly scoped `enforce-enum-casing` name override; keep your keys `CONSTANT_CASE`. Directly importing the provider enum avoids duplicating its literal definitions.
-
-Reports: `objectInput`, `redundantObject`.
-
 ### `enforce-enum-casing`
 
 Checks string literals in the first array or object passed directly to `em(...)` or `new Enumwaii(...)`. It does not need TypeScript parser services. Object keys always require `CONSTANT_CASE`. Tuple members and object values follow `valueCasing`: `"constant"` (the default), `"kebab"`, or `"snake"`. Non-literal values are outside its scope.
@@ -220,6 +136,137 @@ const status = em({
   READY: "ready",
   IN_PROGRESS: "in-progress",
 });
+```
+
+### `no-object-em`
+
+Enabled in every recommended preset. Use `em(["IN_PROGRESS", "COMPLETED"])` for internal identities and new public APIs, including `PROGRESS_TYPE`. Keep display labels in a separate map indexed by extracted enum members. For existing enum subsets and derivations, use `.pick()`, `.omit()`, `.deriveTo()`, and `em.combine()` with owned members.
+
+A redundant identity object is accepted when every property has a JSDoc block. This is the supported member-documentation form because TypeScript preserves comments from named object properties on `.enum` hovers but cannot carry tuple-element comments into generated property symbols. Partially documented objects remain invalid.
+
+Reserve object inputs with distinct keys and values for **external-contract** constraints (AWS or other provider SDKs, provider events/scopes, protocol/media/browser/CSS/locale/runtime tokens) or **compatibility** constraints (existing database rows, saved files, historical messages, previously published values). A new public interface, URL, CLI/config choice, serialization, or lowercase spelling alone does not qualify. AI assistants should fix the representation or use composition, rather than disabling lint or renaming variables to fit an ignore pattern.
+
+```js
+{
+  rules: {
+    "enumwaii/no-object-em": ["error", {
+      ignore: [{
+        name: { startsWith: "aws", endsWith: "Status" },
+        reason: "external-contract",
+        justification: "AWS SDK values must retain the provider's exact spelling.",
+      }, {
+        name: { regex: "^legacyOrderStatus$" },
+        reason: "compatibility",
+        justification: "Existing orders.status rows use inProgress and done.",
+      }],
+    }],
+  },
+}
+```
+
+Each `name` accepts either one object containing any combination of `startsWith`, `endsWith`, and `contains` (at least one required), or a separate `{ regex: string }` object. All provided string conditions must match (AND); ignore entries are alternatives (OR). For example, `{ startsWith: "aws", endsWith: "Status", contains: "Wire" }` matches `awsWireStatus`. Regex cannot be mixed with the string conditions. Native JavaScript string methods implement the first three (`contains` uses `includes`); regex strings compile once per rule instance with the Unicode flag. Matching is case-sensitive against the receiving variable name, such as `awsStatus` in `const awsStatus = em(SdkStatus)`. Anonymous calls cannot match an exception. Patterns must be nonempty; `reason` and a nonblank `justification` are mandatory. No exceptions are built in, and matching a name cannot prove the stated contract.
+
+Recognizes direct factories, renamed named imports and namespace imports from `enumwaii`, TypeScript wrappers, local constant aliases, and local TypeScript enums. Without parser services, unknown imported values, parameters, and function results are outside its scope. Project-aware TypeScript parser services extend checking to those object inputs while allowing arrays and tuples. Unknown/`any` inputs remain unclassified.
+
+An exemption never permits a statically resolved redundant object literal such as `em({ GET: "GET", POST: "POST" })`: use `em(["GET", "POST"])`. The rule does not prove redundancy for imported or dynamic objects and does not autofix contract-sensitive values.
+
+Exceptions apply only to this rule: retain magic-string enforcement at use sites. Required external literal values may need a separate, narrowly scoped `enforce-enum-casing` name override; keep your keys `CONSTANT_CASE`. Directly importing the provider enum avoids duplicating its literal definitions.
+
+Reports: `objectInput` and `redundantObject`.
+
+#### Flagged
+
+```ts
+// @noErrors
+import { em } from "enumwaii";
+
+const progress = em({ IN_PROGRESS: "STARTED", COMPLETED: "DONE" });
+// @error: enumwaii/no-object-em (objectInput) — use array input or a documented exception.
+const methods = em({ GET: "GET", POST: "POST" });
+// @error: enumwaii/no-object-em (redundantObject) — use em([...]) for identical keys and values.
+```
+
+#### Accepted
+
+```ts
+import { em } from "enumwaii";
+
+const progress = em(["IN_PROGRESS", "COMPLETED"]);
+const PROGRESS = progress.enum;
+const progressLabels = {
+  [PROGRESS.IN_PROGRESS]: "In progress",
+  [PROGRESS.COMPLETED]: "Completed",
+};
+
+const methods = em({
+  /** Reads a resource without side effects. */
+  GET: "GET",
+  /** Submits data to create or process a resource. */
+  POST: "POST",
+});
+```
+
+### `no-manual-enum`
+
+Enabled in both type-checked presets. Reports unions of two or more distinct raw string literals, including inline annotations, constraints, containers, nullable unions, branded wrappers, and assembly from single-literal aliases (including imports). Adding even one raw literal to a branded enumwaii type is also reported. References to an already assembled vocabulary are not reported again.
+
+The rule also reports string-valued const arrays and objects when indexed access extracts a multi-value domain, and unions whose branches share a required property with distinct raw string tags. Ordinary const data is allowed until used as a type vocabulary. Diagnostics distinguish unions, const containers, and discriminants.
+
+Use `.cases` for TypeScript's native discriminant narrowing and exhaustiveness, consistent with the other enumwaii rules. Use `.enum` for ordinary branded values.
+
+`keyof`, indexed property selection, built-in `Pick`/`Omit` keys, open template formats, and existing external type references remain allowed. No blanket exemption applies to `.d.ts` files or DTO names. Exclude generated files explicitly through ESLint `ignores`.
+
+Use `ignore` for explicit declaration exceptions, with the same matchers and required rationale as `no-object-em`:
+
+```js
+{
+  rules: {
+    "enumwaii/no-manual-enum": ["error", {
+      ignore: [{
+        name: { startsWith: "Provider", endsWith: "Status" },
+        reason: "external-contract",
+        justification: "Provider schema requires a separately declared wire type.",
+      }],
+    }],
+  },
+}
+```
+
+A name matcher supports `startsWith`, `endsWith`, and `contains` together (all must match), or a standalone `regex` string. Any matching entry exempts the declaration. Matching is case-sensitive; regexes use Unicode mode. Each entry requires `reason: "external-contract" | "compatibility"` and a nonblank `justification`. Invalid options and regexes fail configuration.
+
+Names come from the nearest enclosing type alias, interface, function, method, or variable declaration. This includes inline annotations within that declaration. For const extraction, match the derived type name, not the source container. Matching stops at the nearest declaration, so ignoring a function does not exempt a separately named local type. Unnamed declarations are not matched. Exceptions neither propagate through references nor disable other rules; generated-file exclusions still belong in ESLint `ignores`.
+
+There are no automatic fixes. Preserve existing wire and persisted values when migrating; `no-object-em` representation exceptions do not disable this rule. Coverage is deliberately bounded: it does not evaluate finite template expansions, arbitrary generic transformations, native TypeScript enum declarations, or const containers hidden behind value aliases or non-const assertions. It recognizes branded ownership through enumwaii's declaration source, not a local function named `em` or a property named `~type`.
+
+Reports: `manualUnion`, `manualContainer`, and `manualDiscriminant`.
+
+#### Flagged
+
+```ts
+// @noErrors
+type Status = "LOADING" | "SUCCESS" | "ERROR";
+// @error: enumwaii/no-manual-enum (manualUnion) — declare the vocabulary with enumwaii.
+
+const PRIORITIES = ["LOW", "HIGH"] as const;
+type Priority = (typeof PRIORITIES)[number];
+// @error: enumwaii/no-manual-enum (manualContainer) — replace the const container with enumwaii.
+
+type RequestState = { state: "LOADING" } | { state: "SUCCESS"; data: string };
+// @error: enumwaii/no-manual-enum (manualDiscriminant) — reference canonical case members.
+```
+
+#### Accepted
+
+```ts
+import { em } from "enumwaii";
+
+const states = em(["LOADING", "SUCCESS", "ERROR"]);
+type State = (typeof states)["~type"];
+const STATE_CASES = states.cases;
+type RequestState =
+  | { state: typeof STATE_CASES.LOADING }
+  | { state: typeof STATE_CASES.SUCCESS; data: string }
+  | { state: typeof STATE_CASES.ERROR; error: Error };
 ```
 
 ### `no-direct-enumwaii-reference`
@@ -423,40 +470,6 @@ const grants = roles.deriveTo(
 const combined = em.combine([roles, permissions]);
 ```
 
-### `prefer-native-schema-adapters`
-
-Reports `z.enum`, `z.nativeEnum`, `v.enum`, and `v.picklist` calls that rebuild a schema from an enumwaii `.enum`, `.rawEnum`, `.cases`, `.values`, or `.rawValues` view. Extracted and imported aliases are traced through TypeScript symbols, while ordinary arrays and objects remain valid schema inputs.
-
-Use the library-specific adapter when an API requires a concrete schema type. `emToZodSchema` returns a native `z.enum`, so it also covers schemas that must convert to JSON Schema. If the receiving API supports Standard Schema, pass the enumwaii declaration directly without an adapter.
-
-#### Flagged
-
-```ts
-// @noErrors
-import { em } from "enumwaii";
-import { z } from "zod";
-
-const roles = em(["ADMIN", "USER"]);
-const RAW_ROLE = roles.rawEnum;
-const roleSchema = z.enum(RAW_ROLE);
-// @error: enumwaii/prefer-native-schema-adapters (preferAdapter) — preserve enumwaii validation and branded output.
-```
-
-#### Accepted
-
-```ts
-import { em } from "enumwaii";
-import { emToZodSchema } from "enumwaii/zod";
-
-const roles = em(["ADMIN", "USER"]);
-const roleSchema = emToZodSchema(roles);
-
-declare function acceptsStandardSchema(schema: typeof roles): void;
-acceptsStandardSchema(roles);
-```
-
-The rule has no autofix because adapter schemas can differ from reconstructed schemas in their inferred output types and error behavior. Reports: `preferAdapter`.
-
 ### `no-union-property-in`
 
 Flags a static string on the left side of `in` when the right side is an object union and the property is available on some variants but unavailable on others. It does not reject ordinary property-existence checks, non-unions, dynamic property names, or unions whose members are not structurally separated by that property.
@@ -496,6 +509,42 @@ declare const scope: Scope;
 if (scope.kind === SCOPE_CASES.CHAT) {
   scope.chatId;
 }
+```
+
+### `prefer-native-schema-adapters`
+
+Reports `z.enum`, `z.nativeEnum`, `v.enum`, and `v.picklist` calls that rebuild a schema from an enumwaii `.enum`, `.rawEnum`, `.cases`, `.values`, or `.rawValues` view. Extracted and imported aliases are traced through TypeScript symbols, while ordinary arrays and objects remain valid schema inputs.
+
+Use the library-specific adapter when an API requires a concrete schema type. `emToZodSchema` returns a native `z.enum`, so it also covers schemas that must convert to JSON Schema. If the receiving API supports Standard Schema, pass the enumwaii declaration directly without an adapter.
+
+The rule has no autofix because adapter schemas can differ from reconstructed schemas in their inferred output types and error behavior.
+
+Reports: `preferAdapter`.
+
+#### Flagged
+
+```ts
+// @noErrors
+import { em } from "enumwaii";
+import { z } from "zod";
+
+const roles = em(["ADMIN", "USER"]);
+const RAW_ROLE = roles.rawEnum;
+const roleSchema = z.enum(RAW_ROLE);
+// @error: enumwaii/prefer-native-schema-adapters (preferAdapter) — preserve enumwaii validation and branded output.
+```
+
+#### Accepted
+
+```ts
+import { em } from "enumwaii";
+import { emToZodSchema } from "enumwaii/zod";
+
+const roles = em(["ADMIN", "USER"]);
+const roleSchema = emToZodSchema(roles);
+
+declare function acceptsStandardSchema(schema: typeof roles): void;
+acceptsStandardSchema(roles);
 ```
 
 ## Oxlint

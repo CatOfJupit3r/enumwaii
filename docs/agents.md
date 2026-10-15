@@ -33,7 +33,7 @@ Before editing:
 
 Implementation requirements:
 - Install enumwaii using the repository's existing package manager. It supports
-  npm, pnpm, Yarn, Bun, Deno, and Cloudflare Workers projects.
+  npm, pnpm, Yarn, Bun, and Cloudflare Workers projects.
 - Declare the complete value set with em([...]), extract the branded `.enum`
   object once, and derive the application type from `typeof declaration["~type"]`.
 - Replace authored raw literals with members from the extracted object.

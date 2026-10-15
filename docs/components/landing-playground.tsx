@@ -3,14 +3,13 @@
 import { useEffect, useState, type ReactNode } from "react";
 
 type Scenario = "calls" | "policy" | "crossed";
-type PackageManager = "npm" | "pnpm" | "yarn" | "bun" | "deno";
+type PackageManager = "npm" | "pnpm" | "yarn" | "bun";
 
 const installCommands: Readonly<Record<PackageManager, string>> = {
   npm: "npm install enumwaii",
   pnpm: "pnpm add enumwaii",
   yarn: "yarn add enumwaii",
   bun: "bun add enumwaii",
-  deno: "deno add npm:enumwaii",
 };
 const packageManagerStorageKey = "enumwaii-package-manager";
 

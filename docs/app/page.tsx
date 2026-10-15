@@ -54,11 +54,6 @@ const ecosystem: readonly EcosystemGroup[] = [
         icons: ["bun"],
       },
       {
-        label: "Deno",
-        href: `${exampleRoot}/hono`,
-        icons: ["deno"],
-      },
-      {
         label: "Cloudflare Workers®",
         href: `${exampleRoot}/hono`,
       },
@@ -307,8 +302,8 @@ export default function HomePage() {
         <div>
           <h2>Add enumwaii with the tools you already use.</h2>
           <p>
-            The same package runs across Node.js, Bun, Deno, browsers, and
-            Cloudflare Workers.
+            The same package runs across Node.js, Bun, browsers, and Cloudflare
+            Workers.
           </p>
         </div>
         <InstallCommand />

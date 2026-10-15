@@ -15,7 +15,6 @@ examples/**/.data
 examples/**/pnpm-lock.yaml
 examples/**/package-lock.json
 examples/**/bun.lock*
-examples/**/deno.lock
 examples/react-native/android
 examples/react-native/ios
 examples/hono/worker-configuration.d.ts

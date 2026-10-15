@@ -7,7 +7,7 @@ This runbook covers the repository controls that cannot be inferred from package
 Every pull request runs two parallel jobs from the **CI** workflow:
 
 - **Core validation** installs only the root and publishable-package dependency graph, then checks formatting, dependency version policy, lint, runtime and type tests, package skills, builds, JSDoc coverage, package contents, and type resolution. It is the fast signal.
-- **Extended validation** installs the full workspace and checks packages, examples, documentation, Node 18, Bun, Deno, and Cloudflare Workers.
+- **Extended validation** installs the full workspace and checks packages, examples, documentation, Node 18, Bun, and Cloudflare Workers.
 
 Both jobs run on `pull_request` with a read-only repository token, no secrets, and no persisted credentials, including for pull requests from forks. In **Settings → Actions → General**, require approval for fork pull request workflows from outside collaborators so fork code runs only after a maintainer approves it.
 

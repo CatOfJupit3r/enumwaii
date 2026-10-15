@@ -42,7 +42,7 @@ pnpm test:runtimes
 
 Examples are versioned in this repository but intentionally live outside the root pnpm workspace so their transitive dependencies do not enter the committed root lockfile. `pnpm check` builds the local `enumwaii` package, installs each example independently without a frozen lockfile, and runs its tests, type checks, and build. Generated example lockfiles are ignored. To work on one example from the repository root, run `pnpm --filter enumwaii build`, then `pnpm --dir examples/<name> install --no-frozen-lockfile` and `pnpm --dir examples/<name> <script>`.
 
-`pnpm test:runtimes` is the opt-in cross-runtime gate and additionally requires Bun 1.4 and Deno 2.9. Cloudflare's local `workerd` binary is installed with the Hono example dependencies. CI installs the pinned Bun and Deno versions for this suite, so they are not prerequisites for ordinary Node-focused work.
+`pnpm test:runtimes` is the opt-in cross-runtime gate and additionally requires Bun 1.4. Cloudflare's local `workerd` binary is installed with the Hono example dependencies. CI installs the pinned Bun version for this suite, so it is not a prerequisite for ordinary Node-focused work.
 
 ## Repository map
 
@@ -92,7 +92,7 @@ A pull request should:
 4. include a Changeset when a published package changes; and
 5. pass `pnpm check`.
 
-Core validation and Extended validation start in parallel on every pull request. Core validation is the fast signal for the publishable packages; Extended validation checks the same commit across all examples, documentation, Node 18, Bun, Deno, and Cloudflare Workers. A new push cancels the older runs. Workflow runs for first-time contributors from forks wait for a maintainer to approve them.
+Core validation and Extended validation start in parallel on every pull request. Core validation is the fast signal for the publishable packages; Extended validation checks the same commit across all examples, documentation, Node 18, Bun, and Cloudflare Workers. A new push cancels the older runs. Workflow runs for first-time contributors from forks wait for a maintainer to approve them.
 
 Maintainers may ask to split a pull request when independent changes make its behavior or release impact difficult to review.
 

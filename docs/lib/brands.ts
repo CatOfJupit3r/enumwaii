@@ -4,11 +4,6 @@ export const brandAssets = {
     label: "Bun",
     src: "/brands/bun.svg",
   },
-  deno: {
-    href: "https://deno.com/",
-    label: "Deno",
-    src: "/brands/deno.svg",
-  },
   effect: {
     href: "https://effect.website/",
     label: "Effect",

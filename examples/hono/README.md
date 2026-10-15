@@ -1,11 +1,10 @@
 # Counter — Hono + Drizzle + enumwaii
 
-Counter is a barista-facing café order board backed by embedded Postgres. It runs the full dashboard on Node, Bun, and Deno; the Cloudflare Worker deliberately exposes only its portable menu and pricing catalog because an isolate-local PGlite database would not be durable edge storage.
+Counter is a barista-facing café order board backed by embedded Postgres. It runs the full dashboard on Node and Bun; the Cloudflare Worker deliberately exposes only its portable menu and pricing catalog because an isolate-local PGlite database would not be durable edge storage.
 
 ```sh
 pnpm --dir examples/hono dev
 pnpm --dir examples/hono dev:bun
-pnpm --dir examples/hono dev:deno
 pnpm --dir examples/hono dev:cloudflare
 ```
 

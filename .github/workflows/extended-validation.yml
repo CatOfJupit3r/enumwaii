@@ -34,8 +34,6 @@ jobs:
           # secrets or persisted credentials, and only receives read access.
           allow-unsafe-pr-checkout: true
       - uses: pnpm/action-setup@v6.0.10
-        with:
-          version: 11.18.0
       - uses: actions/setup-node@v7.0.0
         with:
           node-version: 22.18.0

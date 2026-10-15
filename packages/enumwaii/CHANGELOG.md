@@ -1,5 +1,23 @@
 # enumwaii
 
+## 2.0.0
+
+### Major Changes
+
+- [#39](https://github.com/CatOfJupit3r/enumwaii/pull/39) [`40a2adc`](https://github.com/CatOfJupit3r/enumwaii/commit/40a2adc46cb251b0bdaf3c1f089500148f0fbab0) - `emToZodSchema` now returns a native Zod `z.enum` built from the declaration's member object instead of a `z.custom` schema. Its output is still the branded member union, and it now converts with `z.toJSONSchema`, so it works in MCP and model tool definitions without casting a rebuilt `z.enum`.
+
+  Breaking changes for consumers:
+
+  - The `zod` peer range is now `^4.0.0`. Zod 3 is no longer supported by `enumwaii/zod`.
+  - The return type is `z.ZodEnum<...>` instead of `z.ZodType<...>`. It is still assignable to `z.ZodType` of the branded union, and it adds `.enum`, `.options`, `.extract()` and `.exclude()`.
+  - An invalid value now fails with an `invalid_value` issue (with `values`) instead of a `custom` issue. The message stays `Expected one of: ...`.
+
+  `prefer-native-schema-adapters` now says in its report that the adapter keeps the branded output type.
+
+### Patch Changes
+
+- [#45](https://github.com/CatOfJupit3r/enumwaii/pull/45) [`047f8a7`](https://github.com/CatOfJupit3r/enumwaii/commit/047f8a71ccfa33362f7b535e68fcaab6b123e344) - Drop Deno from the documented runtime support. The ESM entry is no longer tested under Deno, so the README lists only Node.js, Bun, and Cloudflare Workers.
+
 ## 1.2.0
 
 ### Minor Changes

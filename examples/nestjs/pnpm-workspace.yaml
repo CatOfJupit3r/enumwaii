@@ -10,3 +10,6 @@ strictDepBuilds: true
 allowBuilds:
   "@swc/core@1.16.18": true
   "esbuild@0.28.2": true
+
+overrides:
+  source-map-js@>=1.0.0 <1.2.2: 1.2.2

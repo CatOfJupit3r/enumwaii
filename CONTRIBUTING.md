@@ -13,7 +13,7 @@ Usage questions and troubleshooting belong in the flow described by [SUPPORT.md]
 
 ## Local setup
 
-The workspace requires Node.js 22.18 or newer and pnpm 11. The published packages have their own, broader runtime compatibility ranges.
+The workspace requires Node.js 22.18 or newer and pnpm 12. The published packages have their own, broader runtime compatibility ranges.
 
 ```sh
 git clone https://github.com/CatOfJupit3r/enumwaii.git

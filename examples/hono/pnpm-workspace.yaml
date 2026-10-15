@@ -13,3 +13,4 @@ allowBuilds:
 
 overrides:
   esbuild@<=0.24.2: 0.28.2
+  source-map-js@>=1.0.0 <1.2.2: 1.2.2

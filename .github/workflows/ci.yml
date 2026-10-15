@@ -32,3 +32,35 @@ jobs:
         run: >-
           pnpm install --frozen-lockfile --filter enumwaii-workspace --filter enumwaii --filter eslint-plugin-enumwaii
       - run: pnpm check:core
+
+  extended:
+    name: Extended validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6.0.10
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 22.18.0
+          cache: pnpm
+      - uses: oven-sh/setup-bun@v2.2.0
+        with:
+          bun-version: 1.4.0
+      - uses: denoland/setup-deno@v2.0.5
+        with:
+          deno-version: v2.9.6
+      - name: Validate dependency pins
+        run: node scripts/check-dependency-pins.mjs
+      - run: pnpm install --frozen-lockfile
+      - name: Check packages, examples, and documentation
+        run: pnpm check
+      - name: Check Bun, Deno, and Cloudflare Workers
+        run: pnpm test:runtimes
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 18.20.8
+      - name: Check the minimum supported Node major
+        run: node scripts/check-node18-runtime.mjs

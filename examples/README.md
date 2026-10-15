@@ -15,7 +15,7 @@ Replace `effect` with the example you want, then use the command listed below. T
 | [Byline · Next.js](./nextjs) | A newsroom publishing desk with Server Components, status tabs, review reducer cases, CMS webhooks, public-status `.pick()`, and explained filter recovery | `pnpm --dir examples/nextjs dev` |
 | [Statuswaii · TanStack Start + Solid](./tanstack-start-solid) | A public status page plus internal ops room with SSR loaders, TanStack Form, versioned mutations, typed Slack links, and an honest branded-value RPC bridge | `pnpm --dir examples/tanstack-start-solid dev` |
 | [Crewboard · Vue](./vue) | A members-and-permissions screen with typed role events, a live `.deriveTo()` matrix, invitation-safe `.omit()`, and URL/localStorage recovery | `pnpm --dir examples/vue dev` |
-| [Counter · Hono + Drizzle + PGlite](./hono) | A café order board backed by embedded Postgres, aliased wire values, drink-size pricing, strict hydration, and optimistic barista moves across Node/Bun/Deno | `pnpm --dir examples/hono dev` |
+| [Counter · Hono + Drizzle + PGlite](./hono) | A café order board backed by embedded Postgres, aliased wire values, drink-size pricing, strict hydration, and optimistic barista moves across Node/Bun | `pnpm --dir examples/hono dev` |
 | [Waybill · Elysia](./elysia) | A parcel-tracking API and public timeline with object-form couriers, status slugs, Valibot scan bodies, and legacy-scanner fallback | `pnpm --dir examples/elysia dev` |
 | [Tablewaii · oRPC](./orpc) | A contract-first restaurant reservation service with host audit context, Zod contracts, Standard Schema scalar I/O, and real typed conflict errors | `pnpm --dir examples/orpc dev` |
 | [shipctl · Effect](./effect) | A pocket deployment orchestrator CLI with subcommands, seeded services, derived terminal presentation, exhaustive routing, and tagged transition failures | `pnpm --dir examples/effect dev` |
@@ -30,7 +30,7 @@ pnpm --dir examples/nestjs dev
 
 Each application is a named fictional product with seeded data and one obvious first action. Invalid and ambiguous inputs appear in realistic product moments—a stale deep link, scanner firmware, corrupt storage, a migrated database row, or a concurrent update—instead of a standalone boundary lab.
 
-The [Hono showcase](./hono) also owns the runtime compatibility suite. Node, Bun, and Deno run the complete PGlite + Drizzle application. Cloudflare workerd runs the same database-free status routes with both Node compatibility modes disabled. Bun, Deno, and workerd execute one shared HTTP contract, so their results remain directly comparable. Run locally installed hosts with `pnpm test:runtimes`; CI installs and checks the pinned versions independently.
+The [Hono showcase](./hono) also owns the runtime compatibility suite. Node and Bun run the complete PGlite + Drizzle application. Cloudflare workerd runs the same database-free status routes with both Node compatibility modes disabled. Bun and workerd execute one shared HTTP contract, so their results remain directly comparable. Run locally installed hosts with `pnpm test:runtimes`; CI installs and checks the pinned versions independently.
 
 ## Everyday application work
 

@@ -9,7 +9,7 @@ app.get("/", (c) =>
     service: "Counter portable café menu worker",
     runtime: "Cloudflare Workers",
     persistence:
-      "The PGlite order board runs on Node, Bun, and Deno; this Worker exposes its database-free menu and pricing catalog.",
+      "The PGlite order board runs on Node and Bun; this Worker exposes its database-free menu and pricing catalog.",
     endpoints: {
       menu: "GET /api/menu",
       pricing: "GET /api/menu/pricing/tall",

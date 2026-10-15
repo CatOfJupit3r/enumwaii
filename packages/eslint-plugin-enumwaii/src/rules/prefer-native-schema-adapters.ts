@@ -47,7 +47,8 @@ function staticPropertyName(node: ts.Node): string | undefined {
  * Prefer enumwaii's schema integrations over rebuilding schemas from member views.
  *
  * This type-aware rule reports Zod and Valibot enum factories whose input can be traced to an enumwaii `.enum`, `.rawEnum`, `.cases`, `.values`, or `.rawValues` view.
- * Use `emToZodSchema` or `emToValibotSchema` when that library's concrete schema type is required.
+ * Use `emToZodSchema` or `emToValibotSchema` when that library's concrete schema type is required,
+ * and `emToZodEnum` when a Zod schema must convert to JSON Schema.
  * When an integration accepts Standard Schema, pass the enumwaii declaration itself.
  *
  * Extracted and imported view aliases are traced through TypeScript symbols,
@@ -200,7 +201,10 @@ export const preferNativeSchemaAdaptersRule = createRule({
           messageId: "preferAdapter",
           data: {
             library,
-            adapter: library === "zod" ? "emToZodSchema" : "emToValibotSchema",
+            adapter:
+              library === "zod"
+                ? "emToZodSchema or emToZodEnum"
+                : "emToValibotSchema",
           },
         });
       },

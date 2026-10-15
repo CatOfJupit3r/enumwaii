@@ -70,7 +70,7 @@ const result = modes.safeParse(query.mode);
 if (result.success) useMode(result.value);
 ```
 
-The declaration implements Standard Schema v1; pass `modes` directly to consumers that accept the standard. Use `enumwaii/zod` or `enumwaii/valibot` only when an API specifically requires that library.
+The declaration implements Standard Schema v1; pass `modes` directly to consumers that accept the standard. Use `enumwaii/zod` or `enumwaii/valibot` only when an API specifically requires that library. When a Zod schema must convert to JSON Schema (MCP or model tool definitions), use `emToZodEnum(modes)` rather than `z.enum(modes.rawValues)`; it is a native `z.enum` with branded output.
 
 ## Compose and derive
 

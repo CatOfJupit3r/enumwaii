@@ -6,8 +6,9 @@ import { em, Enumwaii, EnumwaiiError, EnumwaiiParseError } from "../src/index";
 import { createEnumwaiiQueryParser } from "../src/adapters/nuqs";
 import { emToValibotSchema } from "../src/adapters/valibot";
 import { lowercase, uppercase } from "../src/derive-with";
-import { emToZodSchema } from "../src/adapters/zod";
+import { emToZodEnum, emToZodSchema } from "../src/adapters/zod";
 import * as v from "valibot";
+import { z } from "zod";
 
 const roles = em(["ADMIN", "USER", "GUEST"]);
 const ROLE = roles.enum;
@@ -185,6 +186,32 @@ describe("deserialization", () => {
     expect(() => emToZodSchema(roles).parse("OWNER")).toThrow();
     expect(v.parse(emToValibotSchema(roles), "USER")).toBe(ROLE.USER);
     expect(() => v.parse(emToValibotSchema(roles), "OWNER")).toThrow();
+  });
+
+  it("builds a native Zod enum that JSON Schema generators can describe", () => {
+    const roleSchema = emToZodEnum(roles);
+
+    expect(roleSchema.parse("ADMIN")).toBe(ROLE.ADMIN);
+    expect(roleSchema.safeParse("OWNER").success).toBe(false);
+    expect(roleSchema.options).toEqual(["ADMIN", "USER", "GUEST"]);
+    expect(z.toJSONSchema(z.object({ role: roleSchema }))).toMatchObject({
+      properties: {
+        role: { type: "string", enum: ["ADMIN", "USER", "GUEST"] },
+      },
+    });
+  });
+
+  it("keeps object declaration keys on the native Zod enum", () => {
+    const statuses = em({ ORDER_PAID: "order-paid", ORDER_OPEN: "order-open" });
+    const statusSchema = emToZodEnum(statuses);
+
+    expect(statusSchema.enum.ORDER_PAID).toBe(statuses.enum.ORDER_PAID);
+    expect(statusSchema.parse("order-open")).toBe(statuses.enum.ORDER_OPEN);
+    expect(statusSchema.safeParse("ORDER_OPEN").success).toBe(false);
+    expect(z.toJSONSchema(statusSchema)).toMatchObject({
+      type: "string",
+      enum: ["order-paid", "order-open"],
+    });
   });
 
   it("creates a nuqs parser with validation and an owned default", () => {

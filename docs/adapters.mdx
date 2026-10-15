@@ -88,6 +88,22 @@ const input = inputSchema.parse(payload);
 
 The adapter follows Zod's normal parse and error behavior while preserving the branded output type.
 
+`emToZodSchema` is a `z.custom` schema, which tools that introspect Zod schemas cannot describe. When a schema must become JSON Schema, for example an MCP or model tool definition, use `emToZodEnum`. It returns a native `z.enum` built from the declaration's member object, with the same branded output. It requires Zod 4.
+
+```ts
+import { z } from "zod";
+import { em } from "enumwaii";
+import { emToZodEnum } from "enumwaii/zod";
+
+const roles = em(["ADMIN", "USER"]);
+const toolInputSchema = z.object({
+  role: emToZodEnum(roles),
+});
+
+const jsonSchema = z.toJSONSchema(toolInputSchema);
+// jsonSchema.properties.role is { type: "string", enum: ["ADMIN", "USER"] }
+```
+
   </Tab>
   <Tab value="Valibot">
 Install Valibot for APIs that require its schema type:

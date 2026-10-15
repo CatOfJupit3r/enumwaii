@@ -4,24 +4,19 @@ This runbook covers the repository controls that cannot be inferred from package
 
 ## Pull request gates
 
-Every pull request receives the automatic **Core validation** check. It installs only the root and publishable-package dependency graph, then checks formatting, dependency version policy, lint, runtime and type tests, package skills, builds, JSDoc coverage, package contents, and type resolution.
+Every pull request runs two parallel jobs from the **CI** workflow:
 
-Approve the expensive suite after the change is ready for final review:
+- **Core validation** installs only the root and publishable-package dependency graph, then checks formatting, dependency version policy, lint, runtime and type tests, package skills, builds, JSDoc coverage, package contents, and type resolution. It is the fast signal.
+- **Extended validation** installs the full workspace and checks packages, examples, documentation, Node 18, Bun, Deno, and Cloudflare Workers.
 
-1. Open the pending **Extended validation** run from the pull request.
-2. Review the deployment awaiting approval for the `extended-validation` environment.
-3. Approve and deploy, then confirm that `enumwaii/extended-validation` succeeds on the pull request's latest commit.
-
-Configure the `extended-validation` environment with a maintainer as a required reviewer and no secrets. Leave **Prevent self-review** disabled for a single-maintainer repository so the pull request author can approve the gate.
-
-The workflow starts from the trusted default-branch definition through `pull_request_target`, then pauses before any pull request code is checked out or executed. After approval, package, example, documentation, Node 18, Bun, Deno, and Workers checks run against the immutable pull request head without secrets, persisted credentials, or write permissions. A separate trusted job writes the final status.
+Both jobs run on `pull_request` with a read-only repository token, no secrets, and no persisted credentials, including for pull requests from forks. In **Settings → Actions → General**, require approval for fork pull request workflows from outside collaborators so fork code runs only after a maintainer approves it.
 
 Require these contexts in the default-branch ruleset:
 
 - `Core validation`
-- `enumwaii/extended-validation`
+- `Extended validation`
 
-GitHub requires successful checks on the latest commit. Concurrency cancels an older pending or running validation after a push, and the replacement run waits for fresh environment approval.
+GitHub requires successful checks on the latest commit. Concurrency cancels older runs after a push.
 
 ## Local hooks
 
@@ -72,7 +67,8 @@ Before announcing 1.0.0:
 - make the repository public and confirm that all README, package metadata, issue, security, documentation, and source links resolve;
 - enable private vulnerability reporting, Dependabot alerts, secret scanning, and push protection;
 - apply the default-branch ruleset with pull requests, linear history, resolved review threads, CODEOWNERS, and the two required validation contexts;
-- protect the `extended-validation`, `npm-release`, and `github-pages` environments, with deployment-branch restrictions appropriate to each workflow;
+- protect the `npm-release` and `github-pages` environments, with deployment-branch restrictions appropriate to each workflow;
+- require approval for fork pull request workflows from outside collaborators;
 - verify the GitHub Pages deployment and custom repository homepage metadata;
 - inspect both package tarballs from `pnpm test:build:core` before the first release; and
 - publish through the manual workflow, then verify exports, types, provenance, README rendering, and package ownership from a clean consumer project.

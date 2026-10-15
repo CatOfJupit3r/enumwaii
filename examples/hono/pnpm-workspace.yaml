@@ -10,3 +10,6 @@ strictDepBuilds: true
 allowBuilds:
   "esbuild@0.18.20 || 0.25.12 || 0.28.1 || 0.28.2": true
   "workerd@1.20260926.1": true
+
+overrides:
+  esbuild@<=0.24.2: 0.25.0

@@ -427,7 +427,7 @@ const combined = em.combine([roles, permissions]);
 
 Reports `z.enum`, `z.nativeEnum`, `v.enum`, and `v.picklist` calls that rebuild a schema from an enumwaii `.enum`, `.rawEnum`, `.cases`, `.values`, or `.rawValues` view. Extracted and imported aliases are traced through TypeScript symbols, while ordinary arrays and objects remain valid schema inputs.
 
-Use the library-specific adapter when an API requires a concrete schema type. When a Zod schema must convert to JSON Schema, use `emToZodEnum` instead of `z.enum`. If the receiving API supports Standard Schema, pass the enumwaii declaration directly without an adapter.
+Use the library-specific adapter when an API requires a concrete schema type. `emToZodSchema` returns a native `z.enum`, so it also covers schemas that must convert to JSON Schema. If the receiving API supports Standard Schema, pass the enumwaii declaration directly without an adapter.
 
 #### Flagged
 

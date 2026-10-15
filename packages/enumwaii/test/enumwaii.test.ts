@@ -6,7 +6,7 @@ import { em, Enumwaii, EnumwaiiError, EnumwaiiParseError } from "../src/index";
 import { createEnumwaiiQueryParser } from "../src/adapters/nuqs";
 import { emToValibotSchema } from "../src/adapters/valibot";
 import { lowercase, uppercase } from "../src/derive-with";
-import { emToZodEnum, emToZodSchema } from "../src/adapters/zod";
+import { emToZodSchema } from "../src/adapters/zod";
 import * as v from "valibot";
 import { z } from "zod";
 
@@ -181,18 +181,18 @@ describe("deserialization", () => {
     ).toBeUndefined();
   });
 
-  it("offers optional Zod and Valibot adapters", () => {
-    expect(emToZodSchema(roles).parse("ADMIN")).toBe(ROLE.ADMIN);
-    expect(() => emToZodSchema(roles).parse("OWNER")).toThrow();
+  it("offers an optional Valibot adapter", () => {
     expect(v.parse(emToValibotSchema(roles), "USER")).toBe(ROLE.USER);
     expect(() => v.parse(emToValibotSchema(roles), "OWNER")).toThrow();
   });
 
-  it("builds a native Zod enum that JSON Schema generators can describe", () => {
-    const roleSchema = emToZodEnum(roles);
+  it("adapts a declaration to a native Zod enum that JSON Schema generators can describe", () => {
+    const roleSchema = emToZodSchema(roles);
 
     expect(roleSchema.parse("ADMIN")).toBe(ROLE.ADMIN);
-    expect(roleSchema.safeParse("OWNER").success).toBe(false);
+    expect(roleSchema.safeParse("OWNER").error?.issues).toMatchObject([
+      { code: "invalid_value", message: "Expected one of: ADMIN, USER, GUEST" },
+    ]);
     expect(roleSchema.options).toEqual(["ADMIN", "USER", "GUEST"]);
     expect(z.toJSONSchema(z.object({ role: roleSchema }))).toMatchObject({
       properties: {
@@ -201,9 +201,19 @@ describe("deserialization", () => {
     });
   });
 
-  it("keeps object declaration keys on the native Zod enum", () => {
+  it("adapts composed declarations to Zod enums of their own members", () => {
+    const staffSchema = emToZodSchema(roles.pick([ROLE.ADMIN, ROLE.USER]));
+    const extendedSchema = emToZodSchema(roles.extend(["OWNER"]));
+
+    expect(staffSchema.options).toEqual(["ADMIN", "USER"]);
+    expect(staffSchema.safeParse("GUEST").success).toBe(false);
+    expect(extendedSchema.parse("OWNER")).toBe("OWNER");
+    expect(extendedSchema.parse("ADMIN")).toBe(ROLE.ADMIN);
+  });
+
+  it("keeps object declaration keys on the Zod enum", () => {
     const statuses = em({ ORDER_PAID: "order-paid", ORDER_OPEN: "order-open" });
-    const statusSchema = emToZodEnum(statuses);
+    const statusSchema = emToZodSchema(statuses);
 
     expect(statusSchema.enum.ORDER_PAID).toBe(statuses.enum.ORDER_PAID);
     expect(statusSchema.parse("order-open")).toBe(statuses.enum.ORDER_OPEN);

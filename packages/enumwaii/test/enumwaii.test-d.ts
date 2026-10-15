@@ -10,7 +10,7 @@ import {
   type InferEnumwaiiCase,
 } from "../src/index";
 import { createEnumwaiiQueryParser } from "../src/adapters/nuqs";
-import { emToZodEnum } from "../src/adapters/zod";
+import { emToZodSchema } from "../src/adapters/zod";
 import { z } from "zod";
 
 const roles = em(["ADMIN", "USER"]);
@@ -24,7 +24,7 @@ expectTypeOf(roleQueryParser.serialize(ROLE.ADMIN)).toEqualTypeOf<string>();
 // @ts-expect-error defaults must be owned members
 createEnumwaiiQueryParser(roles, "USER");
 
-const roleZodEnum = emToZodEnum(roles);
+const roleZodEnum = emToZodSchema(roles);
 expectTypeOf(roleZodEnum).toExtend<z.ZodEnum>();
 expectTypeOf<z.output<typeof roleZodEnum>>().toEqualTypeOf<Role>();
 expectTypeOf(roleZodEnum.enum.ADMIN).toEqualTypeOf(ROLE.ADMIN);

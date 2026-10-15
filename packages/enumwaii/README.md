@@ -114,7 +114,7 @@ const metadata = roles.derive<RoleMetadata>()(
 ## Optional entry points
 
 ```ts
-import { emToZodEnum, emToZodSchema } from "enumwaii/zod";
+import { emToZodSchema } from "enumwaii/zod";
 import { emToValibotSchema } from "enumwaii/valibot";
 import { createEnumwaiiQueryParser } from "enumwaii/nuqs";
 import { lowercase, uppercase } from "enumwaii/derive-with";

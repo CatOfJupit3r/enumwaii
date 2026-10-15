@@ -140,7 +140,7 @@ The rule checks `em(...)` and `new Enumwaii(...)`, including named import aliase
 
 Exceptions affect only this rule. Casing and usage-site magic-string rules remain active. If a required external literal spelling conflicts with casing, configure `enforce-enum-casing` separately for that specific declaration using its existing name override; keep internal keys `CONSTANT_CASE`. Importing a provider's enum directly also avoids duplicating its literal definitions. No autofix is offered because changing values can break a contract.
 
-The type-aware preset also enables `prefer-native-schema-adapters`. It reports `z.enum`, `z.nativeEnum`, `v.enum`, and `v.picklist` when their input comes from an enumwaii member view, including extracted aliases. Use `emToZodSchema(enumeration)`, `emToZodEnum(enumeration)` when the Zod schema must convert to JSON Schema, or `emToValibotSchema(enumeration)` when a concrete library schema is required, or pass the declaration itself to a Standard Schema consumer.
+The type-aware preset also enables `prefer-native-schema-adapters`. It reports `z.enum`, `z.nativeEnum`, `v.enum`, and `v.picklist` when their input comes from an enumwaii member view, including extracted aliases. Use `emToZodSchema(enumeration)` or `emToValibotSchema(enumeration)` when a concrete library schema is required, or pass the declaration itself to a Standard Schema consumer.
 
 ## Oxlint
 

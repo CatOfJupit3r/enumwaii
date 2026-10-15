@@ -236,7 +236,6 @@ for (const [entrypointKey, exportName] of [
   ["core", "EnumwaiiError"],
   ["core", "EnumwaiiParseError"],
   ["zod", "emToZodSchema"],
-  ["zod", "emToZodEnum"],
   ["valibot", "emToValibotSchema"],
   ["deriveWith", "lowercase"],
   ["deriveWith", "uppercase"],

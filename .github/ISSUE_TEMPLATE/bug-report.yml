@@ -29,7 +29,7 @@ body:
     attributes:
       label: Environment
       description: Include Node.js, TypeScript, ESLint, package manager, and framework versions that matter.
-      placeholder: Node 22, TypeScript 6.0, pnpm 11, Windows 11
+      placeholder: Node 22, TypeScript 6.0, pnpm 12, Windows 11
     validations:
       required: true
   - type: textarea

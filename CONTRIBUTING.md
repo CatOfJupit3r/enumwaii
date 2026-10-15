@@ -13,7 +13,7 @@ Usage questions and troubleshooting belong in the flow described by [SUPPORT.md]
 
 ## Local setup
 
-The workspace requires Node.js 22.18 or newer and pnpm 11. The published packages have their own, broader runtime compatibility ranges.
+The workspace requires Node.js 22.18 or newer and pnpm 12. The published packages have their own, broader runtime compatibility ranges.
 
 ```sh
 git clone https://github.com/CatOfJupit3r/enumwaii.git
@@ -92,7 +92,7 @@ A pull request should:
 4. include a Changeset when a published package changes; and
 5. pass `pnpm check`.
 
-Core validation starts on every pull request. Extended validation is queued automatically and waits at the protected `extended-validation` environment until a maintainer approves it. Once approved, it checks the exact current head across all examples, documentation, Node 18, Bun, Deno, and Cloudflare Workers. A new push cancels the older run and requires approval for the new head.
+Core validation and Extended validation start in parallel on every pull request. Core validation is the fast signal for the publishable packages; Extended validation checks the same commit across all examples, documentation, Node 18, Bun, Deno, and Cloudflare Workers. A new push cancels the older runs. Workflow runs for first-time contributors from forks wait for a maintainer to approve them.
 
 Maintainers may ask to split a pull request when independent changes make its behavior or release impact difficult to review.
 

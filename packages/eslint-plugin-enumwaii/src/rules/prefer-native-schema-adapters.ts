@@ -165,23 +165,24 @@ export const preferNativeSchemaAdaptersRule = createRule({
         return undefined;
       }
       const factoryName = node.callee.property.name;
+      const librariesWithFactory = (
+        Object.keys(SCHEMA_FACTORIES) as SchemaLibrary[]
+      ).filter((library) =>
+        SCHEMA_FACTORIES[library].has(factoryName as never),
+      );
+      if (librariesWithFactory.length === 0) return undefined;
+
       const declaration = checker.getResolvedSignature(tsNode)?.declaration;
       const fileName = declaration
         ?.getSourceFile()
         .fileName.replaceAll("\\", "/");
       if (!fileName) return undefined;
 
-      for (const library of Object.keys(SCHEMA_FACTORIES) as SchemaLibrary[]) {
-        if (
-          SCHEMA_FACTORIES[library].has(factoryName as never) &&
-          new RegExp(
-            `/node_modules/(?:\\.pnpm/[^/]+/node_modules/)?${library}/`,
-          ).test(fileName)
-        ) {
-          return library;
-        }
-      }
-      return undefined;
+      return librariesWithFactory.find((library) =>
+        new RegExp(
+          `/node_modules/(?:\\.pnpm/[^/]+/node_modules/)?${library}/`,
+        ).test(fileName),
+      );
     }
 
     return {

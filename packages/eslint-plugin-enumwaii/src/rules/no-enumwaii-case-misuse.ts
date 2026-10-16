@@ -18,15 +18,22 @@ const DISCRIMINANT_PROPERTY_NAMES = new Set([
   "type",
 ]);
 
+const casesBrandDecisionByType = new WeakMap<Type, boolean>();
+
 function doesTypeCarryCasesBrand(type: Type): boolean {
-  if (type.isUnionOrIntersection()) {
-    return type.types.some((member) => doesTypeCarryCasesBrand(member));
+  const cachedDecision = casesBrandDecisionByType.get(type);
+  if (cachedDecision !== undefined) {
+    return cachedDecision;
   }
-  return type
-    .getProperties()
-    .some((property) =>
-      String(property.escapedName).includes("ENUMWAII_CASES_BRAND"),
-    );
+  const decision = type.isUnionOrIntersection()
+    ? type.types.some((member) => doesTypeCarryCasesBrand(member))
+    : type
+        .getProperties()
+        .some((property) =>
+          String(property.escapedName).includes("ENUMWAII_CASES_BRAND"),
+        );
+  casesBrandDecisionByType.set(type, decision);
+  return decision;
 }
 
 function getStaticPropertyName(
@@ -233,7 +240,6 @@ export const noEnumwaiiCaseMisuseRule = createRule({
     return {
       Identifier(node) {
         if (
-          !doesTypeCarryCasesBrand(services.getTypeAtLocation(node)) ||
           (isEnumwaiiImplementationFile && isInsideEnumwaiiClass(node)) ||
           isInsideTypeQuery(node) ||
           isParameterBinding(node) ||
@@ -259,6 +265,9 @@ export const noEnumwaiiCaseMisuseRule = createRule({
         ) {
           return;
         }
+        if (!doesTypeCarryCasesBrand(services.getTypeAtLocation(node))) {
+          return;
+        }
         context.report({ node, messageId: "caseObjectEscape" });
       },
       MemberExpression(node) {
@@ -267,9 +276,6 @@ export const noEnumwaiiCaseMisuseRule = createRule({
           node.property.type === AST_NODE_TYPES.Identifier &&
           node.property.name === "cases"
         ) {
-          if (!doesTypeCarryCasesBrand(services.getTypeAtLocation(node))) {
-            return;
-          }
           if (node.object.type === AST_NODE_TYPES.ThisExpression) {
             return;
           }
@@ -287,20 +293,23 @@ export const noEnumwaiiCaseMisuseRule = createRule({
           ) {
             return;
           }
+          if (!doesTypeCarryCasesBrand(services.getTypeAtLocation(node))) {
+            return;
+          }
           context.report({ node, messageId: "caseObjectEscape" });
           return;
         }
 
+        if (!node.computed && isAllowedCaseValueUsage(node)) {
+          return;
+        }
         if (!doesTypeCarryCasesBrand(services.getTypeAtLocation(node.object))) {
           return;
         }
-        if (node.computed) {
-          context.report({ node, messageId: "computedCaseMember" });
-          return;
-        }
-        if (!isAllowedCaseValueUsage(node)) {
-          context.report({ node, messageId: "caseValueEscape" });
-        }
+        context.report({
+          node,
+          messageId: node.computed ? "computedCaseMember" : "caseValueEscape",
+        });
       },
     };
   },

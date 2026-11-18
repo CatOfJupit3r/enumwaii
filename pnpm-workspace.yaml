@@ -7,7 +7,11 @@ minimumReleaseAge: 1440
 minimumReleaseAgeStrict: true
 # Add only reviewed, exact selectors (for example, package@1.2.3) when an
 # emergency update must bypass the 24-hour quarantine.
-minimumReleaseAgeExclude: []
+minimumReleaseAgeExclude:
+  [
+    # Renovate security update: next@16.4.5
+    next@16.4.5
+  ]
 blockExoticSubdeps: true
 strictDepBuilds: true
 
